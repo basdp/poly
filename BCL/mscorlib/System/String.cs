@@ -36,7 +36,12 @@
         ")]
         int get_Length() { return 0; }
 
-        public static string Concat(object arg0, object arg1, object arg2) 
+        public static string Concat(object arg0, object arg1)
+        {
+            return Concat(arg0.ToString(), arg1.ToString());
+        }
+
+        public static string Concat(object arg0, object arg1, object arg2)
         {
             return Concat(arg0.ToString(), arg1.ToString(), arg2.ToString());
         }

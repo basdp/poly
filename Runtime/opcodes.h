@@ -123,20 +123,6 @@ void CIL_ldstr(const char*);
 #define CIL_isinst(...) CIL_undefined()
 #define CIL_jmp(...) CIL_undefined()
 #define CIL_ldarga(...) CIL_undefined()
-#define CIL_ldelem(...) CIL_undefined()
-#define CIL_ldelem__i(...) CIL_undefined()
-#define CIL_ldelem__i1(...) CIL_undefined()
-#define CIL_ldelem__i2(...) CIL_undefined()
-#define CIL_ldelem__i4(...) CIL_undefined()
-#define CIL_ldelem__i8(...) CIL_undefined()
-#define CIL_ldelem__r4(...) CIL_undefined()
-#define CIL_ldelem__r8(...) CIL_undefined()
-#define CIL_ldelem__ref(...) CIL_undefined()
-#define CIL_ldelem__u1(...) CIL_undefined()
-#define CIL_ldelem__u2(...) CIL_undefined()
-#define CIL_ldelem__u4(...) CIL_undefined()
-#define CIL_ldelem__u8(...) CIL_undefined()
-#define CIL_ldelema(...) CIL_undefined()
 #define CIL_ldflda(...) CIL_undefined()
 #define CIL_ldftn(...) CIL_undefined()
 #define CIL_ldind__i(...) CIL_undefined()
@@ -166,7 +152,6 @@ void CIL_ldstr(const char*);
 #define CIL_mul__ovf(...) CIL_undefined()
 #define CIL_mul__ovf__un(...) CIL_undefined()
 #define CIL_neg(...) CIL_undefined()
-#define CIL_newarr(...) CIL_undefined()
 #define CIL_no__typecheck(...) CIL_undefined()
 #define CIL_no__rangecheck(...) CIL_undefined()
 #define CIL_no__nullcheck(...) CIL_undefined()
@@ -184,15 +169,6 @@ void CIL_ldstr(const char*);
 #define CIL_sizeof(...) CIL_undefined()
 #define CIL_starg(...) CIL_undefined()
 #define CIL_starg__s(...) CIL_undefined()
-#define CIL_stelem(...) CIL_undefined()
-#define CIL_stelem__i(...) CIL_undefined()
-#define CIL_stelem__i1(...) CIL_undefined()
-#define CIL_stelem__i2(...) CIL_undefined()
-#define CIL_stelem__i4(...) CIL_undefined()
-#define CIL_stelem__i8(...) CIL_undefined()
-#define CIL_stelem__r4(...) CIL_undefined()
-#define CIL_stelem__r8(...) CIL_undefined()
-#define CIL_stelem__ref(...) CIL_undefined()
 #define CIL_stind__i(...) CIL_undefined()
 #define CIL_stind__i1(...) CIL_undefined()
 #define CIL_stind__i2(...) CIL_undefined()
@@ -269,8 +245,8 @@ void CIL_ldstr(const char*);
 #define CIL_stloc__s(s) CIL_stloc(s)
 
 #define CIL_newobj(type, ctor) { \
-	void* pointer = malloc(sizeof(struct type)); \
-	/* TODO INITIALIZE ALL FIELDS TO 0 */ \
+	void* pointer = calloc(1, sizeof(struct type)); \
+	/* TODO: Garbage collect */ \
 	push_pointer((uintptr_t)pointer); \
 	ctor(); \
 	push_pointer((uintptr_t)pointer); \
@@ -278,3 +254,32 @@ void CIL_ldstr(const char*);
 
 #define CIL_box(type) CIL_box_dispatch(#type)
 void CIL_box_dispatch(const char*);
+
+#define CIL_newarr(type) CIL_newarr_dispatch(#type)
+void CIL_newarr_dispatch(const char*);
+
+#define CIL_stelem(...) CIL_undefined()
+void CIL_stelem__i();
+void CIL_stelem__i1();
+void CIL_stelem__i2();
+void CIL_stelem__i4();
+void CIL_stelem__i8();
+void CIL_stelem__r4();
+void CIL_stelem__r8();
+void CIL_stelem__ref();
+
+#define CIL_ldelem(type) CIL_undefined() /* #type */
+void CIL_ldelem__i(); 
+void CIL_ldelem__i1();
+void CIL_ldelem__i2();
+void CIL_ldelem__i4();
+void CIL_ldelem__i8();
+void CIL_ldelem__r4();
+void CIL_ldelem__r8();
+void CIL_ldelem__ref();
+void CIL_ldelem__u1();
+void CIL_ldelem__u2();
+void CIL_ldelem__u4();
+void CIL_ldelem__u8();
+#define CIL_ldelema(type) CIL_ldelema_dispatch(#type)
+void CIL_ldelema_dispatch(const char*);

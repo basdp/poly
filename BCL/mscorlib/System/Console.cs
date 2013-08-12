@@ -14,6 +14,11 @@ namespace System
         public static void WriteLine(int value) { }
 
         [Poly.Internals.CompilerImplemented.InlineCode(@"
+	        printf(""%i\n"", parameter0);
+        ")]
+        public static void WriteLine(byte value) { }
+
+        [Poly.Internals.CompilerImplemented.InlineCode(@"
             float f;
             memcpy(&f, &parameter0, 4);
 	        printf(""%f\n"", f);
@@ -32,5 +37,10 @@ namespace System
 	        printf(""%s\n"", str);
         ")]
         public static void WriteLine(string value) { }
+
+        public static void WriteLine(object value)
+        {
+            WriteLine(value.ToString());
+        }
     }
 }

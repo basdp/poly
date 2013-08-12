@@ -187,3 +187,163 @@ void CIL_box_dispatch(const char* type) {
 	fprintf(stderr, "Error: Can not box to type %s!\n", type);
 	exit(1);
 }
+
+void CIL_newarr_dispatch(const char* type) {
+	/* TODO: Garbage collect */
+
+	int32_t numElems = pop_value32();
+	if (strcmp(type, "System.Int32") == 0 ||
+		strcmp(type, "System.Byte") == 0 ||
+		strcmp(type, "System.Int16") == 0 ||
+		strcmp(type, "System.IntSByte") == 0 ||
+		strcmp(type, "System.UInt16") == 0 ||
+		strcmp(type, "System.Char") == 0 ||
+		strcmp(type, "System.Short") == 0 ||
+		strcmp(type, "System.UShort") == 0 ||
+		strcmp(type, "System.UInt32") == 0 ||
+		strcmp(type, "System.Boolean") == 0
+	) {
+		intptr_t arr = (intptr_t)calloc(numElems + 2, 4);
+		((int32_t*)arr)[0] = numElems;
+		((int32_t*)arr)[1] = 4; // size
+		push_pointer(arr);
+		return;
+	} else if (strcmp(type, "System.Int64") == 0 ||
+		strcmp(type, "System.UInt64") == 0 ||
+		strcmp(type, "System.Long") == 0 ||
+		strcmp(type, "System.ULong") == 0 
+	) {
+		intptr_t arr = (intptr_t)calloc(numElems + 1, 8);
+		((int32_t*)arr)[0] = numElems;
+		((int32_t*)arr)[1] = 8; // size
+		push_pointer(arr);
+		return;
+	} else if (strcmp(type, "System.Single") == 0) {
+		intptr_t arr = (intptr_t)calloc(numElems + 2, 4);
+		((int32_t*)arr)[0] = numElems;
+		((int32_t*)arr)[1] = 4; // size
+		push_pointer(arr);
+		return;
+	} else if (strcmp(type, "System.Double") == 0) {
+		intptr_t arr = (intptr_t)calloc(numElems, 8);
+		((int32_t*)arr)[0] = numElems;
+		((int32_t*)arr)[1] = 8; // size
+		push_pointer(arr);
+		return;
+	} else {
+		// Object
+		intptr_t arr = (intptr_t)calloc(numElems + 2, sizeof(intptr_t));
+		((int32_t*)arr)[0] = numElems;
+		((int32_t*)arr)[1] = sizeof(intptr_t); // size
+		push_pointer(arr);
+		return;
+	}
+
+	//fprintf(stderr, "Error: Can not create array of type %s!\n", type);
+	//exit(1);
+}
+
+void CIL_stelem__i() {
+	intptr_t value = pop_pointer();
+	int32_t index = pop_value32() + 2;
+	intptr_t* array = (intptr_t*)pop_pointer();
+	array[index] = value;
+}
+
+void CIL_stelem__i4() {
+	int32_t value = pop_value32();
+	int32_t index = pop_value32() + 2;
+	int32_t* array = (int32_t*)pop_pointer();
+	array[index] = value;
+}
+
+void CIL_stelem__i1() { CIL_stelem__i4(); }
+void CIL_stelem__i2() { CIL_stelem__i4(); }
+
+void CIL_stelem__i8() {
+	int64_t value = pop_value64();
+	int32_t index = pop_value32() + 1;
+	int64_t* array = (int64_t*)pop_pointer();
+	array[index] = value;
+}
+
+void CIL_stelem__r4() {
+	int32_t value = pop_value32();
+	int32_t index = pop_value32() + 2;
+	int32_t* array = (int32_t*)pop_pointer();
+	array[index] = value;
+}
+
+void CIL_stelem__r8() {
+	int64_t value = pop_value64();
+	int32_t index = pop_value32() + 1;
+	int64_t* array = (int64_t*)pop_pointer();
+	array[index] = value;
+}
+
+void CIL_stelem__ref() {
+	intptr_t value = pop_pointer();
+	int32_t index = pop_value32() + 2;
+	intptr_t* array = (intptr_t*)pop_pointer();
+	array[index] = value;
+}
+
+void CIL_ldelem__i() {
+	int32_t index = pop_value32() + 2;
+	intptr_t* array = (intptr_t*)pop_pointer();
+	push_pointer(array[index]);
+}
+
+void CIL_ldelem__i4() {
+	int32_t index = pop_value32() + 2;
+	int32_t* array = (int32_t*)pop_pointer();
+	push_value32(array[index], CIL_int32);
+}
+
+void CIL_ldelem__i1() { CIL_ldelem__i4(); }
+void CIL_ldelem__i2() { CIL_ldelem__i4(); }
+
+void CIL_ldelem__i8() {
+	int32_t index = pop_value32() + 1;
+	int64_t* array = (int64_t*)pop_pointer();
+	push_value64(array[index], CIL_int64);
+}
+
+void CIL_ldelem__r4() {
+	int32_t index = pop_value32() + 2;
+	int32_t* array = (int32_t*)pop_pointer();
+	push_value32(array[index], CIL_float32);
+}
+
+void CIL_ldelem__r8() {
+	int32_t index = pop_value32() + 1;
+	int64_t* array = (int64_t*)pop_pointer();
+	push_value64(array[index], CIL_float64);
+}
+
+void CIL_ldelem__ref() {
+	int32_t index = pop_value32();
+	intptr_t* array = (intptr_t*)pop_pointer();
+	int32_t numElems = ((int32_t*)array)[0];
+	if (index >= numElems) {
+		fprintf(stderr, "System.IndexOutOfRangeException\n");
+		exit(1);
+	}
+	push_pointer(array[index + 2]);
+}
+
+void CIL_ldelem__u1() { CIL_ldelem__i4(); }
+void CIL_ldelem__u2() { CIL_ldelem__i4(); }
+void CIL_ldelem__u4() { CIL_ldelem__i4(); }
+void CIL_ldelem__u8() { CIL_ldelem__i8(); }
+
+void CIL_ldelema_dispatch(const char* type) {
+	if (strcmp(type, "System.Int32") == 0) {
+		CIL_ldelem__i4();
+		CIL_box_dispatch(type);
+		return;
+	}
+
+	fprintf(stderr, "Error: ldelema: Can not load address of type %s!\n", type);
+	exit(1);
+}

@@ -219,23 +219,32 @@ namespace PolyCompiler
             header += "*/);\n";
 
             // parameters
-            int staticOffset = m.IsStatic ? 1 : 0;
+            int parameterOffset = 0;
+            if (m.IsStatic) parameterOffset = 1;
+
+            if (m.IsConstructor)
+            {
+                // constructors get the object as last parameter on the stack instead of the first
+                code += "    uintptr_t parameter0 = pop_pointer();\n";
+                code += "    enum CIL_Type parameter0__type = CIL_pointer;\n";
+            }
+
             for (int i = m.GetParameters().Count() - 1; i >= 0; i--)
             {
                 ParameterInfo p = m.GetParameters().Where(a => a.Position == i).First();
                 if (p.ParameterType.IsValueType)
                 {
                     int bytes = getTypeSize(p.ParameterType);
-                    code += "    int" + bytes + "_t parameter" + (p.Position + 1 - staticOffset) + " = pop_value" + bytes + "();\n";
-                    code += "    enum CIL_Type parameter" + (p.Position + 1 - staticOffset) + "__type = " + GetInternalType(p.ParameterType) + "; // " + p.ParameterType.FullName + "\n";
+                    code += "    int" + bytes + "_t parameter" + (p.Position + 1 - parameterOffset) + " = pop_value" + bytes + "();\n";
+                    code += "    enum CIL_Type parameter" + (p.Position + 1 - parameterOffset) + "__type = " + GetInternalType(p.ParameterType) + "; // " + p.ParameterType.FullName + "\n";
                 }
                 else
                 {
-                    code += "    uintptr_t parameter" + (p.Position + 1 - staticOffset) + " = pop_pointer();\n";
-                    code += "    enum CIL_Type parameter" + (p.Position + 1 - staticOffset) + "__type = " + GetInternalType(p.ParameterType) + "; // " + p.ParameterType.FullName + "\n";
+                    code += "    uintptr_t parameter" + (p.Position + 1 - parameterOffset) + " = pop_pointer();\n";
+                    code += "    enum CIL_Type parameter" + (p.Position + 1 - parameterOffset) + "__type = " + GetInternalType(p.ParameterType) + "; // " + p.ParameterType.FullName + "\n";
                 }
             }
-            if (!m.IsStatic)
+            if (!m.IsStatic && !m.IsConstructor)
             {
                 code += "    uintptr_t parameter0 = pop_pointer();\n";
                 code += "    enum CIL_Type parameter0__type = CIL_pointer;\n";
