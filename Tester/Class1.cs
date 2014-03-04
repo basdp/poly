@@ -33,7 +33,8 @@ namespace Tester
             ints[2] = new Test(3);
             ints[3] = new Test(4);*/
             //Test[] ints = new Test[] { }
-            int[] ints = new[] { 1, 2, 3, 4, 5 };
+            double[] ints = new double[] { 1.1, 2.2, 3.3, 4.4, 5.5 };
+            //ints[4] = 4.5;
             System.Console.WriteLine(ints[3]);
             //System.Console.WriteLine(bas);
         }

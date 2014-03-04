@@ -14,6 +14,11 @@ namespace System
         public static void WriteLine(int value) { }
 
         [Poly.Internals.CompilerImplemented.InlineCode(@"
+	        printf(""%ld\n"", parameter0);
+        ")]
+        public static void WriteLine(Int64 value) { }
+
+        [Poly.Internals.CompilerImplemented.InlineCode(@"
 	        printf(""%i\n"", parameter0);
         ")]
         public static void WriteLine(byte value) { }
