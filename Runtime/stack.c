@@ -82,13 +82,37 @@ int stack_top_size() {
 	case CIL_float32:
 	case CIL_int32:
 		return 4;
-	case CIL_float64: 
+	case CIL_float64:
 	case CIL_int64:
 		return 8;
 	case CIL_pointer:
 	case CIL_native:
 		return sizeof(intptr_t);
 	default: return 0;
+	}
+}
+
+void stack_duplicate_top() {
+	enum CIL_Type top_type = stack_top_type();
+	switch (top_type) {
+	case CIL_float32:
+	case CIL_int32: {
+		int32_t v = pop_value32();
+		push_value32(v, top_type);
+		push_value32(v, top_type); }
+		break;
+	case CIL_float64:
+	case CIL_int64: {
+		int64_t v = pop_value64();
+		push_value64(v, top_type);
+		push_value64(v, top_type); }
+		break;
+	case CIL_pointer:
+	case CIL_native: {
+		intptr_t v = pop_pointer();
+		push_pointer(v, top_type);
+		push_pointer(v, top_type); }
+		break;
 	}
 }
 

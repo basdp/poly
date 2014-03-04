@@ -118,7 +118,7 @@ namespace SDILReader
                         }
                         catch
                         {
-
+                            instruction.Operand = module.ResolveMember(metadataToken);
                         }
                         // SSS : see what to do here
                         break;

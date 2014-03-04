@@ -3,6 +3,9 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection.Emit;
 using Poly.Internals.CompilerImplemented;
+using System.Reflection;
+using System.Runtime.InteropServices;
+using PolyCompiler;
 
 namespace SDILReader
 {
@@ -131,9 +134,28 @@ namespace SDILReader
                             break;
                         case OperandType.InlineTok:
                             if (operand is Type)
-                                result += ((Type)operand).FullName;
+                                result += ", " + ((Type)operand).FullName;
+                            else if (operand is FieldInfo)
+                            {
+                                System.Reflection.FieldInfo o = ((System.Reflection.FieldInfo)operand);
+                                if (!o.IsStatic)
+                                {
+                                    result += "field, ";
+                                    result += PolyCompiler.Program.ConvertTypeToCName(o.DeclaringType.FullName) + ", ";
+                                    result += Program.Offsets[o].ToString() + ", ";
+                                    result += Program.GetTypeSize(o.FieldType) / 8;
+                                }
+                                else
+                                {
+                                    result += "static_field, ";
+                                    result += PolyCompiler.Program.ConvertTypeToCName(o.DeclaringType.FullName) + ", ";
+                                    result += PolyCompiler.Program.GetInternalFieldName(o.Name) + ", ";
+                                    result += "0, ";
+                                    result += Program.GetTypeSize(o.FieldType) / 8;
+                                }
+                            }
                             else
-                                result += "not supported";
+                                throw new NotImplementedException();
                             break;
 
                         default: result += "not supported"; break;

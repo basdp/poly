@@ -5,7 +5,7 @@ copy ..\PolyCompiler\bin\Debug\Poly.Internals.dll .
 copy ..\PolyCompiler\bin\Debug\Tester.dll .
 copy ..\BCL\mscorlib\bin\Debug\mscorlib.dll .\mscorlib_.dll
 
-call "C:\Program Files (x86)\Microsoft Visual Studio 11.0\VC\vcvarsall.bat"
+call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
 
 rmdir build
 mkdir build

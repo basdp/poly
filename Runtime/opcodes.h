@@ -113,7 +113,6 @@ void CIL_ldstr(const char*);
 #define CIL_cpblk(...) CIL_undefined()
 #define CIL_cpobj(...) CIL_undefined()
 #define CIL_div__un(...) CIL_undefined()
-#define CIL_dup(...) CIL_undefined()
 #define CIL_endfault(...) CIL_undefined()
 #define CIL_endfilter(...) CIL_undefined()
 #define CIL_endfinally(...) CIL_undefined()
@@ -141,9 +140,7 @@ void CIL_ldstr(const char*);
 #define CIL_ldloca__s(...) CIL_undefined()
 #define CIL_ldnull(...) CIL_undefined()
 #define CIL_ldobj(...) CIL_undefined()
-#define CIL_ldsfld(...) CIL_undefined()
 #define CIL_ldsflda(...) CIL_undefined()
-#define CIL_ldtoken(...) CIL_undefined()
 #define CIL_ldvirtftn(...) CIL_undefined()
 #define CIL_leave(...) CIL_undefined()
 #define CIL_leave__s(...) CIL_undefined()
@@ -178,7 +175,6 @@ void CIL_ldstr(const char*);
 #define CIL_stind__r8(...) CIL_undefined()
 #define CIL_stind__ref(...) CIL_undefined()
 #define CIL_stobj(...) CIL_undefined()
-#define CIL_stsfld(...) CIL_undefined()
 #define CIL_sub__ovf(...) CIL_undefined()
 #define CIL_sub__ovf__un(...) CIL_undefined()
 #define CIL_switch(...) CIL_undefined()
@@ -199,6 +195,16 @@ void CIL_ldstr(const char*);
 #define CIL_stfld(type, name) {    if (stack_top_size() == 4) { int32_t value = pop_value32(); intptr_t self = pop_pointer(); ((struct type*)self)-> name = value; } \
 				 else if (stack_top_size() == 8) { int64_t value = pop_value64(); intptr_t self = pop_pointer(); ((struct type*)self)-> name = value; } \
 				 else { intptr_t value = pop_pointer(); uintptr_t self = pop_pointer(); ((struct type*)self)-> name = value; } }
+
+#define CIL_ldsfld(type, name) {  \
+	if (sizeof(type ## _sf_ ## name) == 4) { push_value32( (type ## _sf_ ## name), (type ## _sf_ ## name ## __type) ); }  \
+							else if (sizeof(type ## _sf_ ## name) == 8) { push_value64( (type ## _sf_ ## name), (type ## _sf_ ## name ## __type) ); }  \
+							else { push_pointer(type ## _sf_ ## name); } \
+}
+
+#define CIL_stsfld(type, name) {    if (stack_top_size() == 4) { int32_t value = pop_value32(); (type ## _sf_ ## name) = value; } \
+				 else if (stack_top_size() == 8) { int64_t value = pop_value64(); (type ## _sf_ ## name) = value; } \
+				 else { intptr_t value = pop_pointer(); (type ## _sf_ ## name) = value; } }
 
 #define CIL_ret() return 0;
 
@@ -283,3 +289,9 @@ void CIL_ldelem__u4();
 void CIL_ldelem__u8();
 #define CIL_ldelema(type) CIL_ldelema_dispatch(#type)
 void CIL_ldelema_dispatch(const char*);
+
+#define CIL_ldtoken(type, clas, id, offset, size) CIL_ldtoken_ ## type (clas, id, offset, size)
+void CIL_ldtoken_static_field_dispatch(void*, enum CIL_Type, int);
+#define CIL_ldtoken_static_field(clas, id, offset, size) CIL_ldtoken_static_field_dispatch(& (clas ## _sf_ ## id), clas ## _sf_ ## id ## __type, size)
+
+#define CIL_dup() stack_duplicate_top()

@@ -15,3 +15,4 @@ int stack_top_size();
 int empty();
 int full();
 void print_stack();
+void stack_duplicate_top();

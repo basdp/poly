@@ -2,6 +2,25 @@
 #include "hashmap.h"
 #include "opcodes.h"
 
+// Check windows
+#if _WIN32 || _WIN64
+#if _WIN64
+#define POLY64
+#else
+#define POLY32
+#endif
+#endif
+
+// Check GCC
+#if __GNUC__
+#if __x86_64__ || __ppc64__
+#define POLY64
+#else
+#define POLY32
+#endif
+#endif
+
+
 struct SYSTEM__OBJECT_proto {
 	map_t __CILsymboltable;
 	intptr_t __CILtype;
@@ -23,4 +42,13 @@ extern void *SYSTEM__INT32_ctor();
 struct SYSTEM__INT32_proto {
 	struct SYSTEM__VALUETYPE_proto __base;
 	int32_t value;
+};
+
+#define SYSTEM__RUNTIMEFIELDHANDLE_ctor m7531E3B8253211639BBBDB1FFB6E188D5A984775
+extern void *SYSTEM__RUNTIMEFIELDHANDLE_ctor();
+struct SYSTEM__RUNTIMEFIELDHANDLE_proto {
+	struct SYSTEM__OBJECT_proto __base;
+	intptr_t addr;
+	enum CIL_Type type;
+	int size;
 };

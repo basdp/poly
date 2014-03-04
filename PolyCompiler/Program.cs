@@ -16,11 +16,23 @@ namespace PolyCompiler
     {
         static SHA1 sha = new SHA1CryptoServiceProvider();
 
+        public static Dictionary<FieldInfo, int> Offsets = new Dictionary<FieldInfo,int>();
+
         public static string ConvertTypeToCName(string type)
         {
             type = type.Replace(".__", ".");
             type = type.Replace(".", "__");
             type = type.Replace("::", "_m_");
+
+            type = type.Replace("<", "_priv_");
+            type = type.Replace(">", "_ate_");
+
+            type = type.Replace("{", "__");
+            type = type.Replace("}", "__");
+            type = type.Replace("+", "_plus_");
+            type = type.Replace("-", "_");
+            type = type.Replace("=", "_eq_");
+
             return type;
         }
 
@@ -41,6 +53,7 @@ namespace PolyCompiler
             }
 
             string code = "#include \"" + headerfile + "\"\n\n";
+            string init = "";
             string header = "#pragma once\n#include \"polyruntime.h\"\n#include \"mscorlib.h\"\n\n";
 
             /*string path = Path.GetDirectoryName(Assembly.GetAssembly(typeof(Program)).CodeBase);
@@ -106,27 +119,105 @@ namespace PolyCompiler
                         StructureCodeAttribute str = (StructureCodeAttribute)type.GetCustomAttribute(typeof(StructureCodeAttribute), true);
                         header += str.GetCode();
                     }
-                    FieldInfo[] fis = type.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
+
+                    // todo .pack? (type.StructLayoutAttribute.Pack)
+
+                    int classSize = 0;
+                    FieldInfo[] fis = type.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                     for (int j = 0; j < fis.Length; j++)
                     {
+                        Offsets[fis[j]] = classSize;
+
                         if (fis[j].FieldType.IsValueType)
                         {
-                            int bytes = getTypeSize(fis[j].FieldType);
-                            header += "    int" + bytes + "_t " + fis[j].Name + "; // " + fis[j].MetadataToken + "\n";
+                            int bits = GetTypeSize(fis[j].FieldType);
+                            if (bits <= 64)
+                            {
+                                header += "    int" + bits + "_t " + GetInternalFieldName(fis[j].Name) + "; // " + fis[j].MetadataToken + "\n";
+                            }
+                            else
+                            {
+                                header += "    int8_t " + GetInternalFieldName(fis[j].Name) + "[" + (bits / 8) + "]; // " + fis[j].MetadataToken + "\n";
+                            }
+                            classSize += bits / 8;
                         }
                         else
                         {
-                            header += "    uintptr_t " + fis[j].Name + "; //" + fis[j].MetadataToken + "\n";
+                            header += "    uintptr_t " + GetInternalFieldName(fis[j].Name) + "; //" + fis[j].MetadataToken + "\n";
+                            // TODO: 64 bit?
+                            classSize += 4;
                         }
                     }
+
+                    if (type.StructLayoutAttribute.Size != 0)
+                    {
+                        //header += "#ifdef POLY32\n";
+                        header += "    int8_t __padding[" + (type.StructLayoutAttribute.Size - classSize) + "];\n";
+                        //header += "#elif POLY64\n";
+                        //header += "    int8_t __padding[" + (type.StructLayoutAttribute.Size - classSize64) + "];\n";
+                        //header += "#else\n";
+                        //header += "#error The class " + type.FullName + " has specific allignment requirements. This has not been implemented for the active platform.\n";
+                        //header += "#endif\n";
+                    }
+
                     header += "};\n";
 
                     for (int j = 0; j < fis.Length; j++)
                     {
-                        code += "enum CIL_Type " + ConvertTypeToCName(type.FullName) + "_f_" + fis[j].Name + "__type = " + GetInternalType(fis[j].FieldType) + "; // " + fis[j].FieldType.FullName + "\n";
-                        header += "extern enum CIL_Type " + ConvertTypeToCName(type.FullName) + "_f_" + fis[j].Name + "__type;\n";
+                        code += "enum CIL_Type " + ConvertTypeToCName(type.FullName) + "_f_" + GetInternalFieldName(fis[j].Name) + "__type = " + GetInternalType(fis[j].FieldType) + "; // " + fis[j].FieldType.FullName + "\n";
+                        header += "extern enum CIL_Type " + ConvertTypeToCName(type.FullName) + "_f_" + GetInternalFieldName(fis[j].Name) + "__type;\n";
                     }
 
+                    // Static fields
+                    fis = type.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static);
+                    for (int j = 0; j < fis.Length; j++)
+                    {
+                        if (fis[j].FieldType.IsValueType)
+                        {
+                            int bits = GetTypeSize(fis[j].FieldType);
+                            if (bits <= 64)
+                            {
+                                header += "int" + bits + "_t " + ConvertTypeToCName(type.FullName) + "_sf_" + GetInternalFieldName(fis[j].Name) + "; // " + fis[j].MetadataToken + "\n";
+                            }
+                            else
+                            {
+                                header += "int8_t " + ConvertTypeToCName(type.FullName) + "_sf_" + GetInternalFieldName(fis[j].Name) + "[" + (bits / 8) + "]; // " + fis[j].MetadataToken + "\n";
+                            }
+                        }
+                        else
+                        {
+                            header += "uintptr_t " + ConvertTypeToCName(type.FullName) + "_sf_" + GetInternalFieldName(fis[j].Name) + "; //" + fis[j].MetadataToken + "\n";
+                        }
+
+                        if ((FieldAttributes.HasFieldRVA & fis[j].Attributes) != 0)
+                        {
+                            if (!fis[j].IsStatic) throw new NotImplementedException();
+                            init += "    // RVA for " + type.FullName + "::" + fis[j].Name + "\n";
+                            object o = fis[j].GetValue(null);
+                            int size = Marshal.SizeOf(o);
+                            byte[] arr = new byte[size];
+                            IntPtr ptr = Marshal.AllocHGlobal(size);
+
+                            Marshal.StructureToPtr(o, ptr, true);
+                            Marshal.Copy(ptr, arr, 0, size);
+                            Marshal.FreeHGlobal(ptr);
+
+                            for (int k = 0; k < arr.Length; k++)
+                            {
+                                init += "    " + ConvertTypeToCName(type.FullName) + "_sf_" + GetInternalFieldName(fis[j].Name) + "[" + k + "] = " + arr[k] + ";\n";
+                            }
+
+                        }
+                    }
+                    for (int j = 0; j < fis.Length; j++)
+                    {
+                        code += "enum CIL_Type " + ConvertTypeToCName(type.FullName) + "_sf_" + GetInternalFieldName(fis[j].Name) + "__type = " + GetInternalType(fis[j].FieldType) + "; // " + fis[j].FieldType.FullName + "\n";
+                        header += "extern enum CIL_Type " + ConvertTypeToCName(type.FullName) + "_sf_" + GetInternalFieldName(fis[j].Name) + "__type;\n";
+                    }
+                }
+
+                foreach (var type in types)
+                {
                     ConstructorInfo[] cis = type.GetConstructors(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
                     for (int j = 0; j < cis.Length; j++)
                     {
@@ -134,7 +225,7 @@ namespace PolyCompiler
                         foreach (var virtmethod in type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(m => m.IsVirtual))
                         {
                             addedcode += "    hashmap_put(((struct System__Object*)parameter0)->__CILsymboltable, \"" + GetInternalMethodName(virtmethod, false) + "\", &" + GetInternalMethodName(virtmethod) +
-                            "); /* " + virtmethod.Name + " */\n";
+                           "); /* " + virtmethod.Name + " */\n";
                         }
                         ProcessMethodBody(cis[j], ref code, ref header, addedcode);
                     }
@@ -147,8 +238,17 @@ namespace PolyCompiler
                 }
             }
 
+            code += "void init_" + ConvertTypeToCName(ass.GetName().Name) + "() {\n" + init + "\n}\n";
+
             File.WriteAllText(codefile, code);
             File.WriteAllText(headerfile, header);
+        }
+
+        public static string GetInternalFieldName(string f)
+        {
+            f = f.Replace("$$", "_f_");
+            f = f.Replace("-", "_");
+            return f;
         }
 
         private static string GetInternalType(Type type)
@@ -234,7 +334,7 @@ namespace PolyCompiler
                 ParameterInfo p = m.GetParameters().Where(a => a.Position == i).First();
                 if (p.ParameterType.IsValueType)
                 {
-                    int bytes = getTypeSize(p.ParameterType);
+                    int bytes = GetTypeSize(p.ParameterType);
                     code += "    int" + bytes + "_t parameter" + (p.Position + 1 - parameterOffset) + " = pop_value" + bytes + "();\n";
                     code += "    enum CIL_Type parameter" + (p.Position + 1 - parameterOffset) + "__type = " + GetInternalType(p.ParameterType) + "; // " + p.ParameterType.FullName + "\n";
                 }
@@ -272,7 +372,7 @@ namespace PolyCompiler
                     {
                         if (l.LocalType.IsValueType)
                         {
-                            int bytes = getTypeSize(l.LocalType);
+                            int bytes = GetTypeSize(l.LocalType);
                             code += "    int" + bytes + "_t local" + l.LocalIndex + " = 0;\n";
                             code += "    enum CIL_Type local" + l.LocalIndex + "__type = " + GetInternalType(l.LocalType) + "; // " + l.LocalType.FullName + "\n";
                         }
@@ -343,7 +443,7 @@ namespace PolyCompiler
             return ConvertTypeToCName(ret.ToString());
         }
 
-        private static int getTypeSize(Type type)
+        public static int GetTypeSize(Type type)
         {
             int bytes = Marshal.SizeOf(type) * 8;
             if (bytes < 32) bytes = 32;

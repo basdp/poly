@@ -225,7 +225,7 @@ void CIL_newarr_dispatch(const char* type) {
 		push_pointer(arr);
 		return;
 	} else if (strcmp(type, "System.Double") == 0) {
-		intptr_t arr = (intptr_t)calloc(numElems, 8);
+		intptr_t arr = (intptr_t)calloc(numElems + 1, 8);
 		((int32_t*)arr)[0] = numElems;
 		((int32_t*)arr)[1] = 8; // size
 		push_pointer(arr);
@@ -346,4 +346,14 @@ void CIL_ldelema_dispatch(const char* type) {
 
 	fprintf(stderr, "Error: ldelema: Can not load address of type %s!\n", type);
 	exit(1);
+}
+
+void CIL_ldtoken_static_field_dispatch(void* addr, enum CIL_Type type, int size) {
+	struct SYSTEM__RUNTIMEFIELDHANDLE_proto *obj;
+
+	CIL_newobj(SYSTEM__RUNTIMEFIELDHANDLE_proto, SYSTEM__RUNTIMEFIELDHANDLE_ctor);
+	obj = (struct SYSTEM__RUNTIMEFIELDHANDLE_proto *)peek_pointer(0);
+	obj->addr = addr;
+	obj->type = type;
+	obj->size = size;
 }
