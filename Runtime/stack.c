@@ -77,6 +77,10 @@ enum CIL_Type stack_top_type() {
 	return types[ttop - 1];
 }
 
+enum CIL_Type stack_offset_type(int offset) {
+	return types[ttop - 1 - offset];
+}
+
 int stack_top_size() {
 	switch (stack_top_type()) {
 	case CIL_float32:
@@ -110,8 +114,8 @@ void stack_duplicate_top() {
 	case CIL_pointer:
 	case CIL_native: {
 		intptr_t v = pop_pointer();
-		push_pointer(v, top_type);
-		push_pointer(v, top_type); }
+		push_pointer(v);
+		push_pointer(v); }
 		break;
 	}
 }

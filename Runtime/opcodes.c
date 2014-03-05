@@ -149,17 +149,90 @@ OPERATOR(sub, -);
 OPERATOR(mul, *);
 OPERATOR(div, /);
 
+/*
 void CIL_ceq() {
 	int32_t value2 = pop_value32();
 	int32_t value1 = pop_value32();
 	if (value1 == value2) {
 		push_value32(1, CIL_int32);
-	} else {
+	}
+	else {
 		push_value32(0, CIL_int32);
 	}
 
 	// TODO: For floating-point numbers, ceq will return 0 if the numbers are unordered (either or both are NaN). The infinite values are equal to themselves. 
+}*/
+
+
+#define COMPARER(name, op) void CIL_ ## name () {\
+enum CIL_Type typeb = stack_top_type();\
+	if (typeb == CIL_int32) {\
+	int32_t b = pop_value32();\
+enum CIL_Type typea = stack_top_type();\
+	if (typea == CIL_int32) {\
+	int32_t a = pop_value32();\
+	push_value32(a op b ? 1 : 0, CIL_int32);\
+	return;\
+	} else if (typea == CIL_native) {\
+	intptr_t a = pop_pointer();\
+	push_value32(a op b ? 1 : 0, CIL_int32);\
+	return;\
+	}\
+	} else if (typeb == CIL_int64) {\
+	int64_t b = pop_value64();\
+enum CIL_Type typea = stack_top_type();\
+	if (typea == CIL_int64) {\
+	int64_t a = pop_value64();\
+	push_value32(a op b ? 1 : 0, CIL_int32);\
+	return;\
+	}\
+	} else if (typeb == CIL_native) {\
+	int32_t b = pop_value32();\
+enum CIL_Type typea = stack_top_type();\
+	if (typea == CIL_int32) {\
+	int32_t a = pop_value32();\
+	push_value32(a op b ? 1 : 0, CIL_int32);\
+	return;\
+	} else if (typea == CIL_native) {\
+	intptr_t a = pop_pointer();\
+	push_value32(a op b ? 1 : 0, CIL_int32);\
+	return;\
+	}\
+} else if (typeb == CIL_float32) {\
+	int32_t b = pop_value32();\
+enum CIL_Type typea = stack_top_type();\
+	float bf; memcpy(&bf, &b, 4);\
+	if (typea == CIL_float32) {\
+	int32_t a = pop_value32();\
+	float af; memcpy(&af, &a, 4);\
+	push_value32(af op bf ? 1 : 0, CIL_int32);\
+	return;\
+	}\
+} else if (typeb == CIL_float64) {\
+	int64_t b = pop_value64();\
+enum CIL_Type typea = stack_top_type();\
+	double bd; memcpy(&bd, &b, 8);\
+	if (typea == CIL_float64) {\
+	int64_t a = pop_value64();\
+	double ad; memcpy(&ad, &a, 8);\
+	push_value32(ad op bd ? 1 : 0, CIL_int32);\
+	return;\
+	}\
+} else if (typeb == CIL_pointer) {\
+	intptr_t b = pop_pointer();\
+enum CIL_Type typea = stack_top_type();\
+	if (typea == CIL_pointer) {\
+	intptr_t a = pop_pointer();\
+	push_value32(a op b ? 1 : 0, CIL_int32);\
+	return;\
+	}\
+}\
+	fprintf(stderr, "Error: " #name " is not supported on these operands");\
 }
+
+COMPARER(ceq, ==);
+COMPARER(clt, <);
+COMPARER(cgt, >);
 
 void CIL_ldstr(const char* str) {
 	struct SYSTEM__STRING_proto *strobj;

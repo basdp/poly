@@ -230,6 +230,8 @@ namespace SDILReader
         //System.Reflection.Assembly.Load(module.Assembly.GetReferencedAssemblies()[3]).GetModules()[0].ResolveType(metadataToken)
 
         }
+
+        /*
         /// <summary>
         /// Gets the IL code of the method
         /// </summary>
@@ -246,7 +248,7 @@ namespace SDILReader
             }
             return result;
 
-        }
+        }*/
 
         /// <summary>
         /// MethodBodyReader constructor

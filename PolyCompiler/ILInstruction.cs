@@ -46,9 +46,11 @@ namespace SDILReader
         /// Returns a friendly strign representation of this instruction
         /// </summary>
         /// <returns></returns>
-        public string GetCode(string extraCode = "")
+        public string GetCode(MethodBase m, string extraCode = "")
         {
             string result = "";
+            string scope = Program.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name);
+            result += scope;
             result += GetExpandedOffset(offset) + ": " + extraCode + PolyCompiler.Program.ConvertTypeToCName("CIL_" + code.Name) + "(";
             if (operand != null)
             {
@@ -107,6 +109,7 @@ namespace SDILReader
                             break;
                         case OperandType.ShortInlineBrTarget:
                         case OperandType.InlineBrTarget:
+                            result += scope;
                             result += GetExpandedOffset((int)operand);
                             break;
                         case OperandType.InlineType:
