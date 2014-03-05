@@ -41,11 +41,17 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CompilerImplementation.cs" />
+    <Compile Include="Context.cs" />
     <Compile Include="Globals.cs" />
     <Compile Include="ILInstruction.cs" />
     <Compile Include="MethodBodyReader.cs" />
+    <Compile Include="MethodGenerator.cs" />
+    <Compile Include="ModuleGenerator.cs" />
+    <Compile Include="Naming.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="TypeGenerator.cs" />
+    <Compile Include="TypeHelper.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

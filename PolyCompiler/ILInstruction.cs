@@ -46,19 +46,19 @@ namespace SDILReader
         /// Returns a friendly strign representation of this instruction
         /// </summary>
         /// <returns></returns>
-        public string GetCode(MethodBase m, string extraCode = "")
+        public string GetCode(MethodBase m, CompilerContext context, string extraCode = "")
         {
             string result = "";
-            string scope = Program.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name);
+            string scope = Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name);
             result += scope;
-            result += GetExpandedOffset(offset) + ": " + extraCode + PolyCompiler.Program.ConvertTypeToCName("CIL_" + code.Name) + "(";
+            result += GetExpandedOffset(offset) + ": " + extraCode + Naming.ConvertTypeToCName("CIL_" + code.Name) + "(";
             if (operand != null)
             {
                 if (code.Name == "newobj")
                 {
                     System.Reflection.ConstructorInfo mOperand = (System.Reflection.ConstructorInfo)operand;
-                    result += PolyCompiler.Program.ConvertTypeToCName(mOperand.ReflectedType.ToString()) + ", ";
-                    result += PolyCompiler.Program.GetInternalMethodName(mOperand);
+                    result += Naming.ConvertTypeToCName(mOperand.ReflectedType.ToString()) + ", ";
+                    result += Naming.GetInternalMethodName(mOperand);
                     result += "/* " + mOperand.DeclaringType.FullName + "::" + mOperand.Name + " */";
                 }
                 else
@@ -70,15 +70,15 @@ namespace SDILReader
                             /*result += PolyCompiler.Program.ConvertTypeToCName(fOperand.FieldType.ToString()) + " " +
                                 PolyCompiler.Program.ConvertTypeToCName(fOperand.ReflectedType.ToString()) +
                                 "::" + fOperand.Name + "";*/
-                            result += PolyCompiler.Program.ConvertTypeToCName(fOperand.DeclaringType.FullName) + ", " + PolyCompiler.Program.ConvertTypeToCName(fOperand.Name);
+                            result += Naming.ConvertTypeToCName(fOperand.DeclaringType.FullName) + ", " + Naming.ConvertTypeToCName(fOperand.Name);
                             break;
                         case OperandType.InlineMethod:
                             try
                             {
                                 System.Reflection.MethodInfo mOperand = (System.Reflection.MethodInfo)operand;
                                 if (!mOperand.IsStatic) result += "/*instance*/ ";
-                                result += "&" + PolyCompiler.Program.GetInternalMethodName(mOperand);
-                                result += ", \"" + PolyCompiler.Program.GetInternalMethodName(mOperand, false) + "\"";
+                                result += "&" + Naming.GetInternalMethodName(mOperand);
+                                result += ", \"" + Naming.GetInternalMethodName(mOperand, false) + "\"";
                                 result += ", " + mOperand.GetParameters().Length + ", " + (mOperand.IsVirtual ? "1" : "0");
                                 result += "/* " + mOperand.ReturnParameter.ParameterType.FullName + " " + mOperand.DeclaringType.FullName + "::" + mOperand.Name + "(";
                                 foreach (var param in mOperand.GetParameters())
@@ -93,7 +93,7 @@ namespace SDILReader
                                 {
                                     System.Reflection.ConstructorInfo mOperand = (System.Reflection.ConstructorInfo)operand;
                                     if (!mOperand.IsStatic) result += "/*constructor*/ ";
-                                    result += "&" + PolyCompiler.Program.GetInternalMethodName(mOperand);
+                                    result += "&" + PolyCompiler.Naming.GetInternalMethodName(mOperand);
                                     result += ", \"NONE\", " + mOperand.GetParameters().Length + ", 0";
                                     result += " /* " + mOperand.DeclaringType.FullName + "::" + mOperand.Name + "(";
                                     foreach (var param in mOperand.GetParameters())
@@ -144,17 +144,17 @@ namespace SDILReader
                                 if (!o.IsStatic)
                                 {
                                     result += "field, ";
-                                    result += PolyCompiler.Program.ConvertTypeToCName(o.DeclaringType.FullName) + ", ";
-                                    result += Program.Offsets[o].ToString() + ", ";
-                                    result += Program.GetTypeSize(o.FieldType) / 8;
+                                    result += PolyCompiler.Naming.ConvertTypeToCName(o.DeclaringType.FullName) + ", ";
+                                    result += context.Offsets[o].ToString() + ", ";
+                                    result += TypeHelper.GetTypeSize(o.FieldType) / 8;
                                 }
                                 else
                                 {
                                     result += "static_field, ";
-                                    result += PolyCompiler.Program.ConvertTypeToCName(o.DeclaringType.FullName) + ", ";
-                                    result += PolyCompiler.Program.GetInternalFieldName(o.Name) + ", ";
+                                    result += PolyCompiler.Naming.ConvertTypeToCName(o.DeclaringType.FullName) + ", ";
+                                    result += PolyCompiler.Naming.GetInternalFieldName(o.Name) + ", ";
                                     result += "0, ";
-                                    result += Program.GetTypeSize(o.FieldType) / 8;
+                                    result += TypeHelper.GetTypeSize(o.FieldType) / 8;
                                 }
                             }
                             else
