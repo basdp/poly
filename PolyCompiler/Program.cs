@@ -24,8 +24,8 @@ namespace PolyCompiler
             type = type.Replace(".", "__");
             type = type.Replace("::", "_m_");
 
-            type = type.Replace("<", "_priv_");
-            type = type.Replace(">", "_ate_");
+            type = type.Replace("<", "_");
+            type = type.Replace(">", "_");
 
             type = type.Replace("{", "__");
             type = type.Replace("}", "__");
@@ -108,6 +108,7 @@ namespace PolyCompiler
                 {
                     code += "// class " + type.FullName + "\n";
                     header += "// class " + type.FullName + "\n";
+                    
                     header += "struct " + ConvertTypeToCName(type.FullName) + " {\n";
 
                     if (type.BaseType != null && type.FullName != "System.Object" && type.FullName != "System.__Object")
@@ -221,6 +222,24 @@ namespace PolyCompiler
                     ConstructorInfo[] cis = type.GetConstructors(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
                     for (int j = 0; j < cis.Length; j++)
                     {
+                        if (cis[j].Name == ".cctor")
+                        {
+                            if ((type.Attributes & TypeAttributes.BeforeFieldInit) != 0)
+                            {
+                                init += GetInternalMethodName(cis[j], true) + "();\n";
+                            }
+                            else
+                            {
+                                // If not marked BeforeFieldInit then that type’s initializer method is executed at (i.e., is triggered by):
+                                /*  a. first access to any static field of that type, or 
+                                    b. first invocation of any static method of that type, or 
+                                    c. first invocation of any instance or virtual method of that type if it is a value 
+                                    type or 
+                                    d. first invocation of any constructor for that type. */
+                                throw new NotImplementedException();
+                            }
+                        }
+
                         string addedcode = "    ((struct System__Object*)parameter0)->__CILtype = (intptr_t)\"" + type.FullName.Replace(".__", ".") + "\";\n";
                         foreach (var virtmethod in type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(m => m.IsVirtual))
                         {
@@ -248,6 +267,8 @@ namespace PolyCompiler
         {
             f = f.Replace("$$", "_f_");
             f = f.Replace("-", "_");
+            f = f.Replace("<", "_");
+            f = f.Replace(">", "_");
             return f;
         }
 
