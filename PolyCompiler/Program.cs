@@ -421,8 +421,7 @@ namespace PolyCompiler
                                 code += "goto " + ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name) + SDILReader.ILInstruction.GetExpandedOffset((int)instr.Operand);
                                 break;
                             default:
-                                code += ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name);
-                                code += instr.GetCode();
+                                code += instr.GetCode(m);
                                 break;
                         }
 

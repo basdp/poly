@@ -41,7 +41,7 @@ namespace Tester
             //char s = str[3];
 
             int d = 4;
-            if (d < 5)
+            if (d == 5)
             {
                 System.Console.WriteLine("Yeah");
             }

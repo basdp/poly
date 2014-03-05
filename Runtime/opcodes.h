@@ -31,6 +31,8 @@ void CIL_ldc__r8(double);
 void CIL_conv__r4();
 
 void CIL_ceq();
+void CIL_clt();
+void CIL_cgt();
 
 char *CIL_getCStringFromSystemString(intptr_t object);
 void CIL_ldstr(const char*);
@@ -67,16 +69,12 @@ void CIL_ldstr(const char*);
 #define CIL_brinst__s(...) CIL_undefined()
 #define CIL_brnull(...) CIL_undefined()
 #define CIL_brnull__s(...) CIL_undefined()
-#define CIL_brtrue(...) CIL_undefined()
-#define CIL_brtrue__s(...) CIL_undefined()
 #define CIL_brzero(...) CIL_undefined()
 #define CIL_brzero__s(...) CIL_undefined()
 #define CIL_calli(...) CIL_undefined()
 #define CIL_castcall(...) CIL_undefined()
-#define CIL_cgt(...) CIL_undefined()
 #define CIL_cgt__un(...) CIL_undefined()
 #define CIL_ckfinite(...) CIL_undefined()
-#define CIL_clt(...) CIL_undefined()
 #define CIL_clt__un(...) CIL_undefined()
 #define CIL_conv__i(...) CIL_undefined()
 #define CIL_conv__i1(...) CIL_undefined()
@@ -295,3 +293,6 @@ void CIL_ldtoken_static_field_dispatch(void*, enum CIL_Type, int);
 #define CIL_ldtoken_static_field(clas, id, offset, size) CIL_ldtoken_static_field_dispatch(& (clas ## _sf_ ## id), clas ## _sf_ ## id ## __type, size)
 
 #define CIL_dup() stack_duplicate_top()
+
+#define CIL_brtrue(...) CIL_undefined()
+#define CIL_brtrue__s(branch) { int32_t value = pop_value32(); if (value != 0) goto branch; }
