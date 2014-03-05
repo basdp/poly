@@ -35,13 +35,13 @@ void CIL_ceq();
 char *CIL_getCStringFromSystemString(intptr_t object);
 void CIL_ldstr(const char*);
 
-#define CIL_undefined() { fprintf(stderr, __FILE__":"__LINE__ "\tError: a CIL opcode has not been implemented\n"); exit(1); }
+#define CIL_undefined() { fprintf(stderr, __FILE__":%d\tError: a CIL opcode has not been implemented\n", __LINE__); exit(1); }
 
 #define CIL_add__ovf() CIL_undefined()
 #define CIL_add__ovf__un() CIL_undefined()
 #define CIL_and() CIL_undefined()
 #define CIL_arglist() CIL_undefined()
-#define CIL_beq(...) CIL_undefined(beq)
+#define CIL_beq(...) CIL_undefined()
 #define CIL_beq__s(...) CIL_undefined()
 #define CIL_bge__un(...) CIL_undefined()
 #define CIL_bge__un__s(...) CIL_undefined()
