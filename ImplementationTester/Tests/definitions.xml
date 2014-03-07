@@ -6,4 +6,27 @@
     -1
     35
   </ExpectOutput>
+  <ExpectOutput filename="exception1.cs" parameters="1">
+    EX
+    CO
+  </ExpectOutput>
+  <ExpectOutput filename="exception1.cs" parameters="2">
+    NRE
+  </ExpectOutput>
+  <ExpectOutput filename="exception1.cs" parameters="3">
+    RE
+  </ExpectOutput>
+  <ExpectOutput filename="exception1.cs" parameters="4">
+    RE
+    FI
+  </ExpectOutput>
+  <ExpectOutput filename="exception1.cs" parameters="5">
+    NRE
+    FI
+  </ExpectOutput>
+  <ExpectOutput filename="exception1.cs" parameters="6">
+    FI1
+    RE
+    FI2
+  </ExpectOutput>
 </Tests>

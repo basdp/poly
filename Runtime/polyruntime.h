@@ -30,6 +30,8 @@
 struct SYSTEM__OBJECT_proto {
 	map_t __CILsymboltable;
 	intptr_t __CILtype;
+	intptr_t __CILbaseclasses;
+	int* __CILbaseclasses_length;
 };
 
 #define SYSTEM__STRING_ctor m8D858A38DA1EA05CB64209432DD7505A8FE82943

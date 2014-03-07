@@ -68,6 +68,33 @@ namespace PolyCompiler
 
             context.Header.Append("};\n");
 
+            Type baseType = type.BaseType;
+            List<Type> baseTypes = new List<Type>();
+            while (baseType != null && type.FullName != "System.Object" && type.FullName != "System.__Object")
+            {
+                baseTypes.Add(baseType);
+                baseType = baseType.BaseType;
+            }
+
+            context.Code.AppendLine("int " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses_length = " + baseTypes.Count + ";");
+            if (baseTypes.Count == 0)
+            {
+                context.Header.AppendLine("extern char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses[1];");
+                context.Code.AppendLine("char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses[1] = { \"\" };");
+            }
+            else
+            {
+                context.Header.AppendLine("extern char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses[" + baseTypes.Count + "];");
+                context.Code.AppendLine("char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses[" + baseTypes.Count + "] = {");
+                for (int i = 0; i < baseTypes.Count; i++)
+                {
+                    context.Code.Append("    \"" + baseTypes[i].FullName + "\"");
+                    if (i < baseTypes.Count - 1) context.Code.Append(", ");
+                    context.Code.Append("\n");
+                }
+                context.Code.AppendLine("};");
+            }
+
             for (int j = 0; j < fis.Length; j++)
             {
                 context.Code.Append("enum CIL_Type " + Naming.ConvertTypeToCName(type.FullName) + "_f_" + Naming.GetInternalFieldName(fis[j].Name) + "__type = " + Naming.GetInternalType(fis[j].FieldType) + "; // " + fis[j].FieldType.FullName + "\n");

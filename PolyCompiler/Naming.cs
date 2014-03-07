@@ -24,7 +24,7 @@ namespace PolyCompiler
                 sig = type;
             foreach (var p in m.GetParameters())
             {
-                sig += "__" + p.ParameterType.FullName;
+                sig += "__" + p.ParameterType.FullName.Replace(".__", ".");
             }
 
             System.Text.ASCIIEncoding encoder = new System.Text.ASCIIEncoding();

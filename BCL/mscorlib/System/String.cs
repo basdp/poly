@@ -99,5 +99,50 @@
         CIL_ret();
         ")]
         public override string ToString() { return null; }
+
+
+        public static bool operator ==(__String a, __String b)
+        {
+            return a.Equals(b);
+        }
+
+        public static bool operator !=(__String a, __String b)
+        {
+            return !a.Equals(b);
+        }
+
+        [Poly.Internals.CompilerImplemented.InlineCode(@"
+        struct System__String *this = (struct System__String*)parameter0;
+        struct System__String *other = (struct System__String*)parameter1;
+        if (strcmp(this->str, other->str) == 0) {
+            push_value32(1, CIL_int32);
+        } else {
+            push_value32(0, CIL_int32);
+        }
+        ")]
+        public bool Equals(__String other)
+        { return false; }
+
+        public override bool Equals(object obj)
+        {
+            if (obj.GetType().Equals(this.GetType())) return Equals((string)obj);
+            return false;
+        }
+
+        [Poly.Internals.CompilerImplemented.InlineCode(@"
+        struct System__String *this = (struct System__String*)parameter0;
+        unsigned long hash = 5381;
+        int c;
+        char* str = this->str;
+
+        while (c = *str++)
+            hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
+
+        push_value32((int32_t)hash, CIL_int32);
+        ")]
+        public override int GetHashCode()
+        { return 0; }
+
+
     }
 }

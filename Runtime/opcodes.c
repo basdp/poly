@@ -24,7 +24,7 @@ void CIL_ldc__i8(int64_t i) { push_value64(i, CIL_int64); }
 void CIL_ldc__r4(float f) { int32_t v; memcpy(&v, &f, 4); push_value32(v, CIL_float32); }
 void CIL_ldc__r8(double d) { int64_t v; memcpy(&v, &d, 8); push_value64(v, CIL_float64); }
 
-void CIL_conv__r4() { 
+void CIL_conv__r4() {
 	enum CIL_Type type = stack_top_type();
 	if (type == CIL_int32) {
 		int32_t v = pop_value32();
@@ -32,24 +32,28 @@ void CIL_conv__r4() {
 		memcpy(&v, &f, 4);
 		push_value32(v, CIL_float32);
 		return;
-	} else if (type == CIL_float32) {
+	}
+	else if (type == CIL_float32) {
 		// conversion to itself, do nothing
 		return;
-	} else if (type == CIL_int64) {
+	}
+	else if (type == CIL_int64) {
 		int64_t v = pop_value64();
 		float f = (float)v;
 		int32_t r;
 		memcpy(&r, &f, 4);
 		push_value32(r, CIL_float32);
 		return;
-	} else if (type == CIL_native) {
+	}
+	else if (type == CIL_native) {
 		intptr_t v = pop_pointer();
 		float f = (float)v;
 		int32_t r;
 		memcpy(&r, &f, 4);
 		push_value32(r, CIL_float32);
 		return;
-	} else if (type == CIL_float64) {
+	}
+	else if (type == CIL_float64) {
 		int64_t v = pop_value64();
 		double d;
 		float f;
@@ -61,6 +65,43 @@ void CIL_conv__r4() {
 		return;
 	}
 	fprintf(stderr, "Error: conv.r4 is not supported on operand");
+}
+
+void CIL_conv__i4() {
+	enum CIL_Type type = stack_top_type();
+	if (type == CIL_int32) {
+		// conversion to itself, do nothing
+		return;
+	}
+	else if (type == CIL_float32) {
+		int32_t v = pop_value32();
+		float f;
+		memcpy(&f, &v, 4);
+		v = (int32_t)f;
+		push_value32(v, CIL_int32);
+		return;
+	}
+	else if (type == CIL_int64) {
+		int64_t v = pop_value64();
+		int32_t r = (int32_t)v;
+		push_value32(r, CIL_int32);
+		return;
+	}
+	else if (type == CIL_native) {
+		intptr_t v = pop_pointer();
+		int32_t r = (int32_t)v;
+		push_value32(r, CIL_int32);
+		return;
+	}
+	else if (type == CIL_float64) {
+		int64_t v = pop_value64();
+		double d;
+		memcpy(&d, &v, 8);
+		int32_t i = (int32_t)d;
+		push_value32(i, CIL_int32);
+		return;
+	}
+	fprintf(stderr, "Error: conv.i4 is not supported on operand");
 }
 
 int CIL_call_dispatch(void* (*func)()) {
@@ -320,6 +361,7 @@ void CIL_newarr_dispatch(const char* type) {
 		return;
 	}
 
+	// TODO: exception
 	//fprintf(stderr, "Error: Can not create array of type %s!\n", type);
 	//exit(1);
 }
@@ -429,6 +471,11 @@ void CIL_ldelema_dispatch(const char* type) {
 	exit(1);
 }
 
+void CIL_ldlen() {
+	uintptr_t arr = pop_pointer();
+	push_value32(((int32_t*)arr)[0], CIL_native);
+}
+
 void CIL_ldtoken_static_field_dispatch(void* addr, enum CIL_Type type, int size) {
 	struct SYSTEM__RUNTIMEFIELDHANDLE_proto *obj;
 
@@ -439,67 +486,13 @@ void CIL_ldtoken_static_field_dispatch(void* addr, enum CIL_Type type, int size)
 	obj->size = size;
 }
 
-int object_is_type_or_subtype(struct SYSTEM__OBJECT_proto *object, const char* type) {
-	return strcmp(type, (char*)object->__CILtype) == 0;
-}
-
-extern void * mFA7CAC02617528CA7AC2E4A268BEF2AA5656C218();
-extern char * mFA7CAC02617528CA7AC2E4A268BEF2AA5656C218_sig;
-
-void* CIL_throw_dispatch(int boundExceptions) {
-	struct SYSTEM__OBJECT_proto *exception = (struct SYSTEM__OBJECT_proto *)pop_pointer();
-
-	//printf("Exception thrown: %s\n", exception->__CILtype);
-	//printf("Bound exceptions: %d\n", boundExceptions);
-	//print_exceptionstack();
-
-	struct ExceptionHandler eh;
-	int i = 0;
-
-	// Pass 1
-	while (1) {
-		if (exceptionstack_size() <= i) {
-			printf("Uncaught Exception: ");
-
-			push_pointer((uintptr_t)exception);
-			CIL_callvirt_unsafe(mFA7CAC02617528CA7AC2E4A268BEF2AA5656C218, "m1DBC7385BADBFDA548FB27E2160A33CF32C0F545", 0, 1); // Exception.ToString();
-			char *excmess = CIL_getCStringFromSystemString(pop_pointer());
-			printf("%s\n", excmess);
-			// TODO: should probably execute all finally blocks
-			exit(1);
-		}
-		eh = exceptionstack_peek(i++);
-
-		if (eh.handlerType == HANDLERTYPE_CATCH && object_is_type_or_subtype(exception, eh.typeName) == 0)
-		{
-			break;
-		}
+int CIL_castclass_dispatch(const char* type) {
+	uintptr_t obj = pop_pointer();
+	if (object_is_type_or_subtype((struct SYSTEM__OBJECT_proto*)obj, type)) {
+		push_pointer(obj);
+		return 1;
 	}
-
-	//printf("Exception level: %d\n", i);
-
-	// Pass 2
-	for (; i > 0; i--) {
-		if (i > boundExceptions) {
-			// this is a handler outside of this method
-			push_pointer((uintptr_t)exception);
-			return 0;
-		}
-		else {
-			// this is a handler in this method
-			exceptionstack_pop();
-		}
+	else {
+		return 0;
 	}
-
-	// remove all other Exception Handlers that are bound to this try block from the exception stack
-	struct ExceptionHandler eh2 = exceptionstack_peek(0);
-	while (eh2.tryAddress == eh.tryAddress && eh2.tryLength == eh.tryLength) {
-		exceptionstack_pop();
-		eh2 = exceptionstack_peek(0);
-	}
-
-	stack_shrink(eh.stackSize);
-	push_pointer((uintptr_t)exception);
-	
-	return eh.labelAddress;
 }

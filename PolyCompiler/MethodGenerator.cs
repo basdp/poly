@@ -37,6 +37,8 @@ namespace PolyCompiler
                 }
 
                 string addedcode = "    ((struct System__Object*)parameter0)->__CILtype = (intptr_t)\"" + type.FullName.Replace(".__", ".") + "\";\n";
+                addedcode += "    ((struct System__Object*)parameter0)->__CILbaseclasses = (intptr_t)&" + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses;\n";
+                addedcode += "    ((struct System__Object*)parameter0)->__CILbaseclasses_length = &" + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses_length;\n";
                 foreach (var virtmethod in type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(m => m.IsVirtual))
                 {
                     addedcode += "    hashmap_put(((struct System__Object*)parameter0)->__CILsymboltable, \"" + Naming.GetInternalMethodName(virtmethod, false) + "\", &" + Naming.GetInternalMethodName(virtmethod) +
@@ -82,12 +84,35 @@ namespace PolyCompiler
                 // yay, we found a entry point
                 // TODO: what if multiple Main?
 
-                // TODO: cli arguments
                 context.Main.AppendLine("int main(int argc, char** argv) {");
-                context.Main.AppendLine("int entryStackSize = 0;");
-                context.Main.AppendLine("int boundExceptions = 0;");
-                context.Main.AppendLine("    push_pointer(0);");
+                context.Main.AppendLine("    int entryStackSize = 0;");
+                context.Main.AppendLine("    int boundExceptions = 0;");
+
+                if (m.GetParameters().Count() == 1)
+                {
+                    context.Main.AppendLine("    push_value32(argc - 1, CIL_int32);");
+                    context.Main.AppendLine("    CIL_newarr(System.String);");
+                    context.Main.AppendLine("    uintptr_t args = pop_pointer();");
+                    context.Main.AppendLine("    int i;");
+                    context.Main.AppendLine("    for(i = 1; i < argc; i++) {");
+                    context.Main.AppendLine("        push_pointer(args);");
+                    context.Main.AppendLine("        push_value32(i - 1, CIL_int32);");
+                    context.Main.AppendLine("        CIL_ldstr(argv[i]);");
+                    context.Main.AppendLine("        CIL_stelem__ref();");
+                    context.Main.AppendLine("    }");
+                    context.Main.AppendLine("    push_pointer(args);");
+                }
+                else if (m.GetParameters().Count() > 1)
+                {
+                    throw new NotImplementedException(); // I think this is illegal also
+                }
+
                 context.Main.AppendLine("    CIL_call(" + Naming.GetInternalMethodName(m) + ", \"" + Naming.GetInternalMethodName(m, false) + "\", " + m.GetParameters().Count() + ", 0);");
+
+                context.Main.AppendLine("    if (stack_size() > 1 || (stack_size() > 0 && stack_top_type() == CIL_int32)) { printf(\"DEBUG WARNING: Stack is not empty at end of program. (int32 for return is allowed)\\n\"); print_stack(); }\n");
+                context.Main.AppendLine("    if (stack_size() > 0 && stack_top_type() == CIL_int32) { return pop_value32(); }\n");
+                context.Main.AppendLine("    else { return 0; }\n");
+                
                 context.Main.AppendLine("}");
             }
 
@@ -99,8 +124,8 @@ namespace PolyCompiler
             // Do not call the base class constructor for System.Object, because that would create an infinite recursive loop
             if (m.DeclaringType.FullName == "System.__Object" && m.IsConstructor) skipFirstConstructorCall = true;
 
-            context.Code.Append("/* " + m.DeclaringType.FullName + "::" + m.Name + " */\n");
-            context.Code.Append("char* " + Naming.GetInternalMethodName(m) + "_sig = \"" + m.DeclaringType.FullName + "::" + m.Name + "(");
+            context.Code.Append("/* " + m.DeclaringType.FullName.Replace(".__", ".") + "::" + m.Name + " */\n");
+            context.Code.Append("char* " + Naming.GetInternalMethodName(m) + "_sig = \"" + m.DeclaringType.FullName.Replace(".__", ".") + "::" + m.Name + "(");
             if (m.GetParameters().Count() > 0)
                 context.Code.Append(m.GetParameters().Select(p => p.ParameterType.Name + " " + p.Name).Aggregate((a, b) => a + ", " + b));
             context.Code.Append(")\";\n");

@@ -34,11 +34,15 @@ namespace System
         }
     }
 
-    class NotImplementedException : Exception
+    class __NotImplementedException : Exception
     {
 
     }
-    class NullReferenceException : Exception
+    class __NullReferenceException : Exception
+    {
+
+    }
+    class __InvalidCastException : Exception
     {
 
     }
