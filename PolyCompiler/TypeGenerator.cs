@@ -13,9 +13,7 @@ namespace PolyCompiler
     {
         public static void ProcessTypeDefinitions(Type type, CompilerContext context)
         {
-            context.Code.Append("// class " + type.FullName + "\n");
             context.Header.Append("// class " + type.FullName + "\n");
-
             context.Header.Append("struct " + Naming.ConvertTypeToCName(type.FullName) + " {\n");
 
             if (type.BaseType != null && type.FullName != "System.Object" && type.FullName != "System.__Object")

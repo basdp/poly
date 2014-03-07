@@ -1,13 +1,40 @@
 #include "stdint.h"
 #include "stack.h"
 #include "hashmap.h"
+#include "exceptions.h"
 #include <stdlib.h>
 #include <stdio.h>
 
-#define CIL_call(func, name, nparams, isvirtual) CIL_call_dispatch(func)
-#define CIL_callvirt(func, name, nparams, isvirtual) CIL_callvirt_dispatch(name, nparams, func, isvirtual)
-void CIL_call_dispatch(void* (*func)());
-void CIL_callvirt_dispatch(const char *symbol, unsigned int nparams, void* (*func)(), int isvirtual);
+#define CIL_call(func, name, nparams, isvirtual) {\
+	callstack_push(func ## _sig, "(unknown)", 0);\
+	int res = CIL_call_dispatch(&func);\
+	if (res == 1) {\
+		/* exception has been thrown*/\
+		CIL_throw();\
+	}\
+}
+
+#define CIL_callvirt(func, name, nparams, isvirtual) {\
+	callstack_push(func ## _sig, "(unknown)", 0);\
+	intptr_t object = peek_pointer(nparams);\
+	if (object == 0) { throw_NullReferenceException(); } else { \
+		int res = CIL_callvirt_dispatch(name, nparams, &func, isvirtual);\
+		if (res == 1) {\
+			/* exception has been thrown*/\
+			CIL_throw();\
+		}\
+	}\
+}
+#define CIL_callvirt_unsafe(func, name, nparams, isvirtual) {\
+	callstack_push(func ## _sig, "(unknown)", 0);\
+	int res = CIL_callvirt_dispatch(name, nparams, &func, isvirtual);\
+	if (res == 1) {\
+		/* exception has been thrown*/\
+		CIL_throw();\
+	}\
+}
+int CIL_call_dispatch(void* (*func)());
+int CIL_callvirt_dispatch(const char *symbol, unsigned int nparams, void* (*func)(), int isvirtual);
 void CIL_add();
 void CIL_sub();
 void CIL_div();
@@ -113,7 +140,6 @@ void CIL_ldstr(const char*);
 #define CIL_div__un(...) CIL_undefined()
 #define CIL_endfault(...) CIL_undefined()
 #define CIL_endfilter(...) CIL_undefined()
-#define CIL_endfinally(...) CIL_undefined()
 #define CIL_idind__u8(...) CIL_undefined()
 #define CIL_initblk(...) CIL_undefined()
 #define CIL_initobj(...) CIL_undefined()
@@ -136,12 +162,10 @@ void CIL_ldstr(const char*);
 #define CIL_ldlen(...) CIL_undefined()
 #define CIL_ldloca(...) CIL_undefined()
 #define CIL_ldloca__s(...) CIL_undefined()
-#define CIL_ldnull(...) CIL_undefined()
 #define CIL_ldobj(...) CIL_undefined()
 #define CIL_ldsflda(...) CIL_undefined()
 #define CIL_ldvirtftn(...) CIL_undefined()
 #define CIL_leave(...) CIL_undefined()
-#define CIL_leave__s(...) CIL_undefined()
 #define CIL_localloc(...) CIL_undefined()
 #define CIL_mkrefany(...) CIL_undefined()
 #define CIL_mul__ovf(...) CIL_undefined()
@@ -152,7 +176,6 @@ void CIL_ldstr(const char*);
 #define CIL_no__nullcheck(...) CIL_undefined()
 #define CIL_not(...) CIL_undefined()
 #define CIL_or(...) CIL_undefined()
-#define CIL_pop(...) CIL_undefined()
 #define CIL_refanytype(...) CIL_undefined()
 #define CIL_refanyval(...) CIL_undefined()
 #define CIL_rem(...) CIL_undefined()
@@ -176,7 +199,6 @@ void CIL_ldstr(const char*);
 #define CIL_sub__ovf(...) CIL_undefined()
 #define CIL_sub__ovf__un(...) CIL_undefined()
 #define CIL_switch(...) CIL_undefined()
-#define CIL_throw(...) CIL_undefined()
 #define CIL_unbox(...) CIL_undefined()
 #define CIL_unbox__any(...) CIL_undefined()
 #define CIL_xor(...) CIL_undefined()
@@ -184,15 +206,21 @@ void CIL_ldstr(const char*);
 #define CIL_nop() 
 #define CIL_break() 
 
-#define CIL_ldfld(type, name) { intptr_t self = pop_pointer(); \
-	if (sizeof(((struct type*)self)->  name) == 4) { push_value32( ((struct type*)self)-> name, type ## _f_ ## name ## __type ); }  \
+#define CIL_pop() pop()
+
+extern void* m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C();
+extern char* m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C_sig;
+#define throw_NullReferenceException() { CIL_newobj(System__NullReferenceException, m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C); CIL_throw(); } 
+
+#define CIL_ldfld(type, name) { intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } \
+	else if (sizeof(((struct type*)self)->  name) == 4) { push_value32( ((struct type*)self)-> name, type ## _f_ ## name ## __type ); }  \
 							else if (sizeof(((struct type*)self)->  name) == 8) { push_value64( ((struct type*)self)-> name, type ## _f_ ## name ## __type ); }  \
 							else { push_pointer((((struct type*)self)-> name)); } \
 }
 
-#define CIL_stfld(type, name) {    if (stack_top_size() == 4) { int32_t value = pop_value32(); intptr_t self = pop_pointer(); ((struct type*)self)-> name = value; } \
-				 else if (stack_top_size() == 8) { int64_t value = pop_value64(); intptr_t self = pop_pointer(); ((struct type*)self)-> name = value; } \
-				 else { intptr_t value = pop_pointer(); uintptr_t self = pop_pointer(); ((struct type*)self)-> name = value; } }
+#define CIL_stfld(type, name) {    if (stack_top_size() == 4) { int32_t value = pop_value32(); intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } \
+				 else if (stack_top_size() == 8) { int64_t value = pop_value64(); intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } \
+				 else { intptr_t value = pop_pointer(); uintptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } }
 
 #define CIL_ldsfld(type, name) {  \
 	if (sizeof(type ## _sf_ ## name) == 4) { push_value32( (type ## _sf_ ## name), (type ## _sf_ ## name ## __type) ); }  \
@@ -204,7 +232,7 @@ void CIL_ldstr(const char*);
 				 else if (stack_top_size() == 8) { int64_t value = pop_value64(); (type ## _sf_ ## name) = value; } \
 				 else { intptr_t value = pop_pointer(); (type ## _sf_ ## name) = value; } }
 
-#define CIL_ret() return 0;
+#define CIL_ret() callstack_pop(); return 0;
 
 #define CIL_ldarg(n) {    if (sizeof(parameter ## n) == 4) push_value32((int32_t)parameter ## n, parameter ## n ## __type); \
 				 else if (sizeof(parameter ## n) == 8) push_value64((int64_t)parameter ## n, parameter ## n ## __type); \
@@ -252,6 +280,7 @@ void CIL_ldstr(const char*);
 	void* pointer = calloc(1, sizeof(struct type)); \
 	/* TODO: Garbage collect */ \
 	push_pointer((uintptr_t)pointer); \
+	callstack_push(ctor ## _sig, "(unknown)", 0);\
 	ctor(); \
 	push_pointer((uintptr_t)pointer); \
 } 
@@ -296,3 +325,42 @@ void CIL_ldtoken_static_field_dispatch(void*, enum CIL_Type, int);
 
 #define CIL_brtrue(...) CIL_undefined()
 #define CIL_brtrue__s(branch) { int32_t value = pop_value32(); if (value != 0) goto branch; }
+
+#define CIL_ldnull(...) push_pointer(0)
+
+
+
+
+
+
+
+
+// TODO: refactor to exceptions.h/c
+#define CIL_throw() { void* lbl = CIL_throw_dispatch(boundExceptions); if (lbl == 0) { callstack_pop(); return (void*)1; } else GOTO_LABEL_ADDRESS(lbl); }
+void* CIL_throw_dispatch(int);
+
+#define CIL_leave__s(label) {\
+	stack_shrink(entryStackSize); \
+	if (exceptionstack_size() > 0) {\
+		struct ExceptionHandler eh = exceptionstack_pop();\
+		boundExceptions--;\
+		if (eh.handlerType == HANDLERTYPE_FINALLY) { \
+			void* p; STORE_LABEL_ADDRESS(p, label);\
+			push_pointer((uintptr_t)p);\
+			GOTO_LABEL_ADDRESS(eh.labelAddress);\
+		} else if (eh.handlerType == HANDLERTYPE_CATCH) {\
+			struct ExceptionHandler eh2 = exceptionstack_peek(0);\
+			while (eh2.handlerType == HANDLERTYPE_CATCH && eh2.tryAddress == eh.tryAddress && eh2.tryLength == eh.tryLength) {\
+				exceptionstack_pop();\
+				boundExceptions--;\
+				eh2 = exceptionstack_peek(0);\
+			}\
+		}\
+	}\
+	goto label;\
+}
+
+#define CIL_endfinally() {\
+	uintptr_t p = pop_pointer();\
+	GOTO_LABEL_ADDRESS(p);\
+}

@@ -9,37 +9,37 @@ namespace System
     public class Console
     {
         [Poly.Internals.CompilerImplemented.InlineCode(@"
-	        printf(""%i\n"", parameter0);
+            printf(""%i\n"", parameter0);
         ")]
         public static void WriteLine(int value) { }
 
         [Poly.Internals.CompilerImplemented.InlineCode(@"
-	        printf(""%ld\n"", parameter0);
+            printf(""%ld\n"", parameter0);
         ")]
         public static void WriteLine(Int64 value) { }
 
         [Poly.Internals.CompilerImplemented.InlineCode(@"
-	        printf(""%i\n"", parameter0);
+            printf(""%i\n"", parameter0);
         ")]
         public static void WriteLine(byte value) { }
 
         [Poly.Internals.CompilerImplemented.InlineCode(@"
             float f;
             memcpy(&f, &parameter0, 4);
-	        printf(""%f\n"", f);
+            printf(""%f\n"", f);
         ")]
         public static void WriteLine(float value) { }
 
         [Poly.Internals.CompilerImplemented.InlineCode(@"
             double f;
             memcpy(&f, &parameter0, 8);
-	        printf(""%f\n"", f);
+            printf(""%f\n"", f);
         ")]
         public static void WriteLine(double value) { }
 
         [Poly.Internals.CompilerImplemented.InlineCode(@"
             char *str = CIL_getCStringFromSystemString(parameter0);
-	        printf(""%s\n"", str);
+            printf(""%s\n"", str);
         ")]
         public static void WriteLine(string value) { }
 

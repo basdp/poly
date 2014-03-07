@@ -4,10 +4,10 @@
 
 #define MAXSTACK 1000
 #define EMPTYSTACK 0
-int top = EMPTYSTACK;
-char items[MAXSTACK];
-int ttop = EMPTYSTACK;
-enum CIL_Type types[MAXSTACK];
+static int top = EMPTYSTACK;
+static char items[MAXSTACK];
+static int ttop = EMPTYSTACK;
+static enum CIL_Type types[MAXSTACK];
 
 void push_value32(int32_t c, enum CIL_Type type) {
 	memcpy(items + top, &c, 4);
@@ -46,6 +46,21 @@ uintptr_t pop_pointer() {
 	top -= sizeof(uintptr_t);
 	ttop--;
 	return r;
+}
+
+void pop() {
+	top -= stack_top_size();
+	ttop--;
+}
+
+extern void exit(int);
+void stack_shrink(int size) {
+	if (ttop < size) {
+		// TODO: exception
+		printf("stack_shrink: %d is bigger than the current stack size (%d)\n", size, top);
+		exit(1);
+	}
+	while (ttop > size) pop();
 }
 
 uintptr_t peek_pointer(unsigned int offset) {
@@ -128,6 +143,9 @@ int empty()  {
 	return top <= EMPTYSTACK;
 }
 
+int stack_size() {
+	return ttop;
+}
 
 void print_stack() {
 	int t = 0;
