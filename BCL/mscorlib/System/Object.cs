@@ -1,4 +1,6 @@
-﻿namespace System
+﻿#pragma warning disable 0465,0114
+
+namespace System
 {
     [Poly.Internals.CompilerImplemented.StructureCode(@"
     map_t __CILsymboltable;

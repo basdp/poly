@@ -33,6 +33,12 @@
     <ClCompile Include="hashmap.c">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="exceptions.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="callstack.c">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="stack.h">
@@ -51,6 +57,12 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="polyruntime.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="exceptions.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="callstack.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

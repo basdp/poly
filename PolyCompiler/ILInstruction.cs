@@ -46,12 +46,11 @@ namespace SDILReader
         /// Returns a friendly strign representation of this instruction
         /// </summary>
         /// <returns></returns>
-        public string GetCode(MethodBase m, CompilerContext context, string extraCode = "")
+        public string GetCode(MethodBase m, CompilerContext context)
         {
             string result = "";
             string scope = Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name);
-            result += scope;
-            result += GetExpandedOffset(offset) + ": " + extraCode + Naming.ConvertTypeToCName("CIL_" + code.Name) + "(";
+            result += Naming.ConvertTypeToCName("CIL_" + code.Name) + "(";
             if (operand != null)
             {
                 if (code.Name == "newobj")
@@ -77,7 +76,7 @@ namespace SDILReader
                             {
                                 System.Reflection.MethodInfo mOperand = (System.Reflection.MethodInfo)operand;
                                 if (!mOperand.IsStatic) result += "/*instance*/ ";
-                                result += "&" + Naming.GetInternalMethodName(mOperand);
+                                result += "" + Naming.GetInternalMethodName(mOperand);
                                 result += ", \"" + Naming.GetInternalMethodName(mOperand, false) + "\"";
                                 result += ", " + mOperand.GetParameters().Length + ", " + (mOperand.IsVirtual ? "1" : "0");
                                 result += "/* " + mOperand.ReturnParameter.ParameterType.FullName + " " + mOperand.DeclaringType.FullName + "::" + mOperand.Name + "(";
@@ -93,7 +92,7 @@ namespace SDILReader
                                 {
                                     System.Reflection.ConstructorInfo mOperand = (System.Reflection.ConstructorInfo)operand;
                                     if (!mOperand.IsStatic) result += "/*constructor*/ ";
-                                    result += "&" + PolyCompiler.Naming.GetInternalMethodName(mOperand);
+                                    result += "" + PolyCompiler.Naming.GetInternalMethodName(mOperand);
                                     result += ", \"NONE\", " + mOperand.GetParameters().Length + ", 0";
                                     result += " /* " + mOperand.DeclaringType.FullName + "::" + mOperand.Name + "(";
                                     foreach (var param in mOperand.GetParameters())
@@ -116,8 +115,19 @@ namespace SDILReader
                             result += operand.ToString();
                             break;
                         case OperandType.InlineString:
-                            if (operand.ToString() == "\r\n") result += " \"\\r\\n\"";
-                            else result += "\"" + operand.ToString() + "\"";
+                            string str = operand.ToString();
+                            str = str.Replace("\\", "\\\\");
+                            str = str.Replace("\n", @"\n");
+                            str = str.Replace("\b", @"\b");
+                            str = str.Replace("\f", @"\f");
+                            str = str.Replace("\n", @"\n");
+                            str = str.Replace("\r", @"\r");
+                            str = str.Replace("\t", @"\t");
+                            str = str.Replace("\v", @"\v");
+                            str = str.Replace("'", @"\'");
+                            str = str.Replace("\"", "\\\"");
+                            str = str.Replace("?", @"\?");
+                            result += "\"" + str + "\"";
                             break;
                         case OperandType.ShortInlineVar:
                             result += operand.ToString();

@@ -17,5 +17,6 @@ namespace PolyCompiler
         public StringBuilder Code = new StringBuilder();
         public StringBuilder Header = new StringBuilder();
         public StringBuilder Init = new StringBuilder();
+        public StringBuilder Main = new StringBuilder();
     }
 }

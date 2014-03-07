@@ -1,3 +1,5 @@
+#define _CRT_SECURE_NO_WARNINGS
+
 #include "opcodes.h"
 #include "stack.h"
 #include "hashmap.h"
@@ -26,7 +28,7 @@ void CIL_conv__r4() {
 	enum CIL_Type type = stack_top_type();
 	if (type == CIL_int32) {
 		int32_t v = pop_value32();
-		float f = v;
+		float f = (float)v;
 		memcpy(&v, &f, 4);
 		push_value32(v, CIL_float32);
 		return;
@@ -35,14 +37,14 @@ void CIL_conv__r4() {
 		return;
 	} else if (type == CIL_int64) {
 		int64_t v = pop_value64();
-		float f = v;
+		float f = (float)v;
 		int32_t r;
 		memcpy(&r, &f, 4);
 		push_value32(r, CIL_float32);
 		return;
 	} else if (type == CIL_native) {
 		intptr_t v = pop_pointer();
-		float f = v;
+		float f = (float)v;
 		int32_t r;
 		memcpy(&r, &f, 4);
 		push_value32(r, CIL_float32);
@@ -53,7 +55,7 @@ void CIL_conv__r4() {
 		float f;
 		int32_t r;
 		memcpy(&d, &v, 8);
-		f = d;
+		f = (float)d;
 		memcpy(&r, &f, 4);
 		push_value32(r, CIL_float32);
 		return;
@@ -61,25 +63,31 @@ void CIL_conv__r4() {
 	fprintf(stderr, "Error: conv.r4 is not supported on operand");
 }
 
-void CIL_call_dispatch(void* (*func)()) {
-	func();
+int CIL_call_dispatch(void* (*func)()) {
+	// TODO: callstack_push() should be only called from here
+	//       We need to create a hashtable from function pointers to signature strings that this
+	//       function can use to get the right signature.
+	//       Now, the signature of the base class is displayed on virtual functions.
+	int res = (int)func();
+	return res;
 }
 
-void CIL_callvirt_dispatch(const char *symbol, unsigned int nparams, void* (*func)(), int isvirtual) {
+int CIL_callvirt_dispatch(const char *symbol, unsigned int nparams, void* (*func)(), int isvirtual) {
 	uintptr_t object; 
 	map_t symboltable;
 	int ret;
 
-	if (!isvirtual) { func(); return; }
+	if (!isvirtual) { return CIL_call_dispatch(func); }
 
 	object = peek_pointer(nparams);
+
 	symboltable = *((map_t*)object);
 	ret = hashmap_get(symboltable, symbol, (any_t*)&func);
 	if (ret == MAP_MISSING) {
 		fprintf(stderr, "Could not find symbol in symboltable!\n");
 		exit(1);
 	}
-	func();
+	return CIL_call_dispatch(func);
 }
 
 #define OPERATOR(name, op) void CIL_ ## name () {\
@@ -426,7 +434,72 @@ void CIL_ldtoken_static_field_dispatch(void* addr, enum CIL_Type type, int size)
 
 	CIL_newobj(SYSTEM__RUNTIMEFIELDHANDLE_proto, SYSTEM__RUNTIMEFIELDHANDLE_ctor);
 	obj = (struct SYSTEM__RUNTIMEFIELDHANDLE_proto *)peek_pointer(0);
-	obj->addr = addr;
+	obj->addr = (intptr_t)addr;
 	obj->type = type;
 	obj->size = size;
+}
+
+int object_is_type_or_subtype(struct SYSTEM__OBJECT_proto *object, const char* type) {
+	return strcmp(type, (char*)object->__CILtype) == 0;
+}
+
+extern void * mFA7CAC02617528CA7AC2E4A268BEF2AA5656C218();
+extern char * mFA7CAC02617528CA7AC2E4A268BEF2AA5656C218_sig;
+
+void* CIL_throw_dispatch(int boundExceptions) {
+	struct SYSTEM__OBJECT_proto *exception = (struct SYSTEM__OBJECT_proto *)pop_pointer();
+
+	//printf("Exception thrown: %s\n", exception->__CILtype);
+	//printf("Bound exceptions: %d\n", boundExceptions);
+	//print_exceptionstack();
+
+	struct ExceptionHandler eh;
+	int i = 0;
+
+	// Pass 1
+	while (1) {
+		if (exceptionstack_size() <= i) {
+			printf("Uncaught Exception: ");
+
+			push_pointer((uintptr_t)exception);
+			CIL_callvirt_unsafe(mFA7CAC02617528CA7AC2E4A268BEF2AA5656C218, "m1DBC7385BADBFDA548FB27E2160A33CF32C0F545", 0, 1); // Exception.ToString();
+			char *excmess = CIL_getCStringFromSystemString(pop_pointer());
+			printf("%s\n", excmess);
+			// TODO: should probably execute all finally blocks
+			exit(1);
+		}
+		eh = exceptionstack_peek(i++);
+
+		if (eh.handlerType == HANDLERTYPE_CATCH && object_is_type_or_subtype(exception, eh.typeName) == 0)
+		{
+			break;
+		}
+	}
+
+	//printf("Exception level: %d\n", i);
+
+	// Pass 2
+	for (; i > 0; i--) {
+		if (i > boundExceptions) {
+			// this is a handler outside of this method
+			push_pointer((uintptr_t)exception);
+			return 0;
+		}
+		else {
+			// this is a handler in this method
+			exceptionstack_pop();
+		}
+	}
+
+	// remove all other Exception Handlers that are bound to this try block from the exception stack
+	struct ExceptionHandler eh2 = exceptionstack_peek(0);
+	while (eh2.tryAddress == eh.tryAddress && eh2.tryLength == eh.tryLength) {
+		exceptionstack_pop();
+		eh2 = exceptionstack_peek(0);
+	}
+
+	stack_shrink(eh.stackSize);
+	push_pointer((uintptr_t)exception);
+	
+	return eh.labelAddress;
 }

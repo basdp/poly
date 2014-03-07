@@ -62,7 +62,6 @@ namespace PolyCompiler
                 default:
                     return "CIL_pointer";
             }
-            return "CIL_unknown";
         }
         
         public static string GetInternalFieldName(string f)

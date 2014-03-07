@@ -18,23 +18,6 @@ namespace PolyCompiler
         {
             SDILReader.Globals.LoadOpCodes();
 
-            string codefile, headerfile;
-            try
-            {
-                codefile = args[1];
-                headerfile = args[2];
-            }
-            catch
-            {
-                codefile = "code.c";
-                headerfile = "header.h";
-            }
-
-            CompilerContext context = new CompilerContext();
-
-            context.Code.Append("#include \"" + headerfile + "\"\n\n");
-            context.Header.Append("#pragma once\n#include \"polyruntime.h\"\n#include \"mscorlib.h\"\n\n");
-
             /*string path = Path.GetDirectoryName(Assembly.GetAssembly(typeof(Program)).CodeBase);
             path = path.Replace("file:\\", "");
             Assembly ass = Assembly.LoadFile(path + "\\Tester.dll");*/
@@ -49,8 +32,40 @@ namespace PolyCompiler
             {
                 string path = Path.GetDirectoryName(Assembly.GetAssembly(typeof(Program)).CodeBase);
                 path = path.Replace("file:\\", "");
-                ass = Assembly.LoadFile(path + "\\Tester.dll");
+                //ass = Assembly.LoadFile(path + "\\Tester.exe");
+                ass = Assembly.LoadFrom(@"C:\Users\Bas\Documents\GitHub\poly\BCL\mscorlib\bin\Debug\mscorlib.dll");
             }
+
+
+            string codefile, headerfile;
+            if (args.Length > 0)
+            {
+                if (args.Length > 1)
+                {
+                    codefile = args[1] + Path.DirectorySeparatorChar + ass.GetName().Name + ".c";
+                    headerfile = args[1] + Path.DirectorySeparatorChar + ass.GetName().Name + ".h";
+                    codefile = Path.GetFullPath(codefile);
+                    headerfile = Path.GetFullPath(headerfile);
+                }
+                else
+                {
+                    codefile = ass.GetName().Name + ".c";
+                    headerfile = ass.GetName().Name + ".h";
+                    codefile = Path.GetFullPath(codefile);
+                    headerfile = Path.GetFullPath(headerfile);
+
+                }
+            }
+            else
+            {
+                codefile = "code.c";
+                headerfile = "header.h";
+            }
+
+            CompilerContext context = new CompilerContext();
+
+            context.Code.Append("#include \"" + headerfile + "\"\n\n");
+            context.Header.Append("#pragma once\n#include \"polyruntime.h\"\n#include \"mscorlib.h\"\n\n");
 
             context.Code.Append("// Imports\n");
             foreach (var export in ass.GetReferencedAssemblies()) {
@@ -62,7 +77,7 @@ namespace PolyCompiler
                 ModuleGenerator.ProcessModule(module, context);
             }
 
-            context.Code.Append("void init_" + Naming.ConvertTypeToCName(ass.GetName().Name) + "() {\n" + context.Init.ToString() + "\n}\n");
+            context.Code.Append("void init_" + Naming.ConvertTypeToCName(ass.GetName().Name) + "() {\n" + context.Init.ToString() + "\n}\n" + context.Main.ToString() + "\n");
 
             File.WriteAllText(codefile, context.Code.ToString());
             File.WriteAllText(headerfile, context.Header.ToString());

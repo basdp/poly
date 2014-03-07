@@ -12,6 +12,8 @@ namespace PolyCompiler
     {
         public static void ProcessMethods(Type type, CompilerContext context)
         {
+            context.Code.Append("// class " + type.FullName + "\n");
+
             ConstructorInfo[] cis = type.GetConstructors(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
             for (int j = 0; j < cis.Length; j++)
             {
@@ -40,6 +42,29 @@ namespace PolyCompiler
                     addedcode += "    hashmap_put(((struct System__Object*)parameter0)->__CILsymboltable, \"" + Naming.GetInternalMethodName(virtmethod, false) + "\", &" + Naming.GetInternalMethodName(virtmethod) +
                    "); /* " + virtmethod.Name + " */\n";
                 }
+                FieldInfo[] fis = type.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                for (int k = 0; k < fis.Length; k++)
+                {
+                    addedcode += "    ((struct " + Naming.ConvertTypeToCName(type.FullName) +"*)parameter0)->";
+                    if (fis[k].FieldType.IsValueType)
+                    {
+                        int bits = TypeHelper.GetTypeSize(fis[k].FieldType);
+                        if (bits <= 64)
+                        {
+                            addedcode += Naming.GetInternalFieldName(fis[k].Name) + " = 0;";
+                        }
+                        else
+                        {
+                            addedcode += Naming.GetInternalFieldName(fis[k].Name) + " = { 0 };";
+                        }
+                    }
+                    else
+                    {
+                        addedcode += Naming.GetInternalFieldName(fis[k].Name) + " = 0;";
+                    }
+                    addedcode += "\n";
+                }
+
                 ProcessMethodBody(cis[j], context, addedcode);
             }
 
@@ -52,6 +77,20 @@ namespace PolyCompiler
 
         public static void ProcessMethodBody(MethodBase m, CompilerContext context, string addedcode = "")
         {
+            if (m.Name == "Main" && m.IsStatic)
+            {
+                // yay, we found a entry point
+                // TODO: what if multiple Main?
+
+                // TODO: cli arguments
+                context.Main.AppendLine("int main(int argc, char** argv) {");
+                context.Main.AppendLine("int entryStackSize = 0;");
+                context.Main.AppendLine("int boundExceptions = 0;");
+                context.Main.AppendLine("    push_pointer(0);");
+                context.Main.AppendLine("    CIL_call(" + Naming.GetInternalMethodName(m) + ", \"" + Naming.GetInternalMethodName(m, false) + "\", " + m.GetParameters().Count() + ", 0);");
+                context.Main.AppendLine("}");
+            }
+
             SDILReader.MethodBodyReader mbr = new SDILReader.MethodBodyReader(m);
 
             bool skipFirstConstructorCall = false;
@@ -61,23 +100,20 @@ namespace PolyCompiler
             if (m.DeclaringType.FullName == "System.__Object" && m.IsConstructor) skipFirstConstructorCall = true;
 
             context.Code.Append("/* " + m.DeclaringType.FullName + "::" + m.Name + " */\n");
+            context.Code.Append("char* " + Naming.GetInternalMethodName(m) + "_sig = \"" + m.DeclaringType.FullName + "::" + m.Name + "(");
+            if (m.GetParameters().Count() > 0)
+                context.Code.Append(m.GetParameters().Select(p => p.ParameterType.Name + " " + p.Name).Aggregate((a, b) => a + ", " + b));
+            context.Code.Append(")\";\n");
             context.Code.Append("void *" + Naming.GetInternalMethodName(m) + "(/*");
-            foreach (ParameterInfo p in m.GetParameters())
-            {
-                context.Code.Append(p.Position + ":");
-                context.Code.Append(p.Name);
-                context.Code.Append("<" + p.MetadataToken + ">, ");
-            }
+            if (m.GetParameters().Count() > 0)
+                context.Code.Append(m.GetParameters().Select(p => p.ParameterType.Name + " " + p.Name).Aggregate((a, b) => a + ", " + b));
             context.Code.Append("*/) {\n");
 
             context.Header.Append("/* " + m.DeclaringType.FullName + "::" + m.Name + " */\n");
+            context.Header.AppendLine("extern char* " + Naming.GetInternalMethodName(m) + "_sig;");
             context.Header.Append("void *" + Naming.GetInternalMethodName(m) + "(/*");
-            foreach (ParameterInfo p in m.GetParameters())
-            {
-                context.Header.Append(p.Position + ":");
-                context.Header.Append(p.Name);
-                context.Header.Append("<" + p.MetadataToken + ">, ");
-            }
+            if (m.GetParameters().Count() > 0)
+                context.Header.Append(m.GetParameters().Select(p => p.ParameterType.Name + " " + p.Name).Aggregate((a, b) => a + ", " + b));
             context.Header.Append("*/);\n");
 
             // parameters
@@ -111,6 +147,9 @@ namespace PolyCompiler
                 context.Code.Append("    uintptr_t parameter0 = pop_pointer();\n");
                 context.Code.Append("    enum CIL_Type parameter0__type = CIL_pointer;\n");
             }
+
+            context.Code.AppendLine("    int entryStackSize = stack_size();");
+            context.Code.AppendLine("    int boundExceptions = 0;");
 
             if (m.GetCustomAttributes(typeof(Poly.Internals.CompilerImplemented.InlineCodeAttribute), true).Length > 0)
             {
@@ -157,13 +196,60 @@ namespace PolyCompiler
                             continue;
                         }
 
+                        string scope = Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name);
+                        string label = scope + SDILReader.ILInstruction.GetExpandedOffset(instr.Offset);
                         context.Code.Append("    ");
+                        context.Code.Append(label + ": ");
+
+                        // exception code
+                        // TODO: refactor
+                        foreach (var exc in m.GetMethodBody().ExceptionHandlingClauses.Reverse())
+                        {
+                            switch (exc.Flags)
+                            {
+                                case ExceptionHandlingClauseOptions.Filter:
+                                    throw new NotImplementedException(); // TODO
+                                case ExceptionHandlingClauseOptions.Finally:
+                                    if (instr.Offset == exc.TryOffset)
+                                    {
+                                        context.Code.AppendLine("register_finally(" + Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name) + SDILReader.ILInstruction.GetExpandedOffset(exc.HandlerOffset) + ", " +
+                                                "" + Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name) + SDILReader.ILInstruction.GetExpandedOffset(exc.TryOffset) + ", " +
+                                                exc.TryLength.ToString() + ");");
+                                        context.Code.Append(new string(' ', label.Length + 6));
+                                    }
+                                    break;
+                                case ExceptionHandlingClauseOptions.Fault:
+                                    throw new NotImplementedException(); // TODO
+                                case ExceptionHandlingClauseOptions.Clause:
+                                    if (instr.Offset == exc.TryOffset)
+                                    {
+                                        context.Code.AppendLine("register_catch(\"" + exc.CatchType.FullName + "\", " +
+                                            "" + Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name) + SDILReader.ILInstruction.GetExpandedOffset(exc.HandlerOffset) + ", " +
+                                            "" + Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name) + SDILReader.ILInstruction.GetExpandedOffset(exc.TryOffset) + ", " +
+                                            exc.TryLength.ToString() + ", " + "stack_size());");
+                                        context.Code.Append(new string(' ', label.Length + 6));
+                                    }
+                                    if (instr.Offset == exc.TryOffset + exc.TryLength)
+                                    {
+                                        context.Code.AppendLine("// End try of type " + exc.CatchType.Name);
+                                        context.Code.Append(new string(' ', label.Length + 6));
+                                    }
+                                    break;
+                                default:
+                                    throw new FormatException();
+                            }
+                        }
 
                         switch (instr.Code.Name)
                         {
                             case "br.s":
                                 context.Code.Append("goto " + Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name) + SDILReader.ILInstruction.GetExpandedOffset((int)instr.Operand));
                                 break;
+                            /*case "leave.s":
+                                int numexc = GetNumberOfExceptionHandlersForOffset(m.GetMethodBody(), instr.Offset);
+                                context.Code.Append(Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name) + SDILReader.ILInstruction.GetExpandedOffset(instr.Offset) + ": ");
+                                context.Code.Append("CIL_leave__s(" + Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name) + SDILReader.ILInstruction.GetExpandedOffset((int)instr.Operand) + ", " + numexc + ")");
+                                break;*/
                             default:
                                 context.Code.Append(instr.GetCode(m, context));
                                 break;
@@ -181,7 +267,8 @@ namespace PolyCompiler
                 }
             }
 
-            context.Code.Append("    return 0;\n}\n");
+            context.Code.Append("    CIL_ret();\n}\n");
         }
+
     }
 }

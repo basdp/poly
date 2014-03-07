@@ -72,9 +72,9 @@ unsigned int hashmap_hash_int(hashmap_map * m, unsigned int key){
 
 unsigned int hashmap_hash_string(hashmap_map *m, const char *s)
 {
-    unsigned int h = *s;
-    if (h) for (++s ; *s; ++s) h = (h << 5) - h + *s;
-    return h % m->table_size;
+	unsigned int h = *s;
+	if (h) for (++s ; *s; ++s) h = (h << 5) - h + *s;
+	return h % m->table_size;
 }
 
 /*
@@ -281,7 +281,7 @@ int hashmap_iterate(map_t in, PFany f, any_t item) {
 	/* Unlock */
 	//semaphore_V(m->lock);
 
-        return MAP_OK;
+		return MAP_OK;
 }
 
 /*
@@ -341,6 +341,7 @@ int hashmap_length(map_t in){
 
 int hashmap_print_item(any_t tag, any_t data, const char* key) {
 	printf("%s\t0x%x\n", key, data);
+	return 0;
 }
 
 void hashmap_print(map_t map) {
