@@ -43,6 +43,7 @@
     <Compile Include="System\Runtime\CompilerServices\RuntimeHelpers.cs" />
     <Compile Include="System\String.cs" />
     <Compile Include="System\ValueType.cs" />
+    <Compile Include="System\Type.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\Poly.Internals\Poly.Internals.csproj">

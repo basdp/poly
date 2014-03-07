@@ -60,6 +60,12 @@ namespace SDILReader
                     result += Naming.GetInternalMethodName(mOperand);
                     result += "/* " + mOperand.DeclaringType.FullName + "::" + mOperand.Name + " */";
                 }
+
+                /*else if (code.Name == "castclass")
+                {
+                    System.Reflection.ConstructorInfo mOperand = (System.Reflection.ConstructorInfo)operand;
+                    result += Naming.ConvertTypeToCName(mOperand.ReflectedType.ToString()) + ", ";
+                }*/
                 else
                 {
                     switch (code.OperandType)

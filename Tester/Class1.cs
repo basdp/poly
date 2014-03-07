@@ -50,37 +50,44 @@ namespace Tester
             }
         }
 
+
+        static void NestedException2()
+        {
+            try
+            {
+                throw new Exception();
+            }
+            finally
+            {
+                Console.WriteLine("FI1");
+            }
+        }
+
+        static void Test6()
+        {
+            try
+            {
+                NestedException2();
+            }
+            catch (NullReferenceException)
+            {
+                Console.WriteLine("NRE");
+            }
+            catch (Exception)
+            {
+                Console.WriteLine("RE");
+            }
+            finally
+            {
+                Console.WriteLine("FI2");
+            }
+        }
+
         static int get() { return 10; }
 
         static void Main(string[] args)
         {
-            //bas = 42;
-
-
-            //Test[] ints = new Test[] { new Test(1), new Test(2), new Test(3), new Test(4) };
-            //Test[] ints = new Test[] { }
-            //double[] ints = new double[] { 1.1, 2.2, 3.3, 4.4, 5.5 };
-            //ints[4] = 4.5;
-            //System.Console.WriteLine(ints[3]);
-
-            //string str = "hoi Bas";
-            //char s = str[3];
-
-            //int d = 4;
-            //if (d == 5)
-            //{
-            //     System.Console.WriteLine("Yeah");
-            //}
-
-            //System.Console.WriteLine(ints[3].ToString());
-
-
-            Bla(0);
-
-            //string i = null;
-            //i.ToString();
-
-
+            Test6();
         }
 
     }

@@ -1,4 +1,6 @@
 #pragma once
+#include "opcodes.h"
+#include "object.h"
 
 enum HandlerType {
 	HANDLERTYPE_CATCH,
@@ -53,6 +55,28 @@ struct ExceptionHandler {
 //#  define JUMP_TO_IP() goto **(ip++)
 #endif
 
+#define exception_leave(label) {\
+	stack_shrink(entryStackSize); \
+	if (exceptionstack_size() > 0) {\
+		struct ExceptionHandler eh = exceptionstack_pop();\
+		boundExceptions--;\
+		if (eh.handlerType == HANDLERTYPE_FINALLY) { \
+			void* p; STORE_LABEL_ADDRESS(p, label);\
+			push_pointer((uintptr_t)p);\
+			GOTO_LABEL_ADDRESS(eh.labelAddress);\
+		} else if (eh.handlerType == HANDLERTYPE_CATCH) {\
+			struct ExceptionHandler eh2 = exceptionstack_peek(0);\
+			while (eh2.handlerType == HANDLERTYPE_CATCH && eh2.tryAddress == eh.tryAddress && eh2.tryLength == eh.tryLength) {\
+				exceptionstack_pop();\
+				boundExceptions--;\
+				eh2 = exceptionstack_peek(0);\
+			}\
+		}\
+	}\
+	goto label;\
+}
+
+void* throw_dispatch(int);
 void exceptionstack_push(struct ExceptionHandler eh);
 struct ExceptionHandler exceptionstack_pop();
 int exceptionstack_size();

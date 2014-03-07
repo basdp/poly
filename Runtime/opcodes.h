@@ -56,6 +56,7 @@ void CIL_ldc__i8(int64_t);
 void CIL_ldc__r4(float);
 void CIL_ldc__r8(double);
 void CIL_conv__r4();
+void CIL_conv__i4();
 
 void CIL_ceq();
 void CIL_clt();
@@ -106,7 +107,6 @@ void CIL_ldstr(const char*);
 #define CIL_conv__i(...) CIL_undefined()
 #define CIL_conv__i1(...) CIL_undefined()
 #define CIL_conv__i2(...) CIL_undefined()
-#define CIL_conv__i4(...) CIL_undefined()
 #define CIL_conv__i8(...) CIL_undefined()
 #define CIL_conv__ovf__i(...) CIL_undefined()
 #define CIL_conv__ovf__i1(...) CIL_undefined()
@@ -159,7 +159,6 @@ void CIL_ldstr(const char*);
 #define CIL_ldind__u1(...) CIL_undefined()
 #define CIL_ldind__u2(...) CIL_undefined()
 #define CIL_ldind__u4(...) CIL_undefined()
-#define CIL_ldlen(...) CIL_undefined()
 #define CIL_ldloca(...) CIL_undefined()
 #define CIL_ldloca__s(...) CIL_undefined()
 #define CIL_ldobj(...) CIL_undefined()
@@ -206,11 +205,14 @@ void CIL_ldstr(const char*);
 #define CIL_nop() 
 #define CIL_break() 
 
+#define CIL_br(label) goto label
+
 #define CIL_pop() pop()
 
 extern void* m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C();
 extern char* m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C_sig;
 #define throw_NullReferenceException() { CIL_newobj(System__NullReferenceException, m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C); CIL_throw(); } 
+#define throw_InvalidCastException() { CIL_newobj(System__InvalidCastException, m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C); CIL_throw(); } 
 
 #define CIL_ldfld(type, name) { intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } \
 	else if (sizeof(((struct type*)self)->  name) == 4) { push_value32( ((struct type*)self)-> name, type ## _f_ ## name ## __type ); }  \
@@ -316,6 +318,7 @@ void CIL_ldelem__u4();
 void CIL_ldelem__u8();
 #define CIL_ldelema(type) CIL_ldelema_dispatch(#type)
 void CIL_ldelema_dispatch(const char*);
+void CIL_ldlen();
 
 #define CIL_ldtoken(type, clas, id, offset, size) CIL_ldtoken_ ## type (clas, id, offset, size)
 void CIL_ldtoken_static_field_dispatch(void*, enum CIL_Type, int);
@@ -328,39 +331,13 @@ void CIL_ldtoken_static_field_dispatch(void*, enum CIL_Type, int);
 
 #define CIL_ldnull(...) push_pointer(0)
 
-
-
-
-
-
-
-
-// TODO: refactor to exceptions.h/c
-#define CIL_throw() { void* lbl = CIL_throw_dispatch(boundExceptions); if (lbl == 0) { callstack_pop(); return (void*)1; } else GOTO_LABEL_ADDRESS(lbl); }
-void* CIL_throw_dispatch(int);
-
-#define CIL_leave__s(label) {\
-	stack_shrink(entryStackSize); \
-	if (exceptionstack_size() > 0) {\
-		struct ExceptionHandler eh = exceptionstack_pop();\
-		boundExceptions--;\
-		if (eh.handlerType == HANDLERTYPE_FINALLY) { \
-			void* p; STORE_LABEL_ADDRESS(p, label);\
-			push_pointer((uintptr_t)p);\
-			GOTO_LABEL_ADDRESS(eh.labelAddress);\
-		} else if (eh.handlerType == HANDLERTYPE_CATCH) {\
-			struct ExceptionHandler eh2 = exceptionstack_peek(0);\
-			while (eh2.handlerType == HANDLERTYPE_CATCH && eh2.tryAddress == eh.tryAddress && eh2.tryLength == eh.tryLength) {\
-				exceptionstack_pop();\
-				boundExceptions--;\
-				eh2 = exceptionstack_peek(0);\
-			}\
-		}\
-	}\
-	goto label;\
-}
-
+//exceptions
+#define CIL_throw() { void* lbl = throw_dispatch(boundExceptions); if (lbl == 0) { callstack_pop(); return (void*)1; } else GOTO_LABEL_ADDRESS(lbl); }
+#define CIL_leave__s(label) exception_leave(label)
 #define CIL_endfinally() {\
 	uintptr_t p = pop_pointer();\
 	GOTO_LABEL_ADDRESS(p);\
 }
+
+#define CIL_castclass(type) { if (!CIL_castclass_dispatch(#type)) { throw_InvalidCastException(); } }
+int CIL_castclass_dispatch(const char*);

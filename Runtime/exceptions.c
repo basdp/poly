@@ -40,3 +40,73 @@ void print_exceptionstack() {
 	}
 	printf("\n");
 }
+
+extern void * mFA7CAC02617528CA7AC2E4A268BEF2AA5656C218();
+extern char * mFA7CAC02617528CA7AC2E4A268BEF2AA5656C218_sig;
+
+void* throw_dispatch(int boundExceptions) {
+	struct SYSTEM__OBJECT_proto *exception = (struct SYSTEM__OBJECT_proto *)pop_pointer();
+
+	//printf("Exception thrown: %s\n", exception->__CILtype);
+	//printf("Bound ExceptionHandlers: %d\n", boundExceptions);
+	//print_exceptionstack();
+
+	struct ExceptionHandler eh;
+	int i = 0;
+
+	// Pass 1
+	while (1) {
+		if (exceptionstack_size() <= i) {
+			printf("Uncaught Exception: ");
+
+			push_pointer((uintptr_t)exception);
+			CIL_callvirt_unsafe(mFA7CAC02617528CA7AC2E4A268BEF2AA5656C218, "m1DBC7385BADBFDA548FB27E2160A33CF32C0F545", 0, 1); // Exception.ToString();
+			char *excmess = CIL_getCStringFromSystemString(pop_pointer());
+			printf("%s\n", excmess);
+			// TODO: should probably execute all finally blocks
+			exit(1);
+		}
+		eh = exceptionstack_peek(i++);
+
+		if (eh.handlerType == HANDLERTYPE_CATCH && object_is_type_or_subtype(exception, eh.typeName))
+		{
+			break;
+		}
+	}
+
+	//printf("Exception level: %d\n", i);
+	//printf("Current Handler: %s\n", eh.typeName);
+
+	// Pass 2
+	for (; i > 0; i--) {
+		if (i > boundExceptions) {
+			// this is a handler outside of this method
+			push_pointer((uintptr_t)exception);
+			return 0;
+		}
+		else {
+			// this is a handler in this method
+			struct ExceptionHandler eh3 = exceptionstack_pop();
+			if (eh3.handlerType == HANDLERTYPE_FINALLY) {
+				printf("SKIPPED FINALLY\n");
+				// TODO: Exception: this should not be skipped.. :(
+
+				//void* p; STORE_LABEL_ADDRESS(p, label);
+				//push_pointer((uintptr_t)p);
+				//GOTO_LABEL_ADDRESS(eh.labelAddress);
+			}
+		}
+	}
+
+	// remove all other Exception Handlers that are bound to this try block from the exception stack
+	struct ExceptionHandler eh2 = exceptionstack_peek(0);
+	while (eh2.tryAddress == eh.tryAddress && eh2.tryLength == eh.tryLength) {
+		exceptionstack_pop();
+		eh2 = exceptionstack_peek(0);
+	}
+
+	stack_shrink(eh.stackSize);
+	push_pointer((uintptr_t)exception);
+
+	return eh.labelAddress;
+}

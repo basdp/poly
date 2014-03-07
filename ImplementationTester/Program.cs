@@ -33,12 +33,17 @@ namespace ImplementationTester
             {
                 string filename = elem.GetAttribute("filename");
                 FileInfo fi = new FileInfo(filename);
+
+                string parameters = "";
+                if (elem.HasAttribute("parameters")) parameters = elem.GetAttribute("parameters");
+
                 string basename = fi.Name.Substring(0, fi.Name.LastIndexOf("."));
+                string displayname = basename + "." + parameters;
                 if (!CompiledTests.ContainsKey(filename)) {
                     CompileCsToPolyExe(@"Tests\" + filename, @"Tests\" + basename + ".poly.exe");
                     if (!File.Exists(@"Tests\" + basename + ".poly.exe"))
                     {
-                        Console.Write(basename + new string(' ', 20 - basename.Length));
+                        Console.Write(displayname + new string(' ', 20 - displayname.Length));
                         Console.WriteLine("FAIL");
                         Console.WriteLine("  Compilation failed");
                         continue;
@@ -50,12 +55,13 @@ namespace ImplementationTester
                         // TODO: performance test
 
                     case "expectoutput":
-                        ExpectOutput(@"Tests\" + basename + ".poly.exe", elem.InnerText.Trim());
+                        ExpectOutput(@"Tests\" + basename + ".poly.exe", parameters, elem.InnerText.Trim());
                         break;
                     default:
                         throw new FormatException("Unexpected Test Type: " + elem.Name);
                 }
             }
+            Console.ReadKey();
         }
 
         private static bool ExpectOutput(string executable, string output)
@@ -79,7 +85,9 @@ namespace ImplementationTester
 
             FileInfo fi = new FileInfo(executable);
             string testName = fi.Name.Substring(0, fi.Name.ToLower().LastIndexOf(".poly.exe"));
-            Console.Write(testName + new string(' ', 20 - testName.Length));
+            string displayname = testName;
+            if (parameters != "") displayname += "." + parameters;
+            Console.Write(displayname + new string(' ', 20 - displayname.Length));
 
             string output = proc.StandardOutput.ReadToEnd().Trim();
             output = output.Split(new char[] { '\n' }).Select(s => s.Trim()).Aggregate((i, j) => i + "\n" + j);
