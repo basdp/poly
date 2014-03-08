@@ -10,12 +10,8 @@
 	int res = CIL_call_dispatch(&func);\
 	if (res == 1) {\
 		/* exception has been thrown*/\
-<<<<<<< HEAD
 		if (DEBUG_EXCEPTIONS) { printf("Func " #func " threw an exception\n"); }\
 		exception_throw_withInitStackTrace(0);\
-=======
-		CIL_throw();\
->>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
 	}\
 }
 
@@ -25,14 +21,9 @@
 	if (object == 0) { throw_NullReferenceException(); } else { \
 		int res = CIL_callvirt_dispatch(name, nparams, &func, isvirtual);\
 		if (res == 1) {\
-<<<<<<< HEAD
 			if (DEBUG_EXCEPTIONS) { printf("Func " name " threw an exception\n"); }\
 			/* exception has been thrown*/\
 			exception_throw_withInitStackTrace(0);\
-=======
-			/* exception has been thrown*/\
-			CIL_throw();\
->>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
 		}\
 	}\
 }
@@ -40,14 +31,9 @@
 	callstack_push(func ## _sig, "(unknown)", 0);\
 	int res = CIL_callvirt_dispatch(name, nparams, &func, isvirtual);\
 	if (res == 1) {\
-<<<<<<< HEAD
 		if (DEBUG_EXCEPTIONS) { printf("Unsafe func " name " threw an exception\n"); }\
 		/* exception has been thrown */\
 		exception_throw_withInitStackTrace(0);\
-=======
-		/* exception has been thrown*/\
-		CIL_throw();\
->>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
 	}\
 }
 int CIL_call_dispatch(void* (*func)());
@@ -196,10 +182,6 @@ void CIL_ldstr(const char*);
 #define CIL_refanyval(...) CIL_undefined()
 #define CIL_rem(...) CIL_undefined()
 #define CIL_rem__un(...) CIL_undefined()
-<<<<<<< HEAD
-=======
-#define CIL_rethrow(...) CIL_undefined()
->>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
 #define CIL_shl(...) CIL_undefined()
 #define CIL_shr(...) CIL_undefined()
 #define CIL_shr__un(...) CIL_undefined()
@@ -229,14 +211,6 @@ void CIL_ldstr(const char*);
 
 #define CIL_pop() pop()
 
-<<<<<<< HEAD
-=======
-extern void* m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C();
-extern char* m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C_sig;
-#define throw_NullReferenceException() { CIL_newobj(System__NullReferenceException, m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C); CIL_throw(); } 
-#define throw_InvalidCastException() { CIL_newobj(System__InvalidCastException, m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C); CIL_throw(); } 
-
->>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
 #define CIL_ldfld(type, name) { intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } \
 	else if (sizeof(((struct type*)self)->  name) == 4) { push_value32( ((struct type*)self)-> name, type ## _f_ ## name ## __type ); }  \
 							else if (sizeof(((struct type*)self)->  name) == 8) { push_value64( ((struct type*)self)-> name, type ## _f_ ## name ## __type ); }  \
@@ -355,19 +329,10 @@ void CIL_ldtoken_static_field_dispatch(void*, enum CIL_Type, int);
 #define CIL_ldnull(...) push_pointer(0)
 
 //exceptions
-<<<<<<< HEAD
 #define CIL_throw() exception_throw()
 #define CIL_rethrow(...) exception_rethrow()
 #define CIL_leave__s(label) exception_leave(label)
 #define CIL_endfinally() exception_endfinally()
-=======
-#define CIL_throw() { void* lbl = throw_dispatch(boundExceptions); if (lbl == 0) { callstack_pop(); return (void*)1; } else GOTO_LABEL_ADDRESS(lbl); }
-#define CIL_leave__s(label) exception_leave(label)
-#define CIL_endfinally() {\
-	uintptr_t p = pop_pointer();\
-	GOTO_LABEL_ADDRESS(p);\
-}
->>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
 
 #define CIL_castclass(type) { if (!CIL_castclass_dispatch(#type)) { throw_InvalidCastException(); } }
 int CIL_castclass_dispatch(const char*);

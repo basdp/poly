@@ -1,8 +1,5 @@
 #include "stack.h"
-<<<<<<< HEAD
 #include "polyruntime.h"
-=======
->>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
 #include <string.h>
 #include <stdio.h>
 
@@ -190,12 +187,8 @@ void print_stack() {
 		} else if (types[i] == CIL_pointer) {
 			intptr_t v = *((intptr_t*)(items + t));
 			printf("pointer\t\t"); 
-<<<<<<< HEAD
 			printf("0x%x\t", v);
 			printf("%s", ((struct SYSTEM__OBJECT_proto *)v)->__CILtype);
-=======
-			printf("0x%x", v);
->>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
 			t += sizeof(intptr_t);
 		}		 
 		printf("\n");

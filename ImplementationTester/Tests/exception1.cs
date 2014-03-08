@@ -129,7 +129,6 @@ class exception1
         }
     }
 
-<<<<<<< HEAD
     static void Test7NestedException2()
     {
         try
@@ -176,8 +175,6 @@ class exception1
             Console.WriteLine("FI2");
         }
     }
-=======
->>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
     static void Main(string[] args)
     {
         if (args.Length != 1) return;
@@ -188,9 +185,6 @@ class exception1
         if (args[0] == "4") Test4();
         if (args[0] == "5") Test5();
         if (args[0] == "6") Test6();
-<<<<<<< HEAD
         if (args[0] == "7") Test7();
-=======
->>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
     }
 }

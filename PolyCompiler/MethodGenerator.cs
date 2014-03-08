@@ -233,11 +233,7 @@ namespace PolyCompiler
                             switch (exc.Flags)
                             {
                                 case ExceptionHandlingClauseOptions.Filter:
-<<<<<<< HEAD
                                     throw new NotImplementedException(); // TODO: Exception: Filter
-=======
-                                    throw new NotImplementedException(); // TODO
->>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
                                 case ExceptionHandlingClauseOptions.Finally:
                                     if (instr.Offset == exc.TryOffset)
                                     {
@@ -248,11 +244,7 @@ namespace PolyCompiler
                                     }
                                     break;
                                 case ExceptionHandlingClauseOptions.Fault:
-<<<<<<< HEAD
                                     throw new NotImplementedException(); // TODO: Exception: Fault
-=======
-                                    throw new NotImplementedException(); // TODO
->>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
                                 case ExceptionHandlingClauseOptions.Clause:
                                     if (instr.Offset == exc.TryOffset)
                                     {
@@ -283,12 +275,9 @@ namespace PolyCompiler
                                 context.Code.Append(Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name) + SDILReader.ILInstruction.GetExpandedOffset(instr.Offset) + ": ");
                                 context.Code.Append("CIL_leave__s(" + Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name) + SDILReader.ILInstruction.GetExpandedOffset((int)instr.Operand) + ", " + numexc + ")");
                                 break;*/
-<<<<<<< HEAD
                             /*case "throw":
                                 context.Code.Append("CIL_throw(" + label + ")");
                                 break;*/
-=======
->>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
                             default:
                                 context.Code.Append(instr.GetCode(m, context));
                                 break;

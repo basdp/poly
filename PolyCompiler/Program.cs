@@ -32,13 +32,8 @@ namespace PolyCompiler
             {
                 string path = Path.GetDirectoryName(Assembly.GetAssembly(typeof(Program)).CodeBase);
                 path = path.Replace("file:\\", "");
-<<<<<<< HEAD
                 //ass = Assembly.LoadFile(path + "\\Tester.exe");
                 ass = Assembly.LoadFrom(@"C:\Users\Bas\Documents\GitHub\poly\BCL\mscorlib\bin\Debug\mscorlib.dll");
-=======
-                ass = Assembly.LoadFile(path + "\\Tester.exe");
-                //ass = Assembly.LoadFrom(@"C:\Users\Bas\Documents\GitHub\poly\BCL\mscorlib\bin\Debug\mscorlib.dll");
->>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
             }
 
 
