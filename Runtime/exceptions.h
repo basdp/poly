@@ -2,8 +2,11 @@
 #include "opcodes.h"
 #include "object.h"
 
+<<<<<<< HEAD
 #define DEBUG_EXCEPTIONS 0
 
+=======
+>>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
 enum HandlerType {
 	HANDLERTYPE_CATCH,
 	HANDLERTYPE_FINALLY,
@@ -50,13 +53,20 @@ struct ExceptionHandler {
 #define GOTO_LABEL_ADDRESS(var) __asm { jmp var }
 #endif
 
+<<<<<<< HEAD
 // TODO: GCC http://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html
 #ifndef STORE_LABEL_ADDRESS
 #error STORE_LABEL_ADDRESS needs to be defined for this compiler
+=======
+#ifndef STORE_LABEL_ADDRESS
+#error STORE_LABEL_ADDRESS needs to be defined for this compiler
+// TODO: GCC http://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html
+>>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
 //#  define STORE_ADDRESS(index,label) data[index] = &&label
 //#  define JUMP_TO_IP() goto **(ip++)
 #endif
 
+<<<<<<< HEAD
 extern struct SYSTEM__OBJECT_proto *lastThrownException;
 
 #define exception_throw() exception_throw_withInitStackTrace(1)
@@ -88,6 +98,11 @@ extern struct SYSTEM__OBJECT_proto *lastThrownException;
 	if (DEBUG_EXCEPTIONS) printf("exception_leave %d\n", entryStackSize);\
 	stack_shrink(entryStackSize); \
 	if (boundExceptions > 0) {\
+=======
+#define exception_leave(label) {\
+	stack_shrink(entryStackSize); \
+	if (exceptionstack_size() > 0) {\
+>>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
 		struct ExceptionHandler eh = exceptionstack_pop();\
 		boundExceptions--;\
 		if (eh.handlerType == HANDLERTYPE_FINALLY) { \
@@ -106,6 +121,7 @@ extern struct SYSTEM__OBJECT_proto *lastThrownException;
 	goto label;\
 }
 
+<<<<<<< HEAD
 #define exception_endfinally() {\
 	if (DEBUG_EXCEPTIONS) { printf("endfinally\n"); } \
 	uintptr_t p = pop_pointer(); \
@@ -137,6 +153,9 @@ extern char* mD81A01BD2EAF4E0554E7E00022DA8393DA63979F_sig;
 #define throw_ArgumentOutOfRangeException() { CIL_newobj(System__ArgumentOutOfRangeException, mD81A01BD2EAF4E0554E7E00022DA8393DA63979F); CIL_throw(); } 
 
 void* throw_dispatch(int, int*, int);
+=======
+void* throw_dispatch(int);
+>>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
 void exceptionstack_push(struct ExceptionHandler eh);
 struct ExceptionHandler exceptionstack_pop();
 int exceptionstack_size();

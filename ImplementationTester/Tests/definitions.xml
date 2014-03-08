@@ -29,6 +29,7 @@
     RE
     FI2
   </ExpectOutput>
+<<<<<<< HEAD
   <ExpectOutput filename="exception1.cs" parameters="7">
     a
     FI0
@@ -36,4 +37,6 @@
     RE
     FI2
   </ExpectOutput>
+=======
+>>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
 </Tests>

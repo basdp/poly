@@ -18,7 +18,11 @@ namespace PolyCompiler
             types.Sort(delegate(Type t1, Type t2)
             {
                 if (t1.FullName.Contains(".__")) t1 = Type.GetType(t1.FullName.Replace(".__", "."));
+<<<<<<< HEAD
                 if (t2.FullName.Contains(".__")) t2 = Type.GetType(t2.FullName.Replace(".__", "."));
+=======
+                if (t2.FullName.Contains(".__")) t2 = Type.GetType(t1.FullName.Replace(".__", "."));
+>>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
                 if (t1.FullName == "System.Object") return -1;
                 if (t2.FullName == "System.Object") return 1;
                 if (t1.IsSubclassOf(t2))

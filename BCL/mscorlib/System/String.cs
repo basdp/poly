@@ -6,8 +6,11 @@
     {
         // DO NOT ADD FIELDS OR PROPERTIES!!!
 
+<<<<<<< HEAD
         // TODO: String is array of UTF16 (2 byte) chars
 
+=======
+>>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
         __String() { }
 
         [Poly.Internals.CompilerImplemented.InlineCode(@"
@@ -145,6 +148,7 @@
         public override int GetHashCode()
         { return 0; }
 
+<<<<<<< HEAD
         public int IndexOf(string str)
         {
             int len = this.get_Length();
@@ -199,6 +203,8 @@
         ")]
         public char get_Chars(int i)
         { return '0'; }
+=======
+>>>>>>> c2b351a7678081326d30d337f4c1b52610b82019
 
     }
 }
