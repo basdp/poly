@@ -6,6 +6,7 @@
 #define EMPTYSTACK 0
 static int top = EMPTYSTACK;
 static struct ExceptionHandler items[MAXSTACK];
+struct SYSTEM__OBJECT_proto *lastThrownException = 0;
 
 void exceptionstack_push(struct ExceptionHandler eh) {
 	items[top++] = eh;
@@ -41,15 +42,33 @@ void print_exceptionstack() {
 	printf("\n");
 }
 
+// System.Exception::ToString()
 extern void * mFA7CAC02617528CA7AC2E4A268BEF2AA5656C218();
 extern char * mFA7CAC02617528CA7AC2E4A268BEF2AA5656C218_sig;
+// System.Exception::InitStackTrace()
+extern char* m38EAC9CEA38B341E4916A3737AB09F8E8CCC0394_sig;;
+extern void *m38EAC9CEA38B341E4916A3737AB09F8E8CCC0394();
 
-void* throw_dispatch(int boundExceptions) {
+
+void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initStackTrace) {
+	*removedBoundExceptions = 0;
 	struct SYSTEM__OBJECT_proto *exception = (struct SYSTEM__OBJECT_proto *)pop_pointer();
+	lastThrownException = exception;
 
-	//printf("Exception thrown: %s\n", exception->__CILtype);
-	//printf("Bound ExceptionHandlers: %d\n", boundExceptions);
-	//print_exceptionstack();
+#if DEBUG_EXCEPTIONS == 1
+	printf("Exception thrown: %s\n", exception->__CILtype);
+	printf("Bound ExceptionHandlers: %d\n", boundExceptions);
+	print_exceptionstack();
+	print_callstack();
+#endif
+
+	if (initStackTrace) {
+#if DEBUG_EXCEPTIONS == 1
+		printf("(re)initialize the stack trace\n");
+#endif
+		push_pointer(exception);
+		CIL_call(m38EAC9CEA38B341E4916A3737AB09F8E8CCC0394, "m38EAC9CEA38B341E4916A3737AB09F8E8CCC0394", 0, 0);
+	}
 
 	struct ExceptionHandler eh;
 	int i = 0;
@@ -68,14 +87,17 @@ void* throw_dispatch(int boundExceptions) {
 		}
 		eh = exceptionstack_peek(i++);
 
-		if (eh.handlerType == HANDLERTYPE_CATCH && object_is_type_or_subtype(exception, eh.typeName))
+		if (eh.handlerType == HANDLERTYPE_CATCH && object_is_type_or_subtype(exception, eh.typeName) ||
+			eh.handlerType == HANDLERTYPE_FINALLY)
 		{
 			break;
 		}
 	}
 
-	//printf("Exception level: %d\n", i);
-	//printf("Current Handler: %s\n", eh.typeName);
+#if DEBUG_EXCEPTIONS == 1
+	printf("Exception level: %d\n", i);
+	printf("Current Handler: %s\n", eh.typeName);
+#endif
 
 	// Pass 2
 	for (; i > 0; i--) {
@@ -85,28 +107,40 @@ void* throw_dispatch(int boundExceptions) {
 			return 0;
 		}
 		else {
-			// this is a handler in this method
-			struct ExceptionHandler eh3 = exceptionstack_pop();
-			if (eh3.handlerType == HANDLERTYPE_FINALLY) {
-				printf("SKIPPED FINALLY\n");
-				// TODO: Exception: this should not be skipped.. :(
+			exceptionstack_pop();
 
-				//void* p; STORE_LABEL_ADDRESS(p, label);
-				//push_pointer((uintptr_t)p);
-				//GOTO_LABEL_ADDRESS(eh.labelAddress);
+			// this is a handler in this method
+			if (eh.handlerType == HANDLERTYPE_FINALLY) {
+#if DEBUG_EXCEPTIONS == 1
+				printf("INTERMEDIATE FINALLY\n");
+				print_exceptionstack();
+#endif
+				push_pointer((uintptr_t)exception);
+				push_pointer((uintptr_t)eh.labelAddress);
+				return (void*)1;
+
 			}
 		}
 	}
 
-	// remove all other Exception Handlers that are bound to this try block from the exception stack
+	// remove all other catches that are bound to this try block from the exception stack
 	struct ExceptionHandler eh2 = exceptionstack_peek(0);
 	while (eh2.tryAddress == eh.tryAddress && eh2.tryLength == eh.tryLength) {
+#if DEBUG_EXCEPTIONS == 1
+		printf("Removed alternative %s from exception stack\n", eh2.typeName);
+#endif
+		*removedBoundExceptions += 1;
 		exceptionstack_pop();
 		eh2 = exceptionstack_peek(0);
 	}
 
+#if DEBUG_EXCEPTIONS == 1
+	printf("dispatch catch\n");
+#endif
 	stack_shrink(eh.stackSize);
 	push_pointer((uintptr_t)exception);
+	
+	*removedBoundExceptions += 1;
 
 	return eh.labelAddress;
 }

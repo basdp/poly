@@ -15,22 +15,29 @@ namespace System
         public int HResult { get; protected set; }
         public Exception InnerException { get; private set; }
         public string Source { get; set; }
-        public string StackTrace { get; private set; }
+        public virtual string StackTrace { get; private set; }
 
         public Exception()
         {
-            this.StackTrace = Environment.StackTrace;
+            this.StackTrace = "(unknown)";
         }
 
         public Exception(string message)
         {
-            this.StackTrace = Environment.StackTrace;
+            this.StackTrace = "(unknown)";
             this.Message = message;
         }
 
         public override string ToString()
         {
             return base.ToString() + "\n" + StackTrace;
+        }
+
+        protected void InitStackTrace()
+        {
+            this.StackTrace = Environment.StackTrace;
+            //string stacktrace = Environment.StackTrace;
+            //this.StackTrace = stacktrace.Substring(stacktrace.IndexOf("\n") + 1);
         }
     }
 

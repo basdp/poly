@@ -40,8 +40,8 @@ namespace ImplementationTester
                 string basename = fi.Name.Substring(0, fi.Name.LastIndexOf("."));
                 string displayname = basename + "." + parameters;
                 if (!CompiledTests.ContainsKey(filename)) {
-                    CompileCsToPolyExe(@"Tests\" + filename, @"Tests\" + basename + ".poly.exe");
-                    if (!File.Exists(@"Tests\" + basename + ".poly.exe"))
+                    CompileCsToPolyExe(@"Tests\" + filename, @"tmp\" + basename + ".poly.exe");
+                    if (!File.Exists(@"tmp\" + basename + ".poly.exe"))
                     {
                         Console.Write(displayname + new string(' ', 20 - displayname.Length));
                         Console.WriteLine("FAIL");
@@ -55,7 +55,7 @@ namespace ImplementationTester
                         // TODO: performance test
 
                     case "expectoutput":
-                        ExpectOutput(@"Tests\" + basename + ".poly.exe", parameters, elem.InnerText.Trim());
+                        ExpectOutput(@"tmp\" + basename + ".poly.exe", parameters, elem.InnerText.Trim());
                         break;
                     default:
                         throw new FormatException("Unexpected Test Type: " + elem.Name);

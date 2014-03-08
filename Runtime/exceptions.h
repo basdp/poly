@@ -2,6 +2,8 @@
 #include "opcodes.h"
 #include "object.h"
 
+#define DEBUG_EXCEPTIONS 0
+
 enum HandlerType {
 	HANDLERTYPE_CATCH,
 	HANDLERTYPE_FINALLY,
@@ -48,16 +50,43 @@ struct ExceptionHandler {
 #define GOTO_LABEL_ADDRESS(var) __asm { jmp var }
 #endif
 
+// TODO: GCC http://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html
 #ifndef STORE_LABEL_ADDRESS
 #error STORE_LABEL_ADDRESS needs to be defined for this compiler
-// TODO: GCC http://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html
 //#  define STORE_ADDRESS(index,label) data[index] = &&label
 //#  define JUMP_TO_IP() goto **(ip++)
 #endif
 
+extern struct SYSTEM__OBJECT_proto *lastThrownException;
+
+#define exception_throw() exception_throw_withInitStackTrace(1)
+#define exception_rethrow() { push_pointer((uintptr_t)lastThrownException); exception_throw_withInitStackTrace(0) }
+
+#define exception_throw_withInitStackTrace(initStackTrace) { \
+	int removedBoundExceptions; \
+	void* lbl = throw_dispatch(boundExceptions, &removedBoundExceptions, initStackTrace); \
+	if (DEBUG_EXCEPTIONS && removedBoundExceptions > 0) printf("Removed %d from bound exceptions\n", removedBoundExceptions);\
+	boundExceptions -= removedBoundExceptions; \
+	if (lbl == 0) { \
+		/* continue with exception in previous method */ \
+		callstack_pop(); \
+		return (void*)1; \
+	} else if (lbl == (void*)1) { \
+		/* continue with finally in THIS method */\
+		if (DEBUG_EXCEPTIONS) printf("continue with finally in this method\n");\
+		boundExceptions--; \
+		uintptr_t finallyAddr = pop_pointer(); \
+		push_pointer(0);\
+		GOTO_LABEL_ADDRESS(finallyAddr); \
+	} else {\
+	GOTO_LABEL_ADDRESS(lbl); \
+	} \
+}
+
 #define exception_leave(label) {\
+	if (DEBUG_EXCEPTIONS) printf("exception_leave %d\n", entryStackSize);\
 	stack_shrink(entryStackSize); \
-	if (exceptionstack_size() > 0) {\
+	if (boundExceptions > 0) {\
 		struct ExceptionHandler eh = exceptionstack_pop();\
 		boundExceptions--;\
 		if (eh.handlerType == HANDLERTYPE_FINALLY) { \
@@ -76,7 +105,17 @@ struct ExceptionHandler {
 	goto label;\
 }
 
-void* throw_dispatch(int);
+#define exception_endfinally() {\
+	if (DEBUG_EXCEPTIONS) { printf("endfinally\n"); } \
+	uintptr_t p = pop_pointer(); \
+	if (p == 0) {\
+	if (DEBUG_EXCEPTIONS) { printf("return was 0\n");print_stack(); }\
+		exception_throw_withInitStackTrace(0);\
+	}\
+	GOTO_LABEL_ADDRESS(p); \
+}
+
+void* throw_dispatch(int, int*, int);
 void exceptionstack_push(struct ExceptionHandler eh);
 struct ExceptionHandler exceptionstack_pop();
 int exceptionstack_size();

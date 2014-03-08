@@ -29,4 +29,11 @@
     RE
     FI2
   </ExpectOutput>
+  <ExpectOutput filename="exception1.cs" parameters="7">
+    a
+    FI0
+    FI1
+    RE
+    FI2
+  </ExpectOutput>
 </Tests>

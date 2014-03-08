@@ -233,7 +233,7 @@ namespace PolyCompiler
                             switch (exc.Flags)
                             {
                                 case ExceptionHandlingClauseOptions.Filter:
-                                    throw new NotImplementedException(); // TODO
+                                    throw new NotImplementedException(); // TODO: Exception: Filter
                                 case ExceptionHandlingClauseOptions.Finally:
                                     if (instr.Offset == exc.TryOffset)
                                     {
@@ -244,7 +244,7 @@ namespace PolyCompiler
                                     }
                                     break;
                                 case ExceptionHandlingClauseOptions.Fault:
-                                    throw new NotImplementedException(); // TODO
+                                    throw new NotImplementedException(); // TODO: Exception: Fault
                                 case ExceptionHandlingClauseOptions.Clause:
                                     if (instr.Offset == exc.TryOffset)
                                     {
@@ -274,6 +274,9 @@ namespace PolyCompiler
                                 int numexc = GetNumberOfExceptionHandlersForOffset(m.GetMethodBody(), instr.Offset);
                                 context.Code.Append(Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name) + SDILReader.ILInstruction.GetExpandedOffset(instr.Offset) + ": ");
                                 context.Code.Append("CIL_leave__s(" + Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name) + SDILReader.ILInstruction.GetExpandedOffset((int)instr.Operand) + ", " + numexc + ")");
+                                break;*/
+                            /*case "throw":
+                                context.Code.Append("CIL_throw(" + label + ")");
                                 break;*/
                             default:
                                 context.Code.Append(instr.GetCode(m, context));

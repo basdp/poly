@@ -14,9 +14,13 @@ cls
 
 cd build
 
+echo Compiling to C
+
 ..\PolyCompiler.exe ..\mscorlib_.dll
 ..\PolyCompiler.exe ..\Poly.Internals.dll
 ..\PolyCompiler.exe ..\Tester.exe
+
+echo Compiling to exe
 
 cl /nologo /DEBUG:Yes /O2 /Fomscorlib.obj /I ..\..\Runtime\ /c mscorlib.c
 cl /nologo /DEBUG:Yes /O2 /FoPoly.Internals.obj /I ..\..\Runtime\ /c Poly.Internals.c
@@ -24,6 +28,8 @@ cl /nologo /DEBUG:Yes /O2 /FoTester.obj /I ..\..\Runtime\ /c Tester.c
 rem cl /nologo /DEBUG:Yes /O2 /Fomain.obj /I ..\..\Runtime\ /c ..\main.c
 
 cl /nologo /DEBUG:Yes mscorlib.obj Tester.obj ..\Runtime.lib /FeTester.exe
+
+echo Running...
 
 Tester.exe
 

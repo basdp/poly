@@ -10,7 +10,8 @@
 	int res = CIL_call_dispatch(&func);\
 	if (res == 1) {\
 		/* exception has been thrown*/\
-		CIL_throw();\
+		if (DEBUG_EXCEPTIONS) { printf("Func " #func " threw an exception\n"); }\
+		exception_throw_withInitStackTrace(0);\
 	}\
 }
 
@@ -20,8 +21,9 @@
 	if (object == 0) { throw_NullReferenceException(); } else { \
 		int res = CIL_callvirt_dispatch(name, nparams, &func, isvirtual);\
 		if (res == 1) {\
+			if (DEBUG_EXCEPTIONS) { printf("Func " name " threw an exception\n"); }\
 			/* exception has been thrown*/\
-			CIL_throw();\
+			exception_throw_withInitStackTrace(0);\
 		}\
 	}\
 }
@@ -29,8 +31,9 @@
 	callstack_push(func ## _sig, "(unknown)", 0);\
 	int res = CIL_callvirt_dispatch(name, nparams, &func, isvirtual);\
 	if (res == 1) {\
-		/* exception has been thrown*/\
-		CIL_throw();\
+		if (DEBUG_EXCEPTIONS) { printf("Unsafe func " name " threw an exception\n"); }\
+		/* exception has been thrown */\
+		exception_throw_withInitStackTrace(0);\
 	}\
 }
 int CIL_call_dispatch(void* (*func)());
@@ -179,7 +182,6 @@ void CIL_ldstr(const char*);
 #define CIL_refanyval(...) CIL_undefined()
 #define CIL_rem(...) CIL_undefined()
 #define CIL_rem__un(...) CIL_undefined()
-#define CIL_rethrow(...) CIL_undefined()
 #define CIL_shl(...) CIL_undefined()
 #define CIL_shr(...) CIL_undefined()
 #define CIL_shr__un(...) CIL_undefined()
@@ -332,12 +334,10 @@ void CIL_ldtoken_static_field_dispatch(void*, enum CIL_Type, int);
 #define CIL_ldnull(...) push_pointer(0)
 
 //exceptions
-#define CIL_throw() { void* lbl = throw_dispatch(boundExceptions); if (lbl == 0) { callstack_pop(); return (void*)1; } else GOTO_LABEL_ADDRESS(lbl); }
+#define CIL_throw() exception_throw()
+#define CIL_rethrow(...) exception_rethrow()
 #define CIL_leave__s(label) exception_leave(label)
-#define CIL_endfinally() {\
-	uintptr_t p = pop_pointer();\
-	GOTO_LABEL_ADDRESS(p);\
-}
+#define CIL_endfinally() exception_endfinally()
 
 #define CIL_castclass(type) { if (!CIL_castclass_dispatch(#type)) { throw_InvalidCastException(); } }
 int CIL_castclass_dispatch(const char*);
