@@ -9,6 +9,11 @@ namespace System
     public class Console
     {
         [Poly.Internals.CompilerImplemented.InlineCode(@"
+            printf(""%c\n"", parameter0);
+        ")]
+        public static void WriteLine(char value) { }
+
+        [Poly.Internals.CompilerImplemented.InlineCode(@"
             printf(""%i\n"", parameter0);
         ")]
         public static void WriteLine(int value) { }

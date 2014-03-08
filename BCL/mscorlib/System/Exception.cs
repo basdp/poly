@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace System
 {
-    class Exception
+    class __Exception
     {
         public string Message { get; set; }
         public string HelpLink { get; set; }
@@ -17,12 +17,12 @@ namespace System
         public string Source { get; set; }
         public virtual string StackTrace { get; private set; }
 
-        public Exception()
+        public __Exception()
         {
             this.StackTrace = "(unknown)";
         }
 
-        public Exception(string message)
+        public __Exception(string message)
         {
             this.StackTrace = "(unknown)";
             this.Message = message;
@@ -35,21 +35,29 @@ namespace System
 
         protected void InitStackTrace()
         {
-            this.StackTrace = Environment.StackTrace;
-            //string stacktrace = Environment.StackTrace;
-            //this.StackTrace = stacktrace.Substring(stacktrace.IndexOf("\n") + 1);
+            //this.StackTrace = Environment.StackTrace;
+            string stacktrace = Environment.StackTrace;
+            this.StackTrace = stacktrace.Substring(stacktrace.IndexOf("\n") + 1);
         }
     }
 
-    class __NotImplementedException : Exception
+    class __NotImplementedException : __Exception
     {
 
     }
-    class __NullReferenceException : Exception
+    class __NullReferenceException : __Exception
     {
 
     }
-    class __InvalidCastException : Exception
+    class __InvalidCastException : __Exception
+    {
+
+    }
+    class __IndexOutOfRangeException : __Exception
+    {
+
+    }
+    class __ArgumentOutOfRangeException : __Exception
     {
 
     }

@@ -63,6 +63,7 @@ extern struct SYSTEM__OBJECT_proto *lastThrownException;
 #define exception_rethrow() { push_pointer((uintptr_t)lastThrownException); exception_throw_withInitStackTrace(0) }
 
 #define exception_throw_withInitStackTrace(initStackTrace) { \
+	if (DEBUG_EXCEPTIONS) { printf("in %s -> %s:%d\n", __FUNCTION__, __FILE__, __LINE__); } \
 	int removedBoundExceptions; \
 	void* lbl = throw_dispatch(boundExceptions, &removedBoundExceptions, initStackTrace); \
 	if (DEBUG_EXCEPTIONS && removedBoundExceptions > 0) printf("Removed %d from bound exceptions\n", removedBoundExceptions);\
@@ -114,6 +115,26 @@ extern struct SYSTEM__OBJECT_proto *lastThrownException;
 	}\
 	GOTO_LABEL_ADDRESS(p); \
 }
+
+// System.NullReferenceException
+extern void* m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C();
+extern char* m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C_sig;
+#define throw_NullReferenceException() { CIL_newobj(System__NullReferenceException, m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C); CIL_throw(); } 
+
+// System.InvalidCastException
+extern void* mB71A0D21D024AF44637A268806CE99358D389355();
+extern char* mB71A0D21D024AF44637A268806CE99358D389355_sig;
+#define throw_InvalidCastException() { CIL_newobj(System__InvalidCastException, mB71A0D21D024AF44637A268806CE99358D389355); CIL_throw(); } 
+
+// System.IndexOutOfRangeException
+extern void* m3C46C87472BC1C0212B9B21367868D11FCC940BB();
+extern char* m3C46C87472BC1C0212B9B21367868D11FCC940BB_sig;
+#define throw_IndexOutOfRangeException() { CIL_newobj(System__IndexOutOfRangeException, m3C46C87472BC1C0212B9B21367868D11FCC940BB); CIL_throw(); } 
+
+// System.ArgumentOutOfRangeException
+extern void* mD81A01BD2EAF4E0554E7E00022DA8393DA63979F();
+extern char* mD81A01BD2EAF4E0554E7E00022DA8393DA63979F_sig;
+#define throw_ArgumentOutOfRangeException() { CIL_newobj(System__ArgumentOutOfRangeException, mD81A01BD2EAF4E0554E7E00022DA8393DA63979F); CIL_throw(); } 
 
 void* throw_dispatch(int, int*, int);
 void exceptionstack_push(struct ExceptionHandler eh);

@@ -211,11 +211,6 @@ void CIL_ldstr(const char*);
 
 #define CIL_pop() pop()
 
-extern void* m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C();
-extern char* m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C_sig;
-#define throw_NullReferenceException() { CIL_newobj(System__NullReferenceException, m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C); CIL_throw(); } 
-#define throw_InvalidCastException() { CIL_newobj(System__InvalidCastException, m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C); CIL_throw(); } 
-
 #define CIL_ldfld(type, name) { intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } \
 	else if (sizeof(((struct type*)self)->  name) == 4) { push_value32( ((struct type*)self)-> name, type ## _f_ ## name ## __type ); }  \
 							else if (sizeof(((struct type*)self)->  name) == 8) { push_value64( ((struct type*)self)-> name, type ## _f_ ## name ## __type ); }  \

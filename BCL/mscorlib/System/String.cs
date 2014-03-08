@@ -6,6 +6,8 @@
     {
         // DO NOT ADD FIELDS OR PROPERTIES!!!
 
+        // TODO: String is array of UTF16 (2 byte) chars
+
         __String() { }
 
         [Poly.Internals.CompilerImplemented.InlineCode(@"
@@ -143,6 +145,60 @@
         public override int GetHashCode()
         { return 0; }
 
+        public int IndexOf(string str)
+        {
+            int len = this.get_Length();
+            int mlen = str.Length;
+            for (int i = 0; i <= len - mlen; i++)
+            {
+                int j = 0;
+                while (this.get_Chars(i + j) == str[j]) {
+                    j++;
+                    if (j == mlen) return i;
+                }
+            }
+            return -1;
+        }
+
+        public int IndexOf(char c)
+        {
+            int len = this.get_Length();
+            for (int i = 0; i < len; i++)
+            {
+                if (this.get_Chars(i) == c) return i;
+            }
+            return -1;
+        }
+
+        [Poly.Internals.CompilerImplemented.InlineCode(@"
+        struct System__String *this = (struct System__String*)parameter0;
+        int start = parameter1;
+        struct System__String *newstr;
+        CIL_newobj(System__String, SYSTEM__STRING_ctor);
+        newstr = (struct System__String *)peek_pointer(0);
+        if (this == 0) throw_NullReferenceException();
+        if (start < 0) throw_ArgumentOutOfRangeException();
+        int len = strlen(this->str);
+        if (start > len) throw_ArgumentOutOfRangeException();
+        newstr->str = (char*)malloc(len - start + 1);
+        strncpy(newstr->str, this->str + start, len - start);
+        newstr->str[len - start] = '\0';
+        CIL_ret();
+        ")]
+        public string Substring(int start)
+        { return null; }
+
+        [Poly.Internals.CompilerImplemented.InlineCode(@"
+        struct System__String *this = (struct System__String*)parameter0;
+        int i = parameter1;
+        if (i < 0 || i > strlen(this->str) - 1) {
+            throw_IndexOutOfRangeException();
+        }
+        char c = this->str[i];
+        push_value32((int32_t)c, CIL_int32);
+        ")]
+        public char get_Chars(int i)
+        { return '0'; }
 
     }
 }

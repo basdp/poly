@@ -24,6 +24,7 @@ namespace Tester
     */
     class Program
     {
+
         static void aaa(int a)
         {
             if (a < 5)
@@ -58,7 +59,7 @@ namespace Tester
         {
             try
             {
-                int a = 5;
+                int a = 4;
                 Test6(a);
             }
             catch (Exception e)

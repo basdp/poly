@@ -66,7 +66,7 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 #if DEBUG_EXCEPTIONS == 1
 		printf("(re)initialize the stack trace\n");
 #endif
-		push_pointer(exception);
+		push_pointer((uintptr_t)exception);
 		CIL_call(m38EAC9CEA38B341E4916A3737AB09F8E8CCC0394, "m38EAC9CEA38B341E4916A3737AB09F8E8CCC0394", 0, 0);
 	}
 

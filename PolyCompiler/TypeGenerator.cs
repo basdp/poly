@@ -88,7 +88,7 @@ namespace PolyCompiler
                 context.Code.AppendLine("char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses[" + baseTypes.Count + "] = {");
                 for (int i = 0; i < baseTypes.Count; i++)
                 {
-                    context.Code.Append("    \"" + baseTypes[i].FullName + "\"");
+                    context.Code.Append("    \"" + baseTypes[i].FullName.Replace(".__", ".") + "\"");
                     if (i < baseTypes.Count - 1) context.Code.Append(", ");
                     context.Code.Append("\n");
                 }
