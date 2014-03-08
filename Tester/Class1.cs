@@ -57,6 +57,8 @@ namespace Tester
 
         static void Main(string[] args)
         {
+            string str = "goedendag";
+
             try
             {
                 int a = 4;

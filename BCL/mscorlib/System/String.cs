@@ -190,6 +190,26 @@
 
         [Poly.Internals.CompilerImplemented.InlineCode(@"
         struct System__String *this = (struct System__String*)parameter0;
+        int start = parameter1;
+        int length = parameter2;
+        struct System__String *newstr;
+        CIL_newobj(System__String, SYSTEM__STRING_ctor);
+        newstr = (struct System__String *)peek_pointer(0);
+        if (this == 0) throw_NullReferenceException();
+        int origlen = strlen(this->str);
+        if (start < 0) throw_ArgumentOutOfRangeException();
+        if (length < 0) throw_ArgumentOutOfRangeException();
+        if (start + length > origlen) throw_ArgumentOutOfRangeException();
+        newstr->str = (char*)malloc(length + 1);
+        strncpy(newstr->str, this->str + start, length);
+        newstr->str[length] = '\0';
+        CIL_ret();
+        ")]
+        public string Substring(int start, int length)
+        { return null; }
+
+        [Poly.Internals.CompilerImplemented.InlineCode(@"
+        struct System__String *this = (struct System__String*)parameter0;
         int i = parameter1;
         if (i < 0 || i > strlen(this->str) - 1) {
             throw_IndexOutOfRangeException();
