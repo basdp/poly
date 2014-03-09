@@ -62,6 +62,7 @@ namespace Tester
             try
             {
                 int a = 4;
+                Console.WriteLine(a);
                 Test6(a);
             }
             catch (Exception e)

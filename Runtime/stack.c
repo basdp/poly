@@ -163,7 +163,7 @@ void print_stack() {
 		} else if (types[i] == CIL_int64) {
 			int64_t v = *((int64_t*)(items + t));
 			printf("int64\t\t"); 
-			printf("%i", v);
+			printf("%i", (int)v);
 			t += sizeof(int64_t);
 		}  else if (types[i] == CIL_float32) {
 			int32_t v = *((int32_t*)(items + t));
@@ -188,7 +188,7 @@ void print_stack() {
 			intptr_t v = *((intptr_t*)(items + t));
 			printf("pointer\t\t"); 
 			printf("0x%x\t", v);
-			printf("%s", ((struct SYSTEM__OBJECT_proto *)v)->__CILtype);
+			printf("%s", (char*)((struct SYSTEM__OBJECT_proto *)v)->__CILtype);
 			t += sizeof(intptr_t);
 		}		 
 		printf("\n");

@@ -1,0 +1,6 @@
+Runtime:
+gcc -m32  *.c -c
+ar rcs runtime.a *.o
+
+Exe:
+gcc -m32 *.c runtime.a -I ../Runtime -o tester

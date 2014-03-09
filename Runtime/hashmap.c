@@ -65,7 +65,7 @@ unsigned int hashmap_hash_int(hashmap_map * m, unsigned int key){
 	key ^= (key >> 12);
 
 	/* Knuth's Multiplicative Method */
-	key = (key >> 3) * 2654435761;
+	key = (key >> 3) * 2654435761u;
 
 	return key % m->table_size;
 }
@@ -340,7 +340,7 @@ int hashmap_length(map_t in){
 }
 
 int hashmap_print_item(any_t tag, any_t data, const char* key) {
-	printf("%s\t0x%x\n", key, data);
+	printf("%s\t0x%x\n", key, (unsigned int)data);
 	return 0;
 }
 

@@ -1,8 +1,11 @@
 #pragma once
+#include <stdio.h>
+#include <string.h>
+#include <stdint.h>
+
 #include "hashmap.h"
-#include "opcodes.h"
-#include "exceptions.h"
-#include "callstack.h"
+#include "stack.h"
+#include "shims.h"
 
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS
@@ -63,3 +66,7 @@ struct SYSTEM__RUNTIMEFIELDHANDLE_proto {
 	enum CIL_Type type;
 	int size;
 };
+
+#include "opcodes.h"
+#include "exceptions.h"
+#include "callstack.h"
