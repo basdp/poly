@@ -78,4 +78,4 @@ extern int hashmap_length(map_t in);
  */
 extern void hashmap_print(map_t map);
 
-#endif __HASHMAP_H__
+#endif // __HASHMAP_H__

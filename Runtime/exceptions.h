@@ -50,6 +50,11 @@ struct ExceptionHandler {
 #define GOTO_LABEL_ADDRESS(var) __asm { jmp var }
 #endif
 
+#ifdef __GNUC__
+#define STORE_LABEL_ADDRESS(var, label) var = &&label
+#define GOTO_LABEL_ADDRESS(var) goto *(var)
+#endif
+
 // TODO: GCC http://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html
 #ifndef STORE_LABEL_ADDRESS
 #error STORE_LABEL_ADDRESS needs to be defined for this compiler

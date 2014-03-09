@@ -69,6 +69,7 @@
     <ClInclude Include="opcodes.h" />
     <ClInclude Include="polyruntime.h" />
     <ClInclude Include="runtime.h" />
+    <ClInclude Include="shims.h" />
     <ClInclude Include="stack.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />

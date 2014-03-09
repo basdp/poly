@@ -6,7 +6,8 @@ int object_is_type_or_subtype(struct SYSTEM__OBJECT_proto *object, const char* t
 	//printf("object_is_type_or_subtype '%s' == '%s'\n", object->__CILtype, type);
 	if (strcmp(type, (char*)object->__CILtype) == 0)
 		return 1;
-	for (int i = 0; i < *(object->__CILbaseclasses_length); i++) {
+	int i;
+	for (i = 0; i < *(object->__CILbaseclasses_length); i++) {
 		if (strcmp(type, ((char**)object->__CILbaseclasses)[i]) == 0)
 			return 1;
 	}

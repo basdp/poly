@@ -36,7 +36,7 @@ void print_exceptionstack() {
 			printf("%d\t%p\t \t(finally)\n", i, items[i].labelAddress);
 		}
 		else {
-			printf("(unknown)\n", i, items[i].labelAddress);
+			printf("(unknown)\n");
 		}
 	}
 	printf("\n");
