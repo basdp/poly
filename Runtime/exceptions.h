@@ -55,11 +55,8 @@ struct ExceptionHandler {
 #define GOTO_LABEL_ADDRESS(var) goto *(var)
 #endif
 
-// TODO: GCC http://gcc.gnu.org/onlinedocs/gcc/Labels-as-Values.html
 #ifndef STORE_LABEL_ADDRESS
 #error STORE_LABEL_ADDRESS needs to be defined for this compiler
-//#  define STORE_ADDRESS(index,label) data[index] = &&label
-//#  define JUMP_TO_IP() goto **(ip++)
 #endif
 
 extern struct SYSTEM__OBJECT_proto *lastThrownException;
