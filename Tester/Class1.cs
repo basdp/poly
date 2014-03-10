@@ -1,45 +1,126 @@
 ﻿using System;
+using System.Threading;
+using System.Reflection;
+
+class I
+{
+
+    public delegate string GetTextFn(string a);
+
+    static public GetTextFn GetText;
+
+    static string fn(string s)
+    {
+        return "(" + s + ")";
+    }
+
+    static I()
+    {
+        GetText = new GetTextFn(fn);
+    }
+}
+
 class X
 {
-    public static int Main(string[] args)
-    {
-        string a = "hello";
-        string b = "1";
-        string c = a + b;
-        string d = a + 1;
-        string y;
 
-        if (c != d)
+    public delegate int Foo(int i, int j);
+
+    private void Thread_func()
+    {
+        Console.WriteLine("Inside the thread !");
+    }
+
+    public int Func(int i, int j)
+    {
+        return i + j;
+    }
+
+    public void Bar()
+    {
+        Foo my_func = new Foo(Func);
+
+        int result = my_func(2, 4);
+
+        Console.WriteLine("Answer is : " + result);
+    }
+
+    static bool MyFilter(MemberInfo mi, object criteria)
+    {
+        Console.WriteLine("You passed in : " + criteria);
+        return true;
+    }
+
+    public static int Main()
+    {
+        I.GetTextFn _ = I.GetText;
+
+        Console.WriteLine("Value: " + I.GetText);
+        X x = new X();
+
+        Thread thr = new Thread(new ThreadStart(x.Thread_func));
+
+        thr.Start();
+        Console.WriteLine("Inside main ");
+        thr.Join();
+
+        Console.WriteLine(_("Hello"));
+
+        x.Bar();
+
+        MemberFilter filter = new MemberFilter(MyFilter);
+
+        Type t = x.GetType();
+
+        MemberInfo[] mi = t.FindMembers(MemberTypes.Method, BindingFlags.Static | BindingFlags.NonPublic,
+                          Type.FilterName, "MyFilter");
+
+        Console.WriteLine("FindMembers called, mi = " + mi);
+        Console.WriteLine("   Count: " + mi.Length);
+        if (!filter(mi[0], "MyFilter"))
             return 1;
-        if (d != (a + b))
-            return 2;
-        if (d != x(a, b))
-            return 3;
-        if (d != x(a, 1))
-            return 4;
 
-        y = c == d ? "equal" : "not-equal";
-        if (y != "equal")
-            return 5;
-        y = b == a ? "oops" : "nice";
-        if (y != "nice")
-            return 6;
+        //
+        // This test is used to call into a delegate defined in a separate
+        // namespace, but which is still not a nested delegate inside a class
+        //
+        NameSpace.TestDelegate td = new NameSpace.TestDelegate(multiply_by_three);
 
-        string[] blah = { "A" + 'B' + "C" };
-        if (blah[0] != "ABC")
-            return 7;
+        if (td(8) != 24)
+            return 30;
 
-        Console.WriteLine(c);
-        return 200;
+        //
+        // Check the names that were used to define the delegates
+        //
+        if (td.GetType().FullName != "NameSpace.TestDelegate")
+            return 31;
+
+        if (_.GetType().FullName != "I+GetTextFn")
+            return 32;
+
+        Console.WriteLine("Test passes");
+
+        return 0;
     }
 
-    static string s(string a, int o)
+    static int multiply_by_three(int v)
     {
-        return a + o;
-    }
-    static string x(string s, object o)
-    {
-        return s + o;
+        return v * 3;
     }
 
+}
+
+namespace NameSpace
+{
+
+    public delegate int TestDelegate(int a);
+
+}
+
+
+namespace TestNamespace
+{
+    public class TestClass
+    {
+        public delegate float NotWorkingDelegate(float point, params object[] hiddenParams);
+    }
 }

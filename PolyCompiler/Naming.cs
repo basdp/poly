@@ -5,6 +5,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reflection;
 
 namespace PolyCompiler
 {
@@ -26,6 +27,11 @@ namespace PolyCompiler
             {
                 sig += "__" + p.ParameterType.FullName.Replace(".__", ".");
             }
+
+            MethodInfo mi = m as MethodInfo;
+            if (mi != null) 
+                sig = mi.ReturnType.FullName + "__" + sig;
+
 
             System.Text.ASCIIEncoding encoder = new System.Text.ASCIIEncoding();
             string ret = "m" + BitConverter.ToString(sha.ComputeHash(encoder.GetBytes(sig))).Replace("-", "");

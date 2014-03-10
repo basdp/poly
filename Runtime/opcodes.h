@@ -104,16 +104,8 @@ void CIL_ldstr(const char*);
 #define CIL_blt__un__s(...) CIL_undefined()
 #define CIL_bne(...) CIL_undefined()
 #define CIL_bne__s(...) CIL_undefined()
-#define CIL_bne__un(...) CIL_undefined()
-#define CIL_bne__un__s(...) CIL_undefined()
-#define CIL_brfalse(...) CIL_undefined()
-#define CIL_brfalse__s(...) CIL_undefined()
 #define CIL_brinst(...) CIL_undefined()
 #define CIL_brinst__s(...) CIL_undefined()
-#define CIL_brnull(...) CIL_undefined()
-#define CIL_brnull__s(...) CIL_undefined()
-#define CIL_brzero(...) CIL_undefined()
-#define CIL_brzero__s(...) CIL_undefined()
 #define CIL_calli(...) CIL_undefined()
 #define CIL_castcall(...) CIL_undefined()
 #define CIL_cgt__un(...) CIL_undefined()
@@ -340,8 +332,17 @@ void CIL_ldtoken_static_field_dispatch(void*, enum CIL_Type, int);
 
 #define CIL_dup() stack_duplicate_top()
 
-#define CIL_brtrue(...) CIL_undefined()
-#define CIL_brtrue__s(branch) { int32_t value = pop_value32(); if (value != 0) goto branch; }
+// TODO: for 64 bit: should check the size of the top value on the stack for 64 bit
+#define CIL_brtrue(target) { int32_t value = pop_value32(); if (value != 0) goto target; }
+#define CIL_brtrue__s(target) CIL_brtrue(target)
+#define CIL_brfalse(target) { int32_t value = pop_value32(); if (value == 0) goto target; }
+#define CIL_brfalse__s(target) CIL_brfalse(target)
+#define CIL_brnull(target) CIL_brfalse(target)
+#define CIL_brnull__s(target) CIL_brfalse(target)
+#define CIL_brzero(target) CIL_brfalse(target)
+#define CIL_brzero__s(target) CIL_brfalse(target)
+#define CIL_bne__un(target) { CIL_ceq(); CIL_brfalse(target); }
+#define CIL_bne__un__s(target) CIL_bne__un(target)
 
 #define CIL_ldnull(...) push_pointer(0)
 

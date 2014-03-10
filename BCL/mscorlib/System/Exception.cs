@@ -61,4 +61,12 @@ namespace System
     {
 
     }
+
+    class __ArgumentException : __Exception
+    {
+        __ArgumentException(string message)
+        {
+            this.Message = message;
+        }
+    }
 }

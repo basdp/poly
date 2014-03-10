@@ -28,8 +28,7 @@ namespace PolyCompiler
                         // If not marked BeforeFieldInit then that type’s initializer method is executed at (i.e., is triggered by):
                         /*  a. first access to any static field of that type, or 
                             b. first invocation of any static method of that type, or 
-                            c. first invocation of any instance or virtual method of that type if it is a value 
-                            type or 
+                            c. first invocation of any instance or virtual method of that type if it is a value type or 
                             d. first invocation of any constructor for that type. */
 
                         throw new NotImplementedException();

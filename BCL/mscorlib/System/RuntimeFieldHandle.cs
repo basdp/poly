@@ -9,8 +9,8 @@ namespace System
     [Poly.Internals.CompilerImplemented.StructureCode(@"intptr_t addr;
     enum CIL_Type type;
     int size;")]
-    class RuntimeFieldHandle
+    class __RuntimeFieldHandle
     {
-        RuntimeFieldHandle() { }
+        __RuntimeFieldHandle() { }
     }
 }

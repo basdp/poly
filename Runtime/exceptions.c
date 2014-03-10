@@ -43,11 +43,11 @@ void print_exceptionstack() {
 }
 
 // System.Exception::ToString()
-extern void * mFA7CAC02617528CA7AC2E4A268BEF2AA5656C218();
-extern char * mFA7CAC02617528CA7AC2E4A268BEF2AA5656C218_sig;
+extern void * mAF915A59A72145069E6562E6C996D1A7DE3D1BBC();
+extern char * mAF915A59A72145069E6562E6C996D1A7DE3D1BBC_sig;
 // System.Exception::InitStackTrace()
-extern char* m38EAC9CEA38B341E4916A3737AB09F8E8CCC0394_sig;;
-extern void *m38EAC9CEA38B341E4916A3737AB09F8E8CCC0394();
+extern char* mCD4230286DD9DEFCC5EFCF854EBB6049454ED123_sig;;
+extern void *mCD4230286DD9DEFCC5EFCF854EBB6049454ED123();
 
 
 void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initStackTrace) {
@@ -67,7 +67,7 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 		printf("(re)initialize the stack trace\n");
 #endif
 		push_pointer((uintptr_t)exception);
-		CIL_call(m38EAC9CEA38B341E4916A3737AB09F8E8CCC0394, "m38EAC9CEA38B341E4916A3737AB09F8E8CCC0394", 0, 0);
+		CIL_call(mCD4230286DD9DEFCC5EFCF854EBB6049454ED123, "m38EAC9CEA38B341E4916A3737AB09F8E8CCC0394", 0, 0);
 	}
 
 	struct ExceptionHandler eh;
@@ -79,7 +79,7 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 			printf("Uncaught Exception: ");
 
 			push_pointer((uintptr_t)exception);
-			CIL_callvirt_unsafe(mFA7CAC02617528CA7AC2E4A268BEF2AA5656C218, "m1DBC7385BADBFDA548FB27E2160A33CF32C0F545", 0, 1); // Exception.ToString();
+			CIL_callvirt_unsafe(mAF915A59A72145069E6562E6C996D1A7DE3D1BBC, "m1DBC7385BADBFDA548FB27E2160A33CF32C0F545", 0, 1); // Exception.ToString();
 			char *excmess = CIL_getCStringFromSystemString(pop_pointer());
 			printf("%s\n", excmess);
 			// TODO: should probably execute all finally blocks
