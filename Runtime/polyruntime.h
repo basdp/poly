@@ -35,6 +35,8 @@ struct SYSTEM__OBJECT_proto {
 	intptr_t __CILtype;
 	intptr_t __CILbaseclasses;
 	int* __CILbaseclasses_length;
+	intptr_t __CILbaseinterfaces;
+	int* __CILbaseinterfaces_length;
 };
 
 #define SYSTEM__STRING_ctor m8D858A38DA1EA05CB64209432DD7505A8FE82943
@@ -57,7 +59,15 @@ struct SYSTEM__INT32_proto {
 	int32_t value;
 };
 
-#define SYSTEM__RUNTIMEFIELDHANDLE_ctor m7531E3B8253211639BBBDB1FFB6E188D5A984775
+#define SYSTEM__CHAR_ctor mF3EA68989C5CDF2CD019A151716D4F3CCDB873A6
+#define SYSTEM__CHAR_ctor_sig "System.Char::.ctor()"
+extern void *SYSTEM__CHAR_ctor();
+struct SYSTEM__CHAR_proto {
+	struct SYSTEM__VALUETYPE_proto __base;
+	uint16_t value;
+};
+
+#define SYSTEM__RUNTIMEFIELDHANDLE_ctor mFA12ADB043C58D9F4954F097AB47D79F03BE8E23
 #define SYSTEM__RUNTIMEFIELDHANDLE_ctor_sig "System.RuntimeFieldHandle::.ctor()" 
 extern void *SYSTEM__RUNTIMEFIELDHANDLE_ctor();
 struct SYSTEM__RUNTIMEFIELDHANDLE_proto {

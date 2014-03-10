@@ -7,6 +7,8 @@ namespace System
     intptr_t __CILtype;
     intptr_t __CILbaseclasses;
     int* __CILbaseclasses_length;
+    intptr_t __CILbaseinterfaces;
+    int* __CILbaseinterfaces_length;
     ")]
     class __Object
     {

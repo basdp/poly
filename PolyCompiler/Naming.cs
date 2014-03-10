@@ -31,37 +31,12 @@ namespace PolyCompiler
             string ret = "m" + BitConverter.ToString(sha.ComputeHash(encoder.GetBytes(sig))).Replace("-", "");
             return ConvertTypeToCName(ret.ToString());
         }
-
-        public static string GetInternalType(Type type)
+        public static string GetInternalMethodName(string name)
         {
-            switch (type.FullName)
-            {
-                case "System.Int8":
-                case "System.UInt8":
-                case "System.Byte":
-                case "System.SByte":
-                case "System.Int16":
-                case "System.UInt16":
-                case "System.Char":
-                case "System.Short":
-                case "System.UShort":
-                case "System.Int32":
-                case "System.UInt32":
-                case "System.Boolean":
-                    return "CIL_int32";
-                case "System.Int64":
-                case "System.UInt64":
-                case "System.Long":
-                case "System.ULong":
-                    return "CIL_int64";
-                case "System.Single":
-                    return "CIL_float32";
-                case "System.Double":
-                    return "CIL_float64";
-
-                default:
-                    return "CIL_pointer";
-            }
+            string sig = name;
+            System.Text.ASCIIEncoding encoder = new System.Text.ASCIIEncoding();
+            string ret = "m" + BitConverter.ToString(sha.ComputeHash(encoder.GetBytes(sig))).Replace("-", "");
+            return ConvertTypeToCName(ret.ToString());
         }
         
         public static string GetInternalFieldName(string f)

@@ -2,7 +2,7 @@
 {
     [Poly.Internals.CompilerImplemented.StructureCode(@"int32_t value;
     ")]
-    class __Int32 : __ValueType
+    class __Int32
     {
         __Int32()
         {

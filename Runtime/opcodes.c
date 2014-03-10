@@ -7,7 +7,7 @@
 #include <stdio.h>
 #include <string.h>
 
-void CIL_ldc__i4__s(int8_t s) {	push_value32(s, CIL_int32); }
+void CIL_ldc__i4__s(int8_t s) { push_value32(s, CIL_int32); }
 void CIL_ldc__i4__0() { push_value32(0, CIL_int32); }
 void CIL_ldc__i4__1() { push_value32(1, CIL_int32); }
 void CIL_ldc__i4__2() { push_value32(2, CIL_int32); }
@@ -23,6 +23,199 @@ void CIL_ldc__i4(int32_t i) { push_value32(i, CIL_int32); }
 void CIL_ldc__i8(int64_t i) { push_value64(i, CIL_int64); }
 void CIL_ldc__r4(float f) { int32_t v; memcpy(&v, &f, 4); push_value32(v, CIL_float32); }
 void CIL_ldc__r8(double d) { int64_t v; memcpy(&v, &d, 8); push_value64(v, CIL_float64); }
+
+void CIL_conv__i4() {
+	enum CIL_Type type = stack_top_type();
+	if (type == CIL_int32) {
+		// conversion to itself, do nothing
+		return;
+	}
+	else if (type == CIL_float32) {
+		int32_t v = pop_value32();
+		float f;
+		memcpy(&f, &v, 4);
+		v = (int32_t)f;
+		push_value32(v, CIL_int32);
+		return;
+	}
+	else if (type == CIL_int64) {
+		int64_t v = pop_value64();
+		int32_t r = (int32_t)v;
+		push_value32(r, CIL_int32);
+		return;
+	}
+	else if (type == CIL_native) {
+		intptr_t v = pop_pointer();
+		int32_t r = (int32_t)v;
+		push_value32(r, CIL_int32);
+		return;
+	}
+	else if (type == CIL_float64) {
+		int64_t v = pop_value64();
+		double d;
+		memcpy(&d, &v, 8);
+		int32_t i = (int32_t)d;
+		push_value32(i, CIL_int32);
+		return;
+	}
+	fprintf(stderr, "Error: conv.i4 is not supported on operand");
+}
+
+void CIL_conv__i() {
+	enum CIL_Type type = stack_top_type();
+	if (type == CIL_int32) {
+		int32_t v = pop_value32();
+		intptr_t r = (intptr_t)v;
+		push_pointer(r);
+		return;
+	}
+	else if (type == CIL_float32) {
+		int32_t v = pop_value32();
+		float f;
+		memcpy(&f, &v, 4);
+		intptr_t r = (intptr_t)f;
+		push_pointer(r);
+		return;
+	}
+	else if (type == CIL_int64) {
+		int64_t v = pop_value64();
+		intptr_t r = (intptr_t)v;
+		push_pointer(r);
+		return;
+	}
+	else if (type == CIL_native) {
+		// conversion to itself, do nothing
+		return;
+	}
+	else if (type == CIL_float64) {
+		int64_t v = pop_value64();
+		double d;
+		memcpy(&d, &v, 8);
+		intptr_t r = (intptr_t)d;
+		push_pointer(r);
+		return;
+	}
+	fprintf(stderr, "Error: conv.i4 is not supported on operand");
+}
+
+void CIL_conv__i1() {
+	enum CIL_Type type = stack_top_type();
+	if (type == CIL_int32) {
+		int32_t v = pop_value32();
+		int8_t r = (int8_t)v;
+		push_value32(r, CIL_int32);
+		return;
+	}
+	else if (type == CIL_float32) {
+		int32_t v = pop_value32();
+		float f;
+		memcpy(&f, &v, 4);
+		int8_t r = (int8_t)f;
+		v = r;
+		push_value32(v, CIL_int32);
+		return;
+	}
+	else if (type == CIL_int64) {
+		int64_t v = pop_value64();
+		int32_t r = (int8_t)v;
+		push_value32(r, CIL_int32);
+		return;
+	}
+	else if (type == CIL_native) {
+		intptr_t v = pop_pointer();
+		int32_t r = (int8_t)v;
+		push_value32(r, CIL_int32);
+		return;
+	}
+	else if (type == CIL_float64) {
+		int64_t v = pop_value64();
+		double d;
+		memcpy(&d, &v, 8);
+		int8_t r = (int8_t)d;
+		int32_t i = r;
+		push_value32(i, CIL_int32);
+		return;
+	}
+	fprintf(stderr, "Error: conv.i4 is not supported on operand");
+}
+
+void CIL_conv__i2() {
+	enum CIL_Type type = stack_top_type();
+	if (type == CIL_int32) {
+		int32_t v = pop_value32();
+		int16_t r = (int16_t)v;
+		push_value32(r, CIL_int32);
+		return;
+	}
+	else if (type == CIL_float32) {
+		int32_t v = pop_value32();
+		float f;
+		memcpy(&f, &v, 4);
+		int16_t r = (int16_t)f;
+		v = r;
+		push_value32(v, CIL_int32);
+		return;
+	}
+	else if (type == CIL_int64) {
+		int64_t v = pop_value64();
+		int32_t r = (int16_t)v;
+		push_value32(r, CIL_int32);
+		return;
+	}
+	else if (type == CIL_native) {
+		intptr_t v = pop_pointer();
+		int32_t r = (int16_t)v;
+		push_value32(r, CIL_int32);
+		return;
+	}
+	else if (type == CIL_float64) {
+		int64_t v = pop_value64();
+		double d;
+		memcpy(&d, &v, 8);
+		int16_t r = (int16_t)d;
+		int32_t i = r;
+		push_value32(i, CIL_int32);
+		return;
+	}
+	fprintf(stderr, "Error: conv.i4 is not supported on operand");
+}
+
+void CIL_conv__i8() {
+	enum CIL_Type type = stack_top_type();
+	if (type == CIL_int32) {
+		int32_t v = pop_value32();
+		int64_t r = (int64_t)v;
+		push_value64(r, CIL_int64);
+		return;
+	}
+	else if (type == CIL_float32) {
+		int32_t v = pop_value32();
+		float f;
+		memcpy(&f, &v, 4);
+		int64_t r = (int64_t)f;
+		push_value64(r, CIL_int64);
+		return;
+	}
+	else if (type == CIL_int64) {
+		// conversion to itself, do nothing
+		return;
+	}
+	else if (type == CIL_native) {
+		intptr_t v = pop_pointer();
+		int64_t r = (int64_t)v;
+		push_value64(r, CIL_int64);
+		return;
+	}
+	else if (type == CIL_float64) {
+		int64_t v = pop_value64();
+		double d;
+		memcpy(&d, &v, 8);
+		v = (intptr_t)d;
+		push_value64(v, CIL_int64);
+		return;
+	}
+	fprintf(stderr, "Error: conv.i4 is not supported on operand");
+}
 
 void CIL_conv__r4() {
 	enum CIL_Type type = stack_top_type();
@@ -67,42 +260,48 @@ void CIL_conv__r4() {
 	fprintf(stderr, "Error: conv.r4 is not supported on operand");
 }
 
-void CIL_conv__i4() {
+void CIL_conv__r8() {
 	enum CIL_Type type = stack_top_type();
 	if (type == CIL_int32) {
-		// conversion to itself, do nothing
+		int32_t v = pop_value32();
+		double f = (double)v;
+		int64_t v2;
+		memcpy(&v2, &f, 8);
+		push_value64(v2, CIL_float64);
 		return;
 	}
 	else if (type == CIL_float32) {
 		int32_t v = pop_value32();
+		double d;
 		float f;
+		int64_t r;
 		memcpy(&f, &v, 4);
-		v = (int32_t)f;
-		push_value32(v, CIL_int32);
+		d = f;
+		memcpy(&r, &d, 8);
+		push_value64(r, CIL_float64);
 		return;
 	}
 	else if (type == CIL_int64) {
 		int64_t v = pop_value64();
-		int32_t r = (int32_t)v;
-		push_value32(r, CIL_int32);
+		double f = (double)v;
+		memcpy(&v, &f, 8);
+		push_value64(v, CIL_float64);
 		return;
 	}
 	else if (type == CIL_native) {
 		intptr_t v = pop_pointer();
-		int32_t r = (int32_t)v;
-		push_value32(r, CIL_int32);
+		double d = (double)v;
+		int64_t r;
+		memcpy(&r, &d, 8);
+		push_value64(r, CIL_float64);
 		return;
 	}
 	else if (type == CIL_float64) {
-		int64_t v = pop_value64();
-		double d;
-		memcpy(&d, &v, 8);
-		int32_t i = (int32_t)d;
-		push_value32(i, CIL_int32);
 		return;
 	}
-	fprintf(stderr, "Error: conv.i4 is not supported on operand");
+	fprintf(stderr, "Error: conv.r8 is not supported on operand");
 }
+
 
 int CIL_call_dispatch(void* (*func)()) {
 	// TODO: callstack_push() should be only called from here
@@ -114,7 +313,7 @@ int CIL_call_dispatch(void* (*func)()) {
 }
 
 int CIL_callvirt_dispatch(const char *symbol, unsigned int nparams, void* (*func)(), int isvirtual) {
-	uintptr_t object; 
+	uintptr_t object;
 	map_t symboltable;
 	int ret;
 
@@ -132,64 +331,102 @@ int CIL_callvirt_dispatch(const char *symbol, unsigned int nparams, void* (*func
 }
 
 #define OPERATOR(name, op) void CIL_ ## name () {\
-	enum CIL_Type typeb = stack_top_type();\
+enum CIL_Type typeb = stack_top_type();\
 	if (typeb == CIL_int32) {\
-		int32_t b = pop_value32();\
-		enum CIL_Type typea = stack_top_type();\
-		if (typea == CIL_int32) {\
-			int32_t a = pop_value32();\
-			push_value32(a op b, CIL_int32);\
-			return;\
-		} else if (typea == CIL_native) {\
-			intptr_t a = pop_pointer();\
-			push_pointer(a op b);\
-			return;\
-		}\
-	} else if (typeb == CIL_int64) {\
-		int64_t b = pop_value64();\
-		enum CIL_Type typea = stack_top_type();\
-		if (typea == CIL_int64) {\
-			int64_t a = pop_value64();\
-			push_value64(a op b, CIL_int64);\
-			return;\
-		}\
-	} else if (typeb == CIL_native) {\
-		int32_t b = pop_value32();\
-		enum CIL_Type typea = stack_top_type();\
-		if (typea == CIL_int32) {\
-			int32_t a = pop_value32();\
-			push_pointer(a op b);\
-			return;\
-		} else if (typea == CIL_native) {\
-			intptr_t a = pop_pointer();\
-			push_pointer(a op b);\
-			return;\
-		}\
-	} else if (typeb == CIL_float32) {\
-		int32_t b = pop_value32();\
-		enum CIL_Type typea = stack_top_type();\
-		float bf; memcpy(&bf, &b, 4);\
-		if (typea == CIL_float32) {\
-			int32_t a = pop_value32();\
-			float af; memcpy(&af, &a, 4);\
-			af = af op bf;\
-			memcpy(&a, &af, 4);\
-			push_value32(a, CIL_float32);\
-			return;\
-		}\
-	} else if (typeb == CIL_float64) {\
-		int64_t b = pop_value64();\
-		enum CIL_Type typea = stack_top_type();\
-		double bd; memcpy(&bd, &b, 8);\
-		if (typea == CIL_float64) {\
-			int64_t a = pop_value64();\
-			double ad; memcpy(&ad, &a, 8);\
-			ad = ad op bd;\
-			memcpy(&a, &ad, 8);\
-			push_value64(a, CIL_float64);\
-			return;\
-		}\
+	int32_t b = pop_value32();\
+enum CIL_Type typea = stack_top_type();\
+	if (typea == CIL_int32) {\
+	int32_t a = pop_value32();\
+	push_value32(a op b, CIL_int32);\
+	return;\
+	} else if (typea == CIL_native) {\
+	intptr_t a = pop_pointer();\
+	push_pointer(a op b);\
+	return;\
 	}\
+	} else if (typeb == CIL_int64) {\
+	int64_t b = pop_value64();\
+enum CIL_Type typea = stack_top_type();\
+	if (typea == CIL_int64) {\
+	int64_t a = pop_value64();\
+	push_value64(a op b, CIL_int64);\
+	return;\
+	}\
+	} else if (typeb == CIL_native) {\
+	int32_t b = pop_value32();\
+enum CIL_Type typea = stack_top_type();\
+	if (typea == CIL_int32) {\
+	int32_t a = pop_value32();\
+	push_pointer(a op b);\
+	return;\
+	} else if (typea == CIL_native) {\
+	intptr_t a = pop_pointer();\
+	push_pointer(a op b);\
+	return;\
+	}\
+} else if (typeb == CIL_float32) {\
+	int32_t b = pop_value32();\
+enum CIL_Type typea = stack_top_type();\
+	float bf; memcpy(&bf, &b, 4);\
+	if (typea == CIL_float32) {\
+	int32_t a = pop_value32();\
+	float af; memcpy(&af, &a, 4);\
+	af = af op bf;\
+	memcpy(&a, &af, 4);\
+	push_value32(a, CIL_float32);\
+	return;\
+	}\
+} else if (typeb == CIL_float64) {\
+	int64_t b = pop_value64();\
+enum CIL_Type typea = stack_top_type();\
+	double bd; memcpy(&bd, &b, 8);\
+	if (typea == CIL_float64) {\
+	int64_t a = pop_value64();\
+	double ad; memcpy(&ad, &a, 8);\
+	ad = ad op bd;\
+	memcpy(&a, &ad, 8);\
+	push_value64(a, CIL_float64);\
+	return;\
+	}\
+}\
+	fprintf(stderr, "Error: " #name " is not supported on these operands");\
+}
+
+#define OPERATOR_INT(name, op) void CIL_ ## name () {\
+enum CIL_Type typeb = stack_top_type();\
+	if (typeb == CIL_int32) {\
+	int32_t b = pop_value32();\
+enum CIL_Type typea = stack_top_type();\
+	if (typea == CIL_int32) {\
+	int32_t a = pop_value32();\
+	push_value32(a op b, CIL_int32);\
+	return;\
+	} else if (typea == CIL_native) {\
+	intptr_t a = pop_pointer();\
+	push_pointer(a op b);\
+	return;\
+	}\
+	} else if (typeb == CIL_int64) {\
+	int64_t b = pop_value64();\
+enum CIL_Type typea = stack_top_type();\
+	if (typea == CIL_int64) {\
+	int64_t a = pop_value64();\
+	push_value64(a op b, CIL_int64);\
+	return;\
+	}\
+	} else if (typeb == CIL_native) {\
+	int32_t b = pop_value32();\
+enum CIL_Type typea = stack_top_type();\
+	if (typea == CIL_int32) {\
+	int32_t a = pop_value32();\
+	push_pointer(a op b);\
+	return;\
+	} else if (typea == CIL_native) {\
+	intptr_t a = pop_pointer();\
+	push_pointer(a op b);\
+	return;\
+	}\
+}\
 	fprintf(stderr, "Error: " #name " is not supported on these operands");\
 }
 
@@ -197,19 +434,20 @@ OPERATOR(add, +);
 OPERATOR(sub, -);
 OPERATOR(mul, *);
 OPERATOR(div, /);
+OPERATOR_INT(rem, %);
 
 /*
 void CIL_ceq() {
-	int32_t value2 = pop_value32();
-	int32_t value1 = pop_value32();
-	if (value1 == value2) {
-		push_value32(1, CIL_int32);
-	}
-	else {
-		push_value32(0, CIL_int32);
-	}
+int32_t value2 = pop_value32();
+int32_t value1 = pop_value32();
+if (value1 == value2) {
+push_value32(1, CIL_int32);
+}
+else {
+push_value32(0, CIL_int32);
+}
 
-	// TODO: For floating-point numbers, ceq will return 0 if the numbers are unordered (either or both are NaN). The infinite values are equal to themselves. 
+// TODO: For floating-point numbers, ceq will return 0 if the numbers are unordered (either or both are NaN). The infinite values are equal to themselves.
 }*/
 
 
@@ -283,6 +521,39 @@ COMPARER(ceq, ==);
 COMPARER(clt, <);
 COMPARER(cgt, >);
 
+#define UNARY_INT(name, op) void CIL_ ## name() { \
+	enum CIL_Type type = stack_top_type(); \
+	if (type == CIL_int32) { \
+		int32_t v = pop_value32(); \
+		v = op v; \
+		push_value32(v, CIL_int32); \
+		return; \
+	} \
+	else if (type == CIL_int64) { \
+		int64_t v = pop_value64(); \
+		v = op v; \
+		push_value64(v, CIL_int64); \
+		return; \
+	} \
+	else if (type == CIL_pointer) { \
+		intptr_t v = pop_pointer(); \
+		v = op v; \
+		push_pointer(v); \
+		return; \
+	} \
+	else if (type == CIL_native) { \
+		intptr_t v = pop_pointer(); \
+		v = op v; \
+		push_pointer(v); \
+		return; \
+	} \
+	fprintf(stderr, "Error: " #name " is not supported on these operands"); \
+}
+
+UNARY_INT(not, ~);
+UNARY_INT(neg, -); // TODO: neg kan ook op float
+
+
 void CIL_ldstr(const char* str) {
 	struct SYSTEM__STRING_proto *strobj;
 	CIL_newobj(SYSTEM__STRING_proto, SYSTEM__STRING_ctor);
@@ -305,6 +576,18 @@ void CIL_box_dispatch(const char* type) {
 		obj->value = val;
 		return;
 	}
+	else if (strcmp(type, "System.Char") == 0) {
+		struct SYSTEM__CHAR_proto *obj;
+		int32_t val = pop_value32();
+		CIL_newobj(SYSTEM__CHAR_proto, SYSTEM__CHAR_ctor);
+		obj = (struct SYSTEM__CHAR_proto *)peek_pointer(0);
+		obj->value = (uint16_t)val;
+		return;
+	}
+	else {
+		// box a valuetype
+		return;
+	}
 
 	fprintf(stderr, "Error: Can not box to type %s!\n", type);
 	exit(1);
@@ -324,35 +607,39 @@ void CIL_newarr_dispatch(const char* type) {
 		strcmp(type, "System.UShort") == 0 ||
 		strcmp(type, "System.UInt32") == 0 ||
 		strcmp(type, "System.Boolean") == 0
-	) {
+		) {
 		intptr_t arr = (intptr_t)calloc(numElems + 2, 4);
 		((int32_t*)arr)[0] = numElems;
 		((int32_t*)arr)[1] = 4; // size
 		push_pointer(arr);
 		return;
-	} else if (strcmp(type, "System.Int64") == 0 ||
+	}
+	else if (strcmp(type, "System.Int64") == 0 ||
 		strcmp(type, "System.UInt64") == 0 ||
 		strcmp(type, "System.Long") == 0 ||
-		strcmp(type, "System.ULong") == 0 
-	) {
+		strcmp(type, "System.ULong") == 0
+		) {
 		intptr_t arr = (intptr_t)calloc(numElems + 1, 8);
 		((int32_t*)arr)[0] = numElems;
 		((int32_t*)arr)[1] = 8; // size
 		push_pointer(arr);
 		return;
-	} else if (strcmp(type, "System.Single") == 0) {
+	}
+	else if (strcmp(type, "System.Single") == 0) {
 		intptr_t arr = (intptr_t)calloc(numElems + 2, 4);
 		((int32_t*)arr)[0] = numElems;
 		((int32_t*)arr)[1] = 4; // size
 		push_pointer(arr);
 		return;
-	} else if (strcmp(type, "System.Double") == 0) {
+	}
+	else if (strcmp(type, "System.Double") == 0) {
 		intptr_t arr = (intptr_t)calloc(numElems + 1, 8);
 		((int32_t*)arr)[0] = numElems;
 		((int32_t*)arr)[1] = 8; // size
 		push_pointer(arr);
 		return;
-	} else {
+	}
+	else {
 		// Object
 		intptr_t arr = (intptr_t)calloc(numElems + 2, sizeof(intptr_t));
 		((int32_t*)arr)[0] = numElems;

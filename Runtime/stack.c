@@ -10,6 +10,8 @@ static char items[MAXSTACK];
 static int ttop = EMPTYSTACK;
 static enum CIL_Type types[MAXSTACK];
 
+// TODO: checks on push and pop for size of type
+
 void push_value32(int32_t c, enum CIL_Type type) {
 	memcpy(items + top, &c, 4);
 	top += 4;

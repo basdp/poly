@@ -43,8 +43,6 @@ struct ExceptionHandler {
 	exceptionstack_push(h); \
 }
 
-//#define uregister_catch(type_name) exceptionstack_pop();
-
 #ifdef _MSC_VER
 #define STORE_LABEL_ADDRESS(var, label) __asm { mov [var], offset label }
 #define GOTO_LABEL_ADDRESS(var) __asm { jmp var }

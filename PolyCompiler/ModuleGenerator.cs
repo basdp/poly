@@ -38,7 +38,7 @@ namespace PolyCompiler
 
             foreach (var type in types)
             {
-                TypeGenerator.ProcessTypeDefinitions(type, context);
+                TypeGenerator.ProcessTypeDefinition(type, context);
             }
 
             foreach (var type in types)

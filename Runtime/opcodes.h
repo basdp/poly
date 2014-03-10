@@ -42,6 +42,8 @@ void CIL_add();
 void CIL_sub();
 void CIL_div();
 void CIL_mul();
+void CIL_rem();
+
 void CIL_ldc__i4__0();
 void CIL_ldc__i4__1();
 void CIL_ldc__i4__2();
@@ -58,17 +60,27 @@ void CIL_ldc__i4(int32_t);
 void CIL_ldc__i8(int64_t);
 void CIL_ldc__r4(float);
 void CIL_ldc__r8(double);
-void CIL_conv__r4();
+
+void CIL_conv__i();
+void CIL_conv__i1();
+void CIL_conv__i2();
+void CIL_conv__i8();
 void CIL_conv__i4();
+
+void CIL_conv__r4();
+void CIL_conv__r8();
 
 void CIL_ceq();
 void CIL_clt();
 void CIL_cgt();
 
+void CIL_not();
+void CIL_neg();
+
 char *CIL_getCStringFromSystemString(intptr_t object);
 void CIL_ldstr(const char*);
 
-#define CIL_undefined() { fprintf(stderr, __FILE__":%d\tError: a CIL opcode has not been implemented\n", __LINE__); exit(1); }
+#define CIL_undefined() { fprintf(stderr, __FILE__":%d\tError: a CIL opcode has not been implemented\n", __LINE__); exit(404); }
 
 #define CIL_add__ovf() CIL_undefined()
 #define CIL_add__ovf__un() CIL_undefined()
@@ -107,10 +119,6 @@ void CIL_ldstr(const char*);
 #define CIL_cgt__un(...) CIL_undefined()
 #define CIL_ckfinite(...) CIL_undefined()
 #define CIL_clt__un(...) CIL_undefined()
-#define CIL_conv__i(...) CIL_undefined()
-#define CIL_conv__i1(...) CIL_undefined()
-#define CIL_conv__i2(...) CIL_undefined()
-#define CIL_conv__i8(...) CIL_undefined()
 #define CIL_conv__ovf__i(...) CIL_undefined()
 #define CIL_conv__ovf__i1(...) CIL_undefined()
 #define CIL_conv__ovf__i2(...) CIL_undefined()
@@ -137,7 +145,6 @@ void CIL_ldstr(const char*);
 #define CIL_conv__ovf__u4__un(...) CIL_undefined()
 #define CIL_conv__ovf__u8__un(...) CIL_undefined()
 #define CIL_conv__r__un(...) CIL_undefined()
-#define CIL_conv__r8(...) CIL_undefined()
 #define CIL_cpblk(...) CIL_undefined()
 #define CIL_cpobj(...) CIL_undefined()
 #define CIL_div__un(...) CIL_undefined()
@@ -145,10 +152,8 @@ void CIL_ldstr(const char*);
 #define CIL_endfilter(...) CIL_undefined()
 #define CIL_idind__u8(...) CIL_undefined()
 #define CIL_initblk(...) CIL_undefined()
-#define CIL_initobj(...) CIL_undefined()
 #define CIL_isinst(...) CIL_undefined()
 #define CIL_jmp(...) CIL_undefined()
-#define CIL_ldarga(...) CIL_undefined()
 #define CIL_ldflda(...) CIL_undefined()
 #define CIL_ldftn(...) CIL_undefined()
 #define CIL_ldind__i(...) CIL_undefined()
@@ -162,8 +167,6 @@ void CIL_ldstr(const char*);
 #define CIL_ldind__u1(...) CIL_undefined()
 #define CIL_ldind__u2(...) CIL_undefined()
 #define CIL_ldind__u4(...) CIL_undefined()
-#define CIL_ldloca(...) CIL_undefined()
-#define CIL_ldloca__s(...) CIL_undefined()
 #define CIL_ldobj(...) CIL_undefined()
 #define CIL_ldsflda(...) CIL_undefined()
 #define CIL_ldvirtftn(...) CIL_undefined()
@@ -172,15 +175,12 @@ void CIL_ldstr(const char*);
 #define CIL_mkrefany(...) CIL_undefined()
 #define CIL_mul__ovf(...) CIL_undefined()
 #define CIL_mul__ovf__un(...) CIL_undefined()
-#define CIL_neg(...) CIL_undefined()
 #define CIL_no__typecheck(...) CIL_undefined()
 #define CIL_no__rangecheck(...) CIL_undefined()
 #define CIL_no__nullcheck(...) CIL_undefined()
-#define CIL_not(...) CIL_undefined()
 #define CIL_or(...) CIL_undefined()
 #define CIL_refanytype(...) CIL_undefined()
 #define CIL_refanyval(...) CIL_undefined()
-#define CIL_rem(...) CIL_undefined()
 #define CIL_rem__un(...) CIL_undefined()
 #define CIL_shl(...) CIL_undefined()
 #define CIL_shr(...) CIL_undefined()
@@ -247,9 +247,13 @@ void CIL_ldstr(const char*);
 
 #define CIL_ldarg__s(s) CIL_ldarg(s)
 
-#define CIL_ldloc(n) {    if (sizeof(local ## n) == 4) push_value32((int32_t)local ## n, local ## n ## __type); \
+#define CIL_ldarga(i) push_pointer((uintptr_t)&parameter ## i)
+#define CIL_ldarga__s(i) CIL_ldarga(i)
+
+#define CIL_ldloc(n) { if (local ## n ## __type == CIL_valuetype) { push_pointer((uintptr_t)&local ## n); } \
+                 else if (sizeof(local ## n) == 4) push_value32((int32_t)local ## n, local ## n ## __type); \
 				 else if (sizeof(local ## n) == 8) push_value64((int64_t)local ## n, local ## n ## __type); \
-				 else push_pointer((uintptr_t)local ## n); }
+				 else printf("ldloc: error\n"); }
 
 #define CIL_ldloc__0() CIL_ldloc(0)
 
@@ -261,9 +265,13 @@ void CIL_ldstr(const char*);
 
 #define CIL_ldloc__s(s) CIL_ldloc(s)
 
-#define CIL_stloc(n) {   if (sizeof(local ## n) == 4) { int32_t *tmp = (int32_t*)&local ## n; *tmp = pop_value32(); } \
+#define CIL_ldloca(i) push_pointer((uintptr_t)&local ## i)
+#define CIL_ldloca__s(i) CIL_ldloca(i)
+
+#define CIL_stloc(n) { if (sizeof(local ## n) > 8 && local ## n ## __type == CIL_valuetype) { memcpy(&local ## 0, (void*)pop_pointer(), sizeof(local ## 0)); } \
+                 else if (sizeof(local ## n) == 4) { int32_t *tmp = (int32_t*)&local ## n; *tmp = pop_value32(); } \
 				 else if (sizeof(local ## n) == 8) { int64_t *tmp = (int64_t*)&local ## n; *tmp = pop_value64(); } \
-				 else { uintptr_t *tmp = (uintptr_t*)&local ## n; *tmp = pop_pointer(); } }
+				 else printf("stloc: error\n"); }
 
 #define CIL_stloc__0() CIL_stloc(0)
 
@@ -283,6 +291,14 @@ void CIL_ldstr(const char*);
 	ctor(); \
 	push_pointer((uintptr_t)pointer); \
 } 
+
+#define CIL_initobj(type) {\
+	uintptr_t pointer = pop_pointer(); \
+	/* TODO: Garbage collect */ \
+	memset((void*)pointer, 0, sizeof(struct type));\
+	push_pointer(pointer);\
+	type ## __init();\
+}
 
 #define CIL_box(type) CIL_box_dispatch(#type)
 void CIL_box_dispatch(const char*);
@@ -318,6 +334,7 @@ void CIL_ldelema_dispatch(const char*);
 void CIL_ldlen();
 
 #define CIL_ldtoken(type, clas, id, offset, size) CIL_ldtoken_ ## type (clas, id, offset, size)
+
 void CIL_ldtoken_static_field_dispatch(void*, enum CIL_Type, int);
 #define CIL_ldtoken_static_field(clas, id, offset, size) CIL_ldtoken_static_field_dispatch(& (clas ## _sf_ ## id), clas ## _sf_ ## id ## __type, size)
 

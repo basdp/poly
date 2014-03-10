@@ -11,8 +11,14 @@ namespace PolyCompiler
 {
     class TypeGenerator
     {
-        public static void ProcessTypeDefinitions(Type type, CompilerContext context)
+        public static void ProcessTypeDefinition(Type type, CompilerContext context)
         {
+            if (type.IsInterface)
+            {
+                ProcessInterface(type, context);
+                return;
+            }
+
             context.Header.Append("// class " + type.FullName + "\n");
             context.Header.Append("struct " + Naming.ConvertTypeToCName(type.FullName) + " {\n");
 
@@ -37,7 +43,7 @@ namespace PolyCompiler
                 if (fis[j].FieldType.IsValueType)
                 {
                     int bits = TypeHelper.GetTypeSize(fis[j].FieldType);
-                    if (bits <= 64)
+                    if (bits <= 64 && bits > 0)
                     {
                         context.Header.Append("    int" + bits + "_t " + Naming.GetInternalFieldName(fis[j].Name) + "; // " + fis[j].MetadataToken + "\n");
                     }
@@ -55,7 +61,7 @@ namespace PolyCompiler
                 }
             }
 
-            if (type.StructLayoutAttribute.Size != 0)
+            if (type.StructLayoutAttribute != null && type.StructLayoutAttribute.Size != 0)
             {
                 //header += "#ifdef POLY32\n";
                 context.Header.Append("    int8_t __padding[" + (type.StructLayoutAttribute.Size - classSize) + "];\n");
@@ -68,36 +74,12 @@ namespace PolyCompiler
 
             context.Header.Append("};\n");
 
-            Type baseType = type.BaseType;
-            List<Type> baseTypes = new List<Type>();
-            while (baseType != null && type.FullName != "System.Object" && type.FullName != "System.__Object")
-            {
-                baseTypes.Add(baseType);
-                baseType = baseType.BaseType;
-            }
-
-            context.Code.AppendLine("int " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses_length = " + baseTypes.Count + ";");
-            if (baseTypes.Count == 0)
-            {
-                context.Header.AppendLine("extern char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses[1];");
-                context.Code.AppendLine("char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses[1] = { \"\" };");
-            }
-            else
-            {
-                context.Header.AppendLine("extern char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses[" + baseTypes.Count + "];");
-                context.Code.AppendLine("char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses[" + baseTypes.Count + "] = {");
-                for (int i = 0; i < baseTypes.Count; i++)
-                {
-                    context.Code.Append("    \"" + baseTypes[i].FullName.Replace(".__", ".") + "\"");
-                    if (i < baseTypes.Count - 1) context.Code.Append(", ");
-                    context.Code.Append("\n");
-                }
-                context.Code.AppendLine("};");
-            }
+            ProcessBaseClasses(type, context);
+            ProcessBaseInterfaces(type, context);
 
             for (int j = 0; j < fis.Length; j++)
             {
-                context.Code.Append("enum CIL_Type " + Naming.ConvertTypeToCName(type.FullName) + "_f_" + Naming.GetInternalFieldName(fis[j].Name) + "__type = " + Naming.GetInternalType(fis[j].FieldType) + "; // " + fis[j].FieldType.FullName + "\n");
+                context.Code.Append("enum CIL_Type " + Naming.ConvertTypeToCName(type.FullName) + "_f_" + Naming.GetInternalFieldName(fis[j].Name) + "__type = " + TypeHelper.GetInternalType(fis[j].FieldType) + "; // " + fis[j].FieldType.FullName + "\n");
                 context.Header.Append("extern enum CIL_Type " + Naming.ConvertTypeToCName(type.FullName) + "_f_" + Naming.GetInternalFieldName(fis[j].Name) + "__type;\n");
             }
 
@@ -108,7 +90,7 @@ namespace PolyCompiler
                 if (fis[j].FieldType.IsValueType)
                 {
                     int bits = TypeHelper.GetTypeSize(fis[j].FieldType);
-                    if (bits <= 64)
+                    if (bits <= 64 && bits > 0)
                     {
                         context.Header.Append("int" + bits + "_t " + Naming.ConvertTypeToCName(type.FullName) + "_sf_" + Naming.GetInternalFieldName(fis[j].Name) + "; // " + fis[j].MetadataToken + "\n");
                     }
@@ -144,8 +126,94 @@ namespace PolyCompiler
             }
             for (int j = 0; j < fis.Length; j++)
             {
-                context.Code.Append("enum CIL_Type " + Naming.ConvertTypeToCName(type.FullName) + "_sf_" + Naming.GetInternalFieldName(fis[j].Name) + "__type = " + Naming.GetInternalType(fis[j].FieldType) + "; // " + fis[j].FieldType.FullName + "\n");
+                context.Code.Append("enum CIL_Type " + Naming.ConvertTypeToCName(type.FullName) + "_sf_" + Naming.GetInternalFieldName(fis[j].Name) + "__type = " + TypeHelper.GetInternalType(fis[j].FieldType) + "; // " + fis[j].FieldType.FullName + "\n");
                 context.Header.Append("extern enum CIL_Type " + Naming.ConvertTypeToCName(type.FullName) + "_sf_" + Naming.GetInternalFieldName(fis[j].Name) + "__type;\n");
+            }
+        }
+
+        private static void ProcessBaseClasses(Type type, CompilerContext context)
+        {
+            Type baseType = type.BaseType;
+            List<Type> baseTypes = new List<Type>();
+            while (baseType != null && type.FullName != "System.Object" && type.FullName != "System.__Object")
+            {
+                baseTypes.Add(baseType);
+                baseType = baseType.BaseType;
+            }
+
+            context.Code.AppendLine("int " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses_length = " + baseTypes.Count + ";");
+            if (baseTypes.Count == 0)
+            {
+                context.Header.AppendLine("extern char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses[1];");
+                context.Code.AppendLine("char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses[1] = { \"\" };");
+            }
+            else
+            {
+                context.Header.AppendLine("extern char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses[" + baseTypes.Count + "];");
+                context.Code.AppendLine("char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses[" + baseTypes.Count + "] = {");
+                for (int i = 0; i < baseTypes.Count; i++)
+                {
+                    context.Code.Append("    \"" + baseTypes[i].FullName.Replace(".__", ".") + "\"");
+                    if (i < baseTypes.Count - 1) context.Code.Append(", ");
+                    context.Code.Append("\n");
+                }
+                context.Code.AppendLine("};");
+            }
+        }
+
+        private static void ProcessBaseInterfaces(Type type, CompilerContext context)
+        {
+            var interfaces = type.GetInterfaces();
+
+            context.Code.AppendLine("int " + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces_length = " + interfaces.Length + ";");
+            if (interfaces.Length == 0)
+            {
+                context.Header.AppendLine("extern char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces[1];");
+                context.Code.AppendLine("char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces[1] = { \"\" };");
+            }
+            else
+            {
+                context.Header.AppendLine("extern char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces[" + interfaces.Length + "];");
+                context.Code.AppendLine("char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces[" + interfaces.Length + "] = {");
+                for (int i = 0; i < interfaces.Length; i++)
+                {
+                    context.Code.Append("    \"" + interfaces[i].FullName.Replace(".__", ".") + "\"");
+                    if (i < interfaces.Length - 1) context.Code.Append(", ");
+                    context.Code.Append("\n");
+                }
+                context.Code.AppendLine("};");
+            }
+        }
+
+        private static void ProcessInterface(Type type, CompilerContext context)
+        {
+            context.Header.Append("// interface " + type.FullName + "\n");
+            
+            Type baseType = type.BaseType;
+            List<Type> baseTypes = new List<Type>();
+            while (baseType != null && type.FullName != "System.Object" && type.FullName != "System.__Object")
+            {
+                baseTypes.Add(baseType);
+                baseType = baseType.BaseType;
+            }
+
+            context.Code.AppendLine("int " + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces_length = " + baseTypes.Count + ";");
+            if (baseTypes.Count == 0)
+            {
+                context.Header.AppendLine("extern char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces[1];");
+                context.Code.AppendLine("char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces[1] = { \"\" };");
+            }
+            else
+            {
+                context.Header.AppendLine("extern char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces[" + baseTypes.Count + "];");
+                context.Code.AppendLine("char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces[" + baseTypes.Count + "] = {");
+                for (int i = 0; i < baseTypes.Count; i++)
+                {
+                    context.Code.Append("    \"" + baseTypes[i].FullName.Replace(".__", ".") + "\"");
+                    if (i < baseTypes.Count - 1) context.Code.Append(", ");
+                    context.Code.Append("\n");
+                }
+                context.Code.AppendLine("};");
             }
         }
     }

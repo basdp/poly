@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace mscorlib.System
+namespace System
 {
     [Poly.Internals.CompilerImplemented.StructureCode(@"intptr_t addr;
     enum CIL_Type type;

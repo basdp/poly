@@ -15,7 +15,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "BCL", "BCL", "{13485B82-F6D
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mscorlib", "BCL\mscorlib\mscorlib.csproj", "{80F565EF-E5AA-488A-B5D9-26CE8A8D8358}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ImplementationTester", "ImplementationTester\ImplementationTester.csproj", "{88F3524A-0C82-4173-9BCF-83C7EC9BE944}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RegressionTesting", "ImplementationTester\RegressionTesting.csproj", "{88F3524A-0C82-4173-9BCF-83C7EC9BE944}"
 	ProjectSection(ProjectDependencies) = postProject
 		{BB611F26-CC81-4689-8B8A-94260330DD8B} = {BB611F26-CC81-4689-8B8A-94260330DD8B}
 		{80F565EF-E5AA-488A-B5D9-26CE8A8D8358} = {80F565EF-E5AA-488A-B5D9-26CE8A8D8358}

@@ -33,6 +33,7 @@
   </PropertyGroup>
   <ItemGroup>
     <Compile Include="System\Attribute.cs" />
+    <Compile Include="System\Char.cs" />
     <Compile Include="System\Environment.cs" />
     <Compile Include="System\Exception.cs" />
     <Compile Include="System\Int32.cs" />

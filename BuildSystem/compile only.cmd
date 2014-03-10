@@ -8,12 +8,12 @@ cls
 
 cd build
 
-cl /nologo /O2 /Fomscorlib.obj /I ..\..\Runtime\ /c mscorlib.c
-cl /nologo /O2 /FoPoly.Internals.obj /I ..\..\Runtime\ /c Poly.Internals.c
-cl /nologo /O2 /FoTester.obj /I ..\..\Runtime\ /c Tester.c
-rem cl /nologo /O2 /Fomain.obj /I ..\..\Runtime\ /c ..\main.c
+cl /nologo /Od /Z7 /Fomscorlib.obj /I ..\..\Runtime\ /c mscorlib.c
+cl /nologo /Od /Z7 /FoPoly.Internals.obj /I ..\..\Runtime\ /c Poly.Internals.c
+cl /nologo /Od /Z7 /FoTester.obj /I ..\..\Runtime\ /c Tester.c
+rem cl /nologo /Od /Fomain.obj /I ..\..\Runtime\ /c ..\main.c
 
-cl /nologo /DEBUG:Yes mscorlib.obj Tester.obj ..\Runtime.lib /FeTester.exe
+cl /nologo /Z7 /DEBUG:Yes mscorlib.obj Tester.obj ..\Runtime.lib /FeTester.exe
 
 Tester.exe
 

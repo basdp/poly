@@ -56,7 +56,7 @@ namespace ImplementationTester
                     }
                 case ".c":
                     {
-                        var proc = ExecuteProcess(cl, "/nologo /O2 /Fo" + output + @" /I include\ /I """ + cl_includes + "\" /c " + filename + " /link /LIBPATH:\"" + cl_libs + "\"");
+                        var proc = ExecuteProcess(cl, "/nologo /Gy /O1 /Os /Fo" + output + @" /I include\ /I """ + cl_includes + "\" /c " + filename + " /link /LIBPATH:\"" + cl_libs + "\"");
 
                         if (proc.ExitCode != 0)
                         {
@@ -71,7 +71,7 @@ namespace ImplementationTester
                     }
                 case ".obj":
                     {
-                        var proc = ExecuteProcess(cl, "/nologo /DEBUG:Yes " + filename + @" Runtime.lib /Fe" + output + " /link /LIBPATH:\"" + cl_libs + "\" /LIBPATH:\"" + windowsSdkDir + @"\Lib\winv6.3\um\x86" + "\"");
+                        var proc = ExecuteProcess(cl, "/nologo /Gy /OPT:REF /O1 /Os " + filename + @" Runtime.lib /Fe" + output + " /link /LIBPATH:\"" + cl_libs + "\" /LIBPATH:\"" + windowsSdkDir + @"\Lib\winv6.3\um\x86" + "\"");
 
                         if (proc.ExitCode != 0)
                         {
@@ -94,12 +94,16 @@ namespace ImplementationTester
             var comp = new System.Diagnostics.ProcessStartInfo(executable, parameters);
             comp.RedirectStandardOutput = true;
             comp.RedirectStandardError = true;
-            comp.CreateNoWindow = false;
+            comp.CreateNoWindow = true;
             comp.UseShellExecute = false;
             var proc = new System.Diagnostics.Process();
             proc.StartInfo = comp;
             proc.Start();
-            proc.WaitForExit();
+            proc.WaitForExit(10000);
+            if (!proc.HasExited)
+            {
+                proc.Kill();
+            }
             return proc;
         }
     }

@@ -1,6 +1,7 @@
 ﻿<?xml version="1.0" encoding="utf-8" ?>
 <Tests>
   <ExpectOutput filename="stdout.cs">5</ExpectOutput>
+  <ExpectExitCode filename="exitcode.cs">8</ExpectExitCode>
   <ExpectOutput filename="arithmetics.cs">
     9
     -1
@@ -36,4 +37,7 @@
     RE
     FI2
   </ExpectOutput>
+
+  <ExpectExitCode filename="test-*.cs">200</ExpectExitCode>
+  
 </Tests>
