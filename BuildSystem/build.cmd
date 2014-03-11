@@ -27,7 +27,7 @@ cl /nologo /Gy /O1 /Os /Fomscorlib.obj /I ..\..\Runtime\ /c mscorlib.c
 cl /nologo /Gy /O1 /Os /FoPoly.Internals.obj /I ..\..\Runtime\ /c Poly.Internals.c
 cl /nologo /Gy /O1 /Os /FoTester.obj /I ..\..\Runtime\ /c Tester.c
 
-cl /nologo /Gy /O1 /Os mscorlib.obj Tester.obj Runtime.lib /FeTester.poly.exe
+cl /nologo /Gy /O1 /Os mscorlib.obj Tester.obj Runtime.lib Poly.internals.obj /FeTester.poly.exe
 
 echo Running...
 

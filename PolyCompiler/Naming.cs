@@ -14,7 +14,9 @@ namespace PolyCompiler
 
         public static string GetInternalMethodName(MethodBase m, bool includePath = true)
         {
-            string path = m.DeclaringType.FullName.Replace(".__", ".");
+            string fullname = m.DeclaringType.FullName;
+            if (m.DeclaringType.IsGenericType && m.DeclaringType.GenericTypeArguments.Length > 0) fullname = fullname.Substring(0, fullname.IndexOf('['));
+            string path = fullname.Replace(".__", ".");
             string type = m.Name;
             type = type.TrimStart(new char[] { '_' });
             string sig;
@@ -67,8 +69,22 @@ namespace PolyCompiler
             type = type.Replace("+", "_plus_");
             type = type.Replace("-", "_");
             type = type.Replace("=", "_eq_");
+            type = type.Replace("`", "__");
 
             return type;
+        }
+
+        public static string ConvertTypeToCName(Type type)
+        {
+            string fullname = "";
+            if (!type.IsGenericType) return ConvertTypeToCName(type.FullName);
+
+            fullname = type.FullName.Substring(0, type.FullName.IndexOf('['));
+            /*foreach (var p in type.GenericTypeArguments)
+            {
+                fullname += "<" + p.FullName + ">";
+            }*/
+            return ConvertTypeToCName(fullname);
         }
 
     }

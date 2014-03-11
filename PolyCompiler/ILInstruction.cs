@@ -50,15 +50,48 @@ namespace SDILReader
         {
             string result = "";
             string scope = Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name);
-            result += Naming.ConvertTypeToCName("CIL_" + code.Name) + "(";
             if (operand != null)
             {
                 if (code.Name == "newobj")
                 {
                     System.Reflection.ConstructorInfo mOperand = (System.Reflection.ConstructorInfo)operand;
-                    result += Naming.ConvertTypeToCName(mOperand.ReflectedType.ToString()) + ", ";
-                    result += Naming.GetInternalMethodName(mOperand);
-                    result += "/* " + mOperand.DeclaringType.FullName + "::" + mOperand.Name + " */";
+                    if (mOperand.ReflectedType.IsGenericType)
+                    {
+                        string def = "generic_" + Naming.ConvertTypeToCName(mOperand.ReflectedType);
+                        foreach (var gtype in mOperand.ReflectedType.GenericTypeArguments)
+                        {
+                            def += "_G_" + Naming.ConvertTypeToCName(gtype);
+                        }
+
+                        result += "CIL_newobj_generic(";
+                        result += Naming.ConvertTypeToCName(mOperand.ReflectedType) + ", ";
+                        result += Naming.GetInternalMethodName(mOperand) + ", ";
+                        result += def + "__typelist_length, ";
+                        result += def + "__typelist ";
+                        result += "/* " + mOperand.DeclaringType.FullName + "::" + mOperand.Name + " */";
+
+                        if (!context.GenericTypeListGenerated.Contains(mOperand.ReflectedType))
+                        {
+                            context.CodeHeader.AppendLine("static enum CIL_Type* " + def + "__typelist;");
+                            context.CodeHeader.AppendLine("static int " + def + "__typelist_length;");
+                            context.Init.AppendLine("    " + def + "__typelist_length = " + mOperand.ReflectedType.GenericTypeArguments.Length + ";");
+                            context.Init.AppendLine("    " + def + "__typelist = malloc(sizeof(enum CIL_Type) * " + mOperand.ReflectedType.GenericTypeArguments.Length + ");");
+                            for (int i = 0; i < mOperand.ReflectedType.GenericTypeArguments.Length; i++)
+                            {
+                                var gtype = mOperand.ReflectedType.GenericTypeArguments[i];
+                                context.Init.AppendLine("    " + def + "__typelist[" + i + "] = " + TypeHelper.GetInternalType(gtype) + ";");
+                            }
+
+                            context.GenericTypeListGenerated.Add(mOperand.ReflectedType);
+                        }
+                    }
+                    else
+                    {
+                        result += "CIL_newobj(";
+                        result += Naming.ConvertTypeToCName(mOperand.ReflectedType) + ", ";
+                        result += Naming.GetInternalMethodName(mOperand);
+                        result += "/* " + mOperand.DeclaringType.FullName + "::" + mOperand.Name + " */";
+                    }
                 }
 
                 /*else if (code.Name == "castclass")
@@ -68,6 +101,7 @@ namespace SDILReader
                 }*/
                 else
                 {
+                    result += Naming.ConvertTypeToCName("CIL_" + code.Name) + "(";
                     switch (code.OperandType)
                     {
                         case OperandType.InlineField:
@@ -75,7 +109,7 @@ namespace SDILReader
                             /*result += PolyCompiler.Program.ConvertTypeToCName(fOperand.FieldType.ToString()) + " " +
                                 PolyCompiler.Program.ConvertTypeToCName(fOperand.ReflectedType.ToString()) +
                                 "::" + fOperand.Name + "";*/
-                            result += Naming.ConvertTypeToCName(fOperand.DeclaringType.FullName) + ", " + Naming.ConvertTypeToCName(fOperand.Name);
+                            result += Naming.ConvertTypeToCName(fOperand.DeclaringType) + ", " + Naming.ConvertTypeToCName(fOperand.Name);
                             break;
                         case OperandType.InlineMethod:
                             try
@@ -180,6 +214,10 @@ namespace SDILReader
                         default: result += "not supported"; break;
                     }
                 }
+            }
+            else
+            {
+                result += Naming.ConvertTypeToCName("CIL_" + code.Name) + "(";
             }
             return result + ")";
 

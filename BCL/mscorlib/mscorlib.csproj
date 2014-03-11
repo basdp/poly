@@ -37,6 +37,7 @@
     <Compile Include="System\Environment.cs" />
     <Compile Include="System\Exception.cs" />
     <Compile Include="System\Int32.cs" />
+    <Compile Include="System\Int64.cs" />
     <Compile Include="System\Object.cs" />
     <Compile Include="System\Console.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

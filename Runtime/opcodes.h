@@ -209,7 +209,8 @@ void CIL_ldstr(const char*);
 							else { push_pointer((((struct type*)self)-> name)); } \
 }
 
-#define CIL_stfld(type, name) {    if (stack_top_size() == 4) { int32_t value = pop_value32(); intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } \
+#define CIL_stfld(type, name) { if (type ## _f_ ## name ## __type == CIL_pointer && stack_top_type() != CIL_pointer) { print_stack(); CIL_box_ciltype(); }\
+				 if (stack_top_size() == 4) { int32_t value = pop_value32(); intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } \
 				 else if (stack_top_size() == 8) { int64_t value = pop_value64(); intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } \
 				 else { intptr_t value = pop_pointer(); uintptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } }
 
@@ -285,6 +286,15 @@ void CIL_ldstr(const char*);
 	push_pointer((uintptr_t)pointer); \
 } 
 
+#define CIL_newobj_generic(type, ctor, typelist_length, typelist) { \
+	void* pointer = calloc(1, sizeof(struct type)); \
+	/* TODO: Garbage collect */ \
+	push_pointer((uintptr_t)pointer); \
+	callstack_push(ctor ## _sig, "(unknown)", 0);\
+	ctor(typelist_length, typelist); \
+	push_pointer((uintptr_t)pointer); \
+} 
+
 #define CIL_initobj(type) {\
 	uintptr_t pointer = pop_pointer(); \
 	/* TODO: Garbage collect */ \
@@ -295,6 +305,8 @@ void CIL_ldstr(const char*);
 
 #define CIL_box(type) CIL_box_dispatch(#type)
 void CIL_box_dispatch(const char*);
+#define CIL_box_ciltype(type) CIL_box_ciltype_dispatch(type)
+void CIL_box_ciltype_dispatch(enum CIL_type);
 
 #define CIL_newarr(type) CIL_newarr_dispatch(#type)
 void CIL_newarr_dispatch(const char*);

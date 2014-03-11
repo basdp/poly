@@ -568,11 +568,20 @@ char *CIL_getCStringFromSystemString(intptr_t object) {
 }
 
 void CIL_box_dispatch(const char* type) {
+	printf("Boxing: %s\n", type);
 	if (strcmp(type, "System.Int32") == 0) {
 		struct SYSTEM__INT32_proto *obj;
 		int32_t val = pop_value32();
 		CIL_newobj(SYSTEM__INT32_proto, SYSTEM__INT32_ctor);
 		obj = (struct SYSTEM__INT32_proto *)peek_pointer(0);
+		obj->value = val;
+		return;
+	}
+	if (strcmp(type, "System.Int64") == 0) {
+		struct SYSTEM__INT64_proto *obj;
+		int64_t val = pop_value64();
+		CIL_newobj(SYSTEM__INT64_proto, SYSTEM__INT64_ctor);
+		obj = (struct SYSTEM__INT64_proto *)peek_pointer(0);
 		obj->value = val;
 		return;
 	}
@@ -591,6 +600,34 @@ void CIL_box_dispatch(const char* type) {
 
 	fprintf(stderr, "Error: Can not box to type %s!\n", type);
 	exit(1);
+}
+
+void CIL_box_ciltype_dispatch(enum CIL_type type) {
+	if (type == CIL_int32) {
+		struct SYSTEM__INT32_proto *obj;
+		int32_t val = pop_value32();
+		CIL_newobj(SYSTEM__INT32_proto, SYSTEM__INT32_ctor);
+		obj = (struct SYSTEM__INT32_proto *)peek_pointer(0);
+		obj->value = val;
+		return;
+	}
+	if (type == CIL_int64) {
+		struct SYSTEM__INT64_proto *obj;
+		int64_t val = pop_value64();
+		CIL_newobj(SYSTEM__INT64_proto, SYSTEM__INT64_ctor);
+		obj = (struct SYSTEM__INT64_proto *)peek_pointer(0);
+		obj->value = val;
+		return;
+	}
+	else if (type == CIL_pointer) {
+		fprintf(stderr, "Error: Can not box from pointer type!\n");
+		exit(1);
+		return;
+	}
+	else {
+		// box a valuetype
+		return;
+	}
 }
 
 void CIL_newarr_dispatch(const char* type) {

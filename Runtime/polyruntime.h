@@ -37,6 +37,9 @@ struct SYSTEM__OBJECT_proto {
 	int* __CILbaseclasses_length;
 	intptr_t __CILbaseinterfaces;
 	int* __CILbaseinterfaces_length;
+	int __CILisgeneric;
+	enum CIL_Type* __CILgenerictypelist;
+	int _CILgenerictypelist_length;
 };
 
 #define SYSTEM__STRING_ctor m8D858A38DA1EA05CB64209432DD7505A8FE82943
@@ -57,6 +60,14 @@ extern void *SYSTEM__INT32_ctor();
 struct SYSTEM__INT32_proto {
 	struct SYSTEM__VALUETYPE_proto __base;
 	int32_t value;
+};
+
+#define SYSTEM__INT64_ctor mBBB2828E3A63B7480D3D6CC62773B26F4691CA33
+#define SYSTEM__INT64_ctor_sig "System.Int64::.ctor()"
+extern void *SYSTEM__INT64_ctor();
+struct SYSTEM__INT64_proto {
+	struct SYSTEM__VALUETYPE_proto __base;
+	int64_t value;
 };
 
 #define SYSTEM__CHAR_ctor mF3EA68989C5CDF2CD019A151716D4F3CCDB873A6

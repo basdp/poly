@@ -62,6 +62,13 @@ namespace PolyCompiler
                     addedcode += "    ((struct System__Object*)parameter0)->__CILbaseclasses_length = &" + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses_length;\n";
                     addedcode += "    ((struct System__Object*)parameter0)->__CILbaseinterfaces = (intptr_t)&" + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces;\n";
                     addedcode += "    ((struct System__Object*)parameter0)->__CILbaseinterfaces_length = &" + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces_length;\n";
+
+                    if (type.IsGenericType)
+                    {
+                        addedcode += "    ((struct System__Object*)parameter0)->__CILisgeneric = 1;\n";
+                        addedcode += "    ((struct System__Object*)parameter0)->__CILgenerictypelist_length = generictypelist_length;\n";
+                        addedcode += "    ((struct System__Object*)parameter0)->__CILgenerictypelist = generictypelist;\n";
+                    }
                 }
                 foreach (var virtmethod in type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(m => m.IsVirtual))
                 {
@@ -187,17 +194,28 @@ namespace PolyCompiler
             if (m.GetParameters().Count() > 0)
                 context.Code.Append(m.GetParameters().Select(p => p.ParameterType.Name + " " + p.Name).Aggregate((a, b) => a + ", " + b));
             context.Code.Append(")\";\n");
-            context.Code.Append("void *" + Naming.GetInternalMethodName(m) + "(/*");
-            if (m.GetParameters().Count() > 0)
-                context.Code.Append(m.GetParameters().Select(p => p.ParameterType.Name + " " + p.Name).Aggregate((a, b) => a + ", " + b));
-            context.Code.Append("*/) {\n");
 
             context.Header.Append("/* " + m.DeclaringType.FullName + "::" + m.Name + " */\n");
             context.Header.AppendLine("extern char* " + Naming.GetInternalMethodName(m) + "_sig;");
-            context.Header.Append("void *" + Naming.GetInternalMethodName(m) + "(/*");
-            if (m.GetParameters().Count() > 0)
-                context.Header.Append(m.GetParameters().Select(p => p.ParameterType.Name + " " + p.Name).Aggregate((a, b) => a + ", " + b));
-            context.Header.Append("*/);\n");
+
+            if (m.IsConstructor && m.DeclaringType.IsGenericType)
+            {
+                context.Header.Append("void *" + Naming.GetInternalMethodName(m) + "(int, enum CIL_Type*);\n");
+
+                context.Code.Append("void *" + Naming.GetInternalMethodName(m) + "(int generictypelist_length, enum CIL_Type* generictypelist) {\n");
+            }
+            else
+            {
+                context.Header.Append("void *" + Naming.GetInternalMethodName(m) + "(/*");
+                if (m.GetParameters().Count() > 0)
+                    context.Header.Append(m.GetParameters().Select(p => p.ParameterType.Name + " " + p.Name).Aggregate((a, b) => a + ", " + b));
+                context.Header.Append("*/);\n");
+
+                context.Code.Append("void *" + Naming.GetInternalMethodName(m) + "(/*");
+                if (m.GetParameters().Count() > 0)
+                    context.Code.Append(m.GetParameters().Select(p => p.ParameterType.Name + " " + p.Name).Aggregate((a, b) => a + ", " + b));
+                context.Code.Append("*/) {\n");
+            }
 
             // parameters
             int parameterOffset = 0;

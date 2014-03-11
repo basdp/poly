@@ -18,7 +18,9 @@ namespace PolyCompiler
 
         public Dictionary<FieldInfo, int> Offsets = new Dictionary<FieldInfo, int>();
         public List<Type> CallCctorAtAccess = new List<Type>();
+        public List<Type> GenericTypeListGenerated = new List<Type>();
         public StringBuilder Code = new StringBuilder();
+        public StringBuilder CodeHeader = new StringBuilder();
         public StringBuilder Header = new StringBuilder();
         public StringBuilder Init = new StringBuilder();
         public StringBuilder Main = new StringBuilder();

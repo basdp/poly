@@ -63,12 +63,12 @@ namespace PolyCompiler
 
             CompilerContext context = new CompilerContext();
             context.Assembly = ass;
-            context.Code.Append("#include \"" + headerfile + "\"\n\n");
+            context.CodeHeader.Append("#include \"" + headerfile + "\"\n\n");
             context.Header.Append("#pragma once\n#include \"polyruntime.h\"\n#include \"mscorlib.h\"\n\n");
 
-            context.Code.Append("// Imports\n");
+            context.CodeHeader.Append("// Imports\n");
             foreach (var export in ass.GetReferencedAssemblies()) {
-                context.Code.Append("#include \"" + export.Name + ".h\"\n");
+                context.CodeHeader.Append("#include \"" + export.Name + ".h\"\n");
             }
 
             foreach (Module module in ass.GetModules())
@@ -84,7 +84,7 @@ namespace PolyCompiler
             context.Code.AppendLine("int init_" + Naming.ConvertTypeToCName(ass.GetName().Name) + "__called = 0;");
             context.Code.Append("void init_" + Naming.ConvertTypeToCName(ass.GetName().Name) + "() {\n    if(init_" + Naming.ConvertTypeToCName(ass.GetName().Name) + "__called) return;\n    init_" + Naming.ConvertTypeToCName(ass.GetName().Name) + "__called = 1;\n" + context.Init.ToString() + "}\n" + context.Main.ToString() + "\n");
 
-            File.WriteAllText(codefile, context.Code.ToString());
+            File.WriteAllText(codefile, context.CodeHeader.ToString() + "\n" + context.Code.ToString());
             File.WriteAllText(headerfile, context.Header.ToString());
         }        
 

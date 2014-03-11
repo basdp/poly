@@ -9,11 +9,16 @@ namespace System
     int* __CILbaseclasses_length;
     intptr_t __CILbaseinterfaces;
     int* __CILbaseinterfaces_length;
+    int __CILisgeneric;
+    enum CIL_Type* __CILgenerictypelist;
+    int __CILgenerictypelist_length;
     ")]
     class __Object
     {
         [Poly.Internals.CompilerImplemented.InlineCode(@"
         ((struct System__Object*)parameter0)->__CILsymboltable = hashmap_new();
+        ((struct System__Object*)parameter0)->__CILisgeneric = 0;
+        ((struct System__Object*)parameter0)->__CILgenerictypelist_length = 0;
         ", replaceCompleteImplementation: false)]
         public __Object() { }
 
