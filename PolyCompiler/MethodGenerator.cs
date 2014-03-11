@@ -14,9 +14,26 @@ namespace PolyCompiler
         {
             context.Code.Append("// class " + type.FullName + "\n");
 
-            ConstructorInfo[] cis = type.GetConstructors(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
-            for (int j = 0; j < cis.Length; j++)
+            var cis = type.GetConstructors(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance).ToList();
+            cis.Sort(delegate(ConstructorInfo t1, ConstructorInfo t2)
             {
+                if (t1.Name == ".cctor")
+                {
+                    return -1;
+                }
+                else if (t1 == t2)
+                {
+                    return 0;
+                }
+                else if (t2.Name == ".cctor")
+                {
+                    return 1;
+                }
+                return 0;
+            });
+            for (int j = 0; j < cis.Count; j++)
+            {
+                string addedcode = "";
                 if (cis[j].Name == ".cctor")
                 {
                     if ((type.Attributes & TypeAttributes.BeforeFieldInit) != 0)
@@ -31,15 +48,21 @@ namespace PolyCompiler
                             c. first invocation of any instance or virtual method of that type if it is a value type or 
                             d. first invocation of any constructor for that type. */
 
-                        throw new NotImplementedException();
+                        context.CallCctorAtAccess.Add(type);
+                        addedcode += "    " + Naming.ConvertTypeToCName(type.FullName) + "__cctor_called = 1;\n";
+                        context.Header.AppendLine("int " + Naming.ConvertTypeToCName(type.FullName) + "__cctor_called;");
+                        context.Code.AppendLine("int " + Naming.ConvertTypeToCName(type.FullName) + "__cctor_called = 0;");
                     }
                 }
-
-                string addedcode = "    ((struct System__Object*)parameter0)->__CILtype = (intptr_t)\"" + type.FullName.Replace(".__", ".") + "\";\n";
-                addedcode += "    ((struct System__Object*)parameter0)->__CILbaseclasses = (intptr_t)&" + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses;\n";
-                addedcode += "    ((struct System__Object*)parameter0)->__CILbaseclasses_length = &" + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses_length;\n";
-                addedcode += "    ((struct System__Object*)parameter0)->__CILbaseinterfaces = (intptr_t)&" + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces;\n";
-                addedcode += "    ((struct System__Object*)parameter0)->__CILbaseinterfaces_length = &" + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces_length;\n";
+                else
+                {
+                    addedcode += "    " + Naming.ConvertTypeToCName(type.FullName) + "__cctor_init();\n";
+                    addedcode += "    ((struct System__Object*)parameter0)->__CILtype = (intptr_t)\"" + type.FullName.Replace(".__", ".") + "\";\n";
+                    addedcode += "    ((struct System__Object*)parameter0)->__CILbaseclasses = (intptr_t)&" + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses;\n";
+                    addedcode += "    ((struct System__Object*)parameter0)->__CILbaseclasses_length = &" + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses_length;\n";
+                    addedcode += "    ((struct System__Object*)parameter0)->__CILbaseinterfaces = (intptr_t)&" + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces;\n";
+                    addedcode += "    ((struct System__Object*)parameter0)->__CILbaseinterfaces_length = &" + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces_length;\n";
+                }
                 foreach (var virtmethod in type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(m => m.IsVirtual))
                 {
                     addedcode += "    hashmap_put(((struct System__Object*)parameter0)->__CILsymboltable, \"" + Naming.GetInternalMethodName(virtmethod, false) + "\", &" + Naming.GetInternalMethodName(virtmethod) +
@@ -69,6 +92,16 @@ namespace PolyCompiler
                 }
 
                 ProcessMethodBody(cis[j], context, addedcode);
+            }
+
+            if (context.CallCctorAtAccess.Contains(type))
+            {
+                context.Header.Append("#define " + Naming.ConvertTypeToCName(type.FullName) + "__cctor_init() ");
+                context.Header.AppendLine("if (!" + Naming.ConvertTypeToCName(type.FullName) + "__cctor_called) CIL_call(" + Naming.GetInternalMethodName(type.FullName + "::.cctor") + ", \"\", 0, 0);");
+            }
+            else
+            {
+                context.Header.AppendLine("#define " + Naming.ConvertTypeToCName(type.FullName) + "__cctor_init() ");
             }
             
             // if this type has no default constructor (.ctor()) for any reason, generate it
@@ -105,10 +138,13 @@ namespace PolyCompiler
             {
                 // yay, we found a entry point
                 // TODO: what if multiple Main?
+                context.IsExecutable = true;
 
                 context.Main.AppendLine("int main(int argc, char** argv) {");
                 context.Main.AppendLine("    int entryStackSize = 0;");
                 context.Main.AppendLine("    int boundExceptions = 0;");
+
+                context.Main.AppendLine("    init_" + Naming.ConvertTypeToCName(m.DeclaringType.Assembly.GetName().Name) + "();");
 
                 if (m.GetParameters().Count() == 1)
                 {
@@ -174,6 +210,11 @@ namespace PolyCompiler
                 context.Code.Append("    enum CIL_Type parameter0__type = CIL_pointer;\n");
             }
 
+            if (m.Name == ".cctor")
+            {
+                context.Code.Append(addedcode);
+            }
+
             for (int i = m.GetParameters().Count() - 1; i >= 0; i--)
             {
                 ParameterInfo p = m.GetParameters().Where(a => a.Position == i).First();
@@ -220,6 +261,11 @@ namespace PolyCompiler
                 if (a.GetReplaceCompleteImplementation()) processMethodBody = false;
 
                 context.Code.Append("\n    /* END INLINE CODE */\n");
+            }
+
+            if (m.IsStatic || m.DeclaringType.IsValueType)
+            {
+                context.Code.AppendLine("    " + Naming.ConvertTypeToCName(m.DeclaringType.FullName) + "__cctor_init();");
             }
 
             if (processMethodBody)

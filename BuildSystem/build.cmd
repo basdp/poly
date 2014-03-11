@@ -8,7 +8,7 @@ copy ..\PolyCompiler\bin\Debug\PolyCompiler.exe build\
 copy ..\PolyCompiler\bin\Debug\Poly.Internals.dll build\
 copy ..\Tester\bin\Debug\Tester.exe build\
 copy ..\BCL\mscorlib\bin\Debug\mscorlib.dll build\mscorlib_.dll
-pause
+
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
 
 cls

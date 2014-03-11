@@ -36,7 +36,6 @@ namespace PolyCompiler
                 //ass = Assembly.LoadFrom(@"C:\Users\Bas\Documents\GitHub\poly\BCL\mscorlib\bin\Debug\mscorlib.dll");
             }
 
-
             string codefile, headerfile;
             if (args.Length > 0)
             {
@@ -63,7 +62,7 @@ namespace PolyCompiler
             }
 
             CompilerContext context = new CompilerContext();
-
+            context.Assembly = ass;
             context.Code.Append("#include \"" + headerfile + "\"\n\n");
             context.Header.Append("#pragma once\n#include \"polyruntime.h\"\n#include \"mscorlib.h\"\n\n");
 
@@ -76,9 +75,14 @@ namespace PolyCompiler
             {
                 ModuleGenerator.ProcessModule(module, context);
             }
-            
-            // TODO: call init somewhere
-            context.Code.Append("void init_" + Naming.ConvertTypeToCName(ass.GetName().Name) + "() {\n" + context.Init.ToString() + "\n}\n" + context.Main.ToString() + "\n");
+
+            foreach (var assembly in context.Assembly.GetReferencedAssemblies())
+            {
+                context.Init.AppendLine("    init_" + Naming.ConvertTypeToCName(assembly.Name) + "();");
+            }
+
+            context.Code.AppendLine("int init_" + Naming.ConvertTypeToCName(ass.GetName().Name) + "__called = 0;");
+            context.Code.Append("void init_" + Naming.ConvertTypeToCName(ass.GetName().Name) + "() {\n    if(init_" + Naming.ConvertTypeToCName(ass.GetName().Name) + "__called) return;\n    init_" + Naming.ConvertTypeToCName(ass.GetName().Name) + "__called = 1;\n" + context.Init.ToString() + "}\n" + context.Main.ToString() + "\n");
 
             File.WriteAllText(codefile, context.Code.ToString());
             File.WriteAllText(headerfile, context.Header.ToString());

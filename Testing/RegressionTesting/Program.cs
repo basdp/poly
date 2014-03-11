@@ -170,7 +170,7 @@ namespace RegressionTesting
             if (!File.Exists(@"tmp\" + basename + ".c")) return;
             CompilerSuite.Compile(@"tmp\" + basename + ".c", @"tmp\" + basename + ".obj");
             if (!File.Exists(@"tmp\" + basename + ".obj")) return;
-            CompilerSuite.Compile(@"tmp\" + basename + @".obj tmp\mscorlib.obj", output);
+            CompilerSuite.Compile(@"tmp\" + basename + @".obj tmp\mscorlib.obj tmp\Poly.Internals.obj", output);
             if (!File.Exists(@"tmp\" + basename + ".poly.exe")) return;
         }
 
@@ -179,6 +179,7 @@ namespace RegressionTesting
             CompilerSuite.Compile(@"mscorlib_.dll", @"tmp");
             CompilerSuite.Compile(@"Poly.Internals.dll", @"tmp");
             CompilerSuite.Compile(@"tmp\mscorlib.c", @"tmp\mscorlib.obj");
+            CompilerSuite.Compile(@"tmp\Poly.Internals.c", @"tmp\Poly.Internals.obj");
         }
     }
 }

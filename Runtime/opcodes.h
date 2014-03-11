@@ -213,15 +213,16 @@ void CIL_ldstr(const char*);
 				 else if (stack_top_size() == 8) { int64_t value = pop_value64(); intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } \
 				 else { intptr_t value = pop_pointer(); uintptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } }
 
-#define CIL_ldsfld(type, name) {  \
-	if (sizeof(type ## _sf_ ## name) == 4) { push_value32( (type ## _sf_ ## name), (type ## _sf_ ## name ## __type) ); }  \
-							else if (sizeof(type ## _sf_ ## name) == 8) { push_value64( (type ## _sf_ ## name), (type ## _sf_ ## name ## __type) ); }  \
-							else { push_pointer(type ## _sf_ ## name); } \
+#define CIL_ldsfld(type, name) { type ## __cctor_init();  \
+	            if (sizeof(type ## _sf_ ## name) == 4) { push_value32( (type ## _sf_ ## name), (type ## _sf_ ## name ## __type) ); }  \
+				else if (sizeof(type ## _sf_ ## name) == 8) { push_value64( (type ## _sf_ ## name), (type ## _sf_ ## name ## __type) ); }  \
+				else { push_pointer(type ## _sf_ ## name); } \
 }
 
-#define CIL_stsfld(type, name) {    if (stack_top_size() == 4) { int32_t value = pop_value32(); (type ## _sf_ ## name) = value; } \
-				 else if (stack_top_size() == 8) { int64_t value = pop_value64(); (type ## _sf_ ## name) = value; } \
-				 else { intptr_t value = pop_pointer(); (type ## _sf_ ## name) = value; } }
+#define CIL_stsfld(type, name) { type ## __cctor_init();\
+	            if (stack_top_size() == 4) { int32_t value = pop_value32(); (type ## _sf_ ## name) = value; } \
+				else if (stack_top_size() == 8) { int64_t value = pop_value64(); (type ## _sf_ ## name) = value; } \
+				else { intptr_t value = pop_pointer(); (type ## _sf_ ## name) = value; } }
 
 #define CIL_ret() callstack_pop(); return 0;
 

@@ -13,7 +13,11 @@ namespace PolyCompiler
         {
         }
 
+        public Assembly Assembly;
+        public bool IsExecutable = false;
+
         public Dictionary<FieldInfo, int> Offsets = new Dictionary<FieldInfo, int>();
+        public List<Type> CallCctorAtAccess = new List<Type>();
         public StringBuilder Code = new StringBuilder();
         public StringBuilder Header = new StringBuilder();
         public StringBuilder Init = new StringBuilder();
