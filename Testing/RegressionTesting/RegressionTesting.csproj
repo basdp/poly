@@ -7,8 +7,8 @@
     <ProjectGuid>{88F3524A-0C82-4173-9BCF-83C7EC9BE944}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>ImplementationTester</RootNamespace>
-    <AssemblyName>ImplementationTester</AssemblyName>
+    <RootNamespace>RegressionTesting</RootNamespace>
+    <AssemblyName>RegressionTester</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <PublishUrl>publish\</PublishUrl>
@@ -45,6 +45,9 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup>
+    <RunPostBuildEvent>OnBuildSuccess</RunPostBuildEvent>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -140,11 +143,11 @@
     </None>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\Poly.Internals\Poly.Internals.csproj">
+    <ProjectReference Include="..\..\Poly.Internals\Poly.Internals.csproj">
       <Project>{c6dfb03e-66fe-43e3-9a9c-01637967878d}</Project>
       <Name>Poly.Internals</Name>
     </ProjectReference>
-    <ProjectReference Include="..\PolyCompiler\PolyCompiler.csproj">
+    <ProjectReference Include="..\..\PolyCompiler\PolyCompiler.csproj">
       <Project>{89b5fc2f-3bcf-43ac-b09a-4251d825a348}</Project>
       <Name>PolyCompiler</Name>
     </ProjectReference>
@@ -168,10 +171,10 @@
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>copy /Y "$(SolutionDir)Release\Runtime.lib" .
-copy /Y "$(SolutionDir)BCL\mscorlib\bin\$(ConfigurationName)\mscorlib.dll" .\mscorlib_.dll
-mkdir include
-copy /Y "$(SolutionDir)Runtime\*.h" include</PostBuildEvent>
+    <PostBuildEvent>copy /Y "$(SolutionDir)\Runtime\Release\Runtime.lib" . &gt; NUL
+copy /Y "$(SolutionDir)BCL\mscorlib\bin\$(ConfigurationName)\mscorlib.dll" .\mscorlib_.dll &gt; NUL
+if NOT EXIST include mkdir include
+copy /Y "$(SolutionDir)Runtime\*.h" include &gt; NUL</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
