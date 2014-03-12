@@ -24,16 +24,18 @@ namespace PolyCompiler
                 sig = path + "::" + type;
             else
                 sig = type;
-            foreach (var p in m.GetParameters())
-            {
-                sig += "__" + GetFullName(p.ParameterType).Replace(".__", ".");
-            }
 
             MethodInfo mi = m as MethodInfo;
             if (mi != null)
             {
                 mi = GetDefinedMethod(mi);
                 sig = GetFullName(mi.ReturnType) + "__" + sig;
+                m = mi;
+            }
+
+            foreach (var p in m.GetParameters())
+            {
+                sig += "__" + GetFullName(p.ParameterType).Replace(".__", ".");
             }
 
             System.Text.ASCIIEncoding encoder = new System.Text.ASCIIEncoding();
@@ -50,7 +52,7 @@ namespace PolyCompiler
             {
                 if (mds.Name == mi.Name)
                 {
-                    if (mds.ReturnType != mi.ReturnType)
+                    if (!mds.ReturnType.Equals(mi.ReturnType))
                     {
                         if (!mds.ReturnType.IsGenericParameter)
                         {
@@ -64,14 +66,14 @@ namespace PolyCompiler
                     bool notIt = false;
                     for (int i = 0; i < miParams.Length && !notIt; i++)
                     {
-                        if (miParams[i].ParameterType != mdsParams[i].ParameterType)
+                        if (!miParams[i].ParameterType.Equals(mdsParams[i].ParameterType))
                         {
                             if (!mdsParams[i].ParameterType.IsGenericParameter) {
                                 notIt = true;
                             }
                         }
                     }
-                    return mds;
+                    if (!notIt) return mds;
                 }
             }
             return mi;
