@@ -101,7 +101,32 @@ namespace SDILReader
                 }*/
                 else
                 {
-                    result += Naming.ConvertTypeToCName("CIL_" + code.Name) + "(";
+                    result += Naming.ConvertTypeToCName("CIL_" + code.Name);
+                    if (code.Name == "stfld" || code.Name == "ldfld")
+                    {
+                        System.Reflection.FieldInfo fOperand = ((System.Reflection.FieldInfo)operand);
+                        if (fOperand.DeclaringType.IsGenericType)
+                        {
+                            string gtypename = fOperand.DeclaringType.Namespace;
+                            if (gtypename == null) gtypename = "";
+                            else gtypename += ".";
+                            gtypename += fOperand.DeclaringType.Name;
+                            var thisfield = fOperand.DeclaringType.Assembly.GetType(gtypename).GetField(fOperand.Name);
+                            if (thisfield.FieldType.IsGenericParameter)
+                            {
+                                result += "_generic";
+                            }
+                            else
+                            {
+                                result += "";
+                            }
+                        }
+                        else
+                        {
+                            result += "";
+                        }
+                    }
+                    result += "(";
                     switch (code.OperandType)
                     {
                         case OperandType.InlineField:
@@ -173,9 +198,11 @@ namespace SDILReader
                             result += operand.ToString();
                             break;
                         case OperandType.InlineI:
-                        case OperandType.InlineI8:
                         case OperandType.ShortInlineI:
-                            result += operand.ToString();
+                            result += operand.ToString() + "u";
+                            break;
+                        case OperandType.InlineI8:
+                            result += operand.ToString() + "ull";
                             break;
                         case OperandType.InlineR:
                             double d = (double)operand;

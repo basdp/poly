@@ -28,7 +28,10 @@ namespace SDILReader
         }
         private ulong ReadInt64(byte[] _il, ref int position)
         {
-            return (ulong)(((il[position++] | (il[position++] << 8)) | (il[position++] << 0x10)) | (il[position++] << 0x18) | (il[position++] << 0x20) | (il[position++] << 0x28) | (il[position++] << 0x30) | (il[position++] << 0x38));
+            ulong i = BitConverter.ToUInt64(il, position);
+            position += 8;
+            return i;
+            //return (ulong)(((il[position++] | (il[position++] << 8)) | (il[position++] << 0x10)) | (il[position++] << 0x18) | (il[position++] << 0x20) | (il[position++] << 0x28) | (il[position++] << 0x30) | (il[position++] << 0x38));
         }
         private double ReadDouble(byte[] _il, ref int position)
         {

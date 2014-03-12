@@ -19,7 +19,7 @@ namespace System
         public static void WriteLine(int value) { }
 
         [Poly.Internals.CompilerImplemented.InlineCode(@"
-            printf(""%ld\n"", (long int)parameter0);
+            printf(""%lld\n"", (int64_t)parameter0);
         ")]
         public static void WriteLine(Int64 value) { }
 

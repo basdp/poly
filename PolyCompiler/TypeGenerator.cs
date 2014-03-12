@@ -59,6 +59,11 @@ namespace PolyCompiler
                     // TODO: 64 bit?
                     classSize += 4;
                 }
+
+                if (type.IsGenericTypeDefinition && fis[j].FieldType.IsGenericParameter)
+                {
+                    context.Header.Append("    enum CIL_Type " + Naming.GetInternalFieldName(fis[j].Name) + "__type;\n");
+                }
             }
 
             if (type.StructLayoutAttribute != null && type.StructLayoutAttribute.Size != 0)

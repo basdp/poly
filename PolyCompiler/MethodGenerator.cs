@@ -63,11 +63,20 @@ namespace PolyCompiler
                     addedcode += "    ((struct System__Object*)parameter0)->__CILbaseinterfaces = (intptr_t)&" + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces;\n";
                     addedcode += "    ((struct System__Object*)parameter0)->__CILbaseinterfaces_length = &" + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces_length;\n";
 
-                    if (type.IsGenericType)
+                    if (type.IsGenericTypeDefinition)
                     {
                         addedcode += "    ((struct System__Object*)parameter0)->__CILisgeneric = 1;\n";
                         addedcode += "    ((struct System__Object*)parameter0)->__CILgenerictypelist_length = generictypelist_length;\n";
                         addedcode += "    ((struct System__Object*)parameter0)->__CILgenerictypelist = generictypelist;\n";
+                        foreach (var field in type.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+                        {
+                            if (field.FieldType.IsGenericParameter)
+                            {
+                                int typeindex = field.FieldType.GenericParameterPosition;
+                                addedcode += "    ((struct " + Naming.ConvertTypeToCName(type) + "*)parameter0)->" + field.Name + "__type = ";
+                                addedcode += "generictypelist[" + typeindex + "];\n";
+                            }
+                        }
                     }
                 }
                 foreach (var virtmethod in type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(m => m.IsVirtual))
@@ -198,7 +207,7 @@ namespace PolyCompiler
             context.Header.Append("/* " + m.DeclaringType.FullName + "::" + m.Name + " */\n");
             context.Header.AppendLine("extern char* " + Naming.GetInternalMethodName(m) + "_sig;");
 
-            if (m.IsConstructor && m.DeclaringType.IsGenericType)
+            if (m.IsConstructor && m.DeclaringType.IsGenericTypeDefinition)
             {
                 context.Header.Append("void *" + Naming.GetInternalMethodName(m) + "(int, enum CIL_Type*);\n");
 

@@ -63,7 +63,7 @@ namespace PolyCompiler
 
             CompilerContext context = new CompilerContext();
             context.Assembly = ass;
-            context.CodeHeader.Append("#include \"" + headerfile + "\"\n\n");
+            context.CodeHeader.Append("#include \"" + new FileInfo(headerfile).Name + "\"\n\n");
             context.Header.Append("#pragma once\n#include \"polyruntime.h\"\n#include \"mscorlib.h\"\n\n");
 
             context.CodeHeader.Append("// Imports\n");

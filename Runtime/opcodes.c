@@ -433,7 +433,7 @@ enum CIL_Type typea = stack_top_type();\
 OPERATOR(add, +);
 OPERATOR(sub, -);
 OPERATOR(mul, *);
-OPERATOR(div, /);
+OPERATOR(div, / );
 OPERATOR_INT(rem, %);
 
 /*
@@ -517,36 +517,36 @@ enum CIL_Type typea = stack_top_type();\
 	fprintf(stderr, "Error: " #name " is not supported on these operands");\
 }
 
-COMPARER(ceq, ==);
+COMPARER(ceq, == );
 COMPARER(clt, <);
 COMPARER(cgt, >);
 
 #define UNARY_INT(name, op) void CIL_ ## name() { \
-	enum CIL_Type type = stack_top_type(); \
+enum CIL_Type type = stack_top_type(); \
 	if (type == CIL_int32) { \
-		int32_t v = pop_value32(); \
-		v = op v; \
-		push_value32(v, CIL_int32); \
-		return; \
+	int32_t v = pop_value32(); \
+	v = op v; \
+	push_value32(v, CIL_int32); \
+	return; \
 	} \
 	else if (type == CIL_int64) { \
-		int64_t v = pop_value64(); \
-		v = op v; \
-		push_value64(v, CIL_int64); \
-		return; \
-	} \
+	int64_t v = pop_value64(); \
+	v = op v; \
+	push_value64(v, CIL_int64); \
+	return; \
+} \
 	else if (type == CIL_pointer) { \
-		intptr_t v = pop_pointer(); \
-		v = op v; \
-		push_pointer(v); \
-		return; \
-	} \
+	intptr_t v = pop_pointer(); \
+	v = op v; \
+	push_pointer(v); \
+	return; \
+} \
 	else if (type == CIL_native) { \
-		intptr_t v = pop_pointer(); \
-		v = op v; \
-		push_pointer(v); \
-		return; \
-	} \
+	intptr_t v = pop_pointer(); \
+	v = op v; \
+	push_pointer(v); \
+	return; \
+} \
 	fprintf(stderr, "Error: " #name " is not supported on these operands"); \
 }
 
@@ -621,6 +621,28 @@ void CIL_box_ciltype_dispatch(enum CIL_type type) {
 	}
 	else if (type == CIL_pointer) {
 		fprintf(stderr, "Error: Can not box from pointer type!\n");
+		exit(1);
+		return;
+	}
+	else {
+		// box a valuetype
+		return;
+	}
+}
+
+void CIL_unbox_ciltype_dispatch(enum CIL_type type) {
+	if (type == CIL_int32) {
+		struct SYSTEM__INT32_proto *obj = (struct SYSTEM__INT32_proto*)pop_pointer();
+		push_value32(obj->value, CIL_int32);
+		return;
+	}
+	if (type == CIL_int64) {
+		struct SYSTEM__INT64_proto *obj = (struct SYSTEM__INT64_proto*)pop_pointer();
+		push_value64(obj->value, CIL_int64);
+		return;
+	}
+	else if (type == CIL_pointer) {
+		fprintf(stderr, "Error: Can not box to pointer type!\n");
 		exit(1);
 		return;
 	}
@@ -818,5 +840,48 @@ int CIL_castclass_dispatch(const char* type) {
 	}
 	else {
 		return 0;
+	}
+}
+
+int CIL_stfld_dispatch(void* field) {
+	if (stack_top_size() == 4) {
+		int32_t value = pop_value32();
+		intptr_t self = pop_pointer();
+		*(int32_t*)field = value;
+	}
+	else if (stack_top_size() == 8) {
+		int64_t value = pop_value64();
+		intptr_t self = pop_pointer();
+		*(int64_t*)field = value;
+	}
+	else {
+		intptr_t value = pop_pointer();
+		uintptr_t self = pop_pointer();
+		*(intptr_t*)field = value;
+	}
+	return 0;
+}
+
+int CIL_stfld_generic_dispatch(void* field, enum CIL_Type type) {
+	// Generic type parameters are always pointers
+	if (type != CIL_pointer) { CIL_box_ciltype(type); }
+	uintptr_t value = pop_pointer();
+	uintptr_t self = pop_pointer();
+	*(uintptr_t*)field = value;
+	return 0;
+}
+
+int cil_type_size(enum CIL_Type type) {
+	switch (type) {
+	case CIL_float32:
+	case CIL_int32:
+		return 4;
+	case CIL_float64:
+	case CIL_int64:
+		return 8;
+	case CIL_pointer:
+	case CIL_native:
+		return sizeof(intptr_t);
+	default: return 0;
 	}
 }

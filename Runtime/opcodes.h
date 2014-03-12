@@ -209,8 +209,25 @@ void CIL_ldstr(const char*);
 							else { push_pointer((((struct type*)self)-> name)); } \
 }
 
-#define CIL_stfld(type, name) { if (type ## _f_ ## name ## __type == CIL_pointer && stack_top_type() != CIL_pointer) { print_stack(); CIL_box_ciltype(); }\
-				 if (stack_top_size() == 4) { int32_t value = pop_value32(); intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } \
+#define CIL_ldfld_generic(type, name)  {intptr_t self = peek_pointer(0); CIL_ldfld(type, name); \
+	enum CIL_Type type = ((struct type*)self)->name ## __type; \
+	if (type != stack_top_type()) { CIL_unbox_ciltype(type); } \
+}
+
+#define CIL_stfld(type, name) { \
+	uintptr_t self = peek_pointer(1); \
+	if (self == 0) { throw_NullReferenceException(); } \
+	CIL_stfld_dispatch(&(((struct type*)self)->name)); \
+}
+#define CIL_stfld_generic(type, name) { \
+	uintptr_t self = peek_pointer(1); \
+	if (self == 0) { throw_NullReferenceException(); } \
+	CIL_stfld_generic_dispatch(&(((struct type*)self)->name), ((struct type*)self)->name ## __type); \
+}
+int CIL_stfld_dispatch(void*);
+int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
+
+#define CIL_stfld_old(type, name) { if stack_top_size() == 4) { int32_t value = pop_value32(); intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } \
 				 else if (stack_top_size() == 8) { int64_t value = pop_value64(); intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } \
 				 else { intptr_t value = pop_pointer(); uintptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } }
 
@@ -307,6 +324,8 @@ void CIL_ldstr(const char*);
 void CIL_box_dispatch(const char*);
 #define CIL_box_ciltype(type) CIL_box_ciltype_dispatch(type)
 void CIL_box_ciltype_dispatch(enum CIL_type);
+#define CIL_unbox_ciltype(type) CIL_unbox_ciltype_dispatch(type)
+void CIL_unbox_ciltype_dispatch(enum CIL_type);
 
 #define CIL_newarr(type) CIL_newarr_dispatch(#type)
 void CIL_newarr_dispatch(const char*);

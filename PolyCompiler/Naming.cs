@@ -15,7 +15,7 @@ namespace PolyCompiler
         public static string GetInternalMethodName(MethodBase m, bool includePath = true)
         {
             string fullname = m.DeclaringType.FullName;
-            if (m.DeclaringType.IsGenericType && m.DeclaringType.GenericTypeArguments.Length > 0) fullname = fullname.Substring(0, fullname.IndexOf('['));
+            if (m.DeclaringType.IsGenericType && fullname.IndexOf('[') != -1) fullname = fullname.Substring(0, fullname.IndexOf('['));
             string path = fullname.Replace(".__", ".");
             string type = m.Name;
             type = type.TrimStart(new char[] { '_' });
@@ -79,7 +79,8 @@ namespace PolyCompiler
             string fullname = "";
             if (!type.IsGenericType) return ConvertTypeToCName(type.FullName);
 
-            fullname = type.FullName.Substring(0, type.FullName.IndexOf('['));
+            fullname = type.FullName;
+            if (fullname.IndexOf('[') != -1) fullname = fullname.Substring(0, type.FullName.IndexOf('['));
             /*foreach (var p in type.GenericTypeArguments)
             {
                 fullname += "<" + p.FullName + ">";

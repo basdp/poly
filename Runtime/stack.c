@@ -165,7 +165,7 @@ void print_stack() {
 		} else if (types[i] == CIL_int64) {
 			int64_t v = *((int64_t*)(items + t));
 			printf("int64\t\t"); 
-			printf("%i", (int)v);
+			printf("%lld", v);
 			t += sizeof(int64_t);
 		}  else if (types[i] == CIL_float32) {
 			int32_t v = *((int32_t*)(items + t));
