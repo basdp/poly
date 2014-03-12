@@ -49,6 +49,7 @@ namespace SDILReader
         public string GetCode(MethodBase m, CompilerContext context)
         {
             string result = "";
+            bool putOpenParenthesis = true;
             string scope = Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name);
             if (operand != null)
             {
@@ -102,6 +103,7 @@ namespace SDILReader
                 else
                 {
                     result += Naming.ConvertTypeToCName("CIL_" + code.Name);
+
                     if (code.Name == "stfld" || code.Name == "ldfld")
                     {
                         System.Reflection.FieldInfo fOperand = ((System.Reflection.FieldInfo)operand);
@@ -126,7 +128,18 @@ namespace SDILReader
                             result += "";
                         }
                     }
-                    result += "(";
+                    if (code.Name == "call")
+                    {
+                        System.Reflection.ConstructorInfo fOperand = operand as ConstructorInfo;
+                        if (fOperand != null && fOperand.DeclaringType.IsGenericType)
+                        {
+                            result += "_generic_ctor(";
+                            result += "base_typelist_length, base_typelist, ";
+                            putOpenParenthesis = false;
+                        }
+                    }
+
+                    if (putOpenParenthesis) result += "(";
                     switch (code.OperandType)
                     {
                         case OperandType.InlineField:
@@ -168,6 +181,7 @@ namespace SDILReader
                                 }
                                 catch
                                 {
+                                    throw new NotImplementedException();
                                 }
                             }
                             break;

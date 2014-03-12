@@ -96,7 +96,14 @@ namespace SDILReader
                         break;
                     case OperandType.InlineField:
                         metadataToken = ReadInt32(il, ref position);
-                        instruction.Operand = module.ResolveField(metadataToken);
+                        try
+                        {
+                            instruction.Operand = module.ResolveField(metadataToken);
+                        }
+                        catch
+                        {
+                            instruction.Operand = module.ResolveField(metadataToken, mi.DeclaringType.GetGenericArguments(), null);
+                        }
                         break;
                     case OperandType.InlineMethod:
                         metadataToken = ReadInt32(il, ref position);
@@ -106,7 +113,7 @@ namespace SDILReader
                         }
                         catch
                         {
-                            instruction.Operand = module.ResolveMember(metadataToken);
+                            instruction.Operand = module.ResolveMember(metadataToken, mi.DeclaringType.GetGenericArguments(), null);
                         }
                         break;
                     case OperandType.InlineSig:

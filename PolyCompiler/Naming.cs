@@ -14,7 +14,7 @@ namespace PolyCompiler
 
         public static string GetInternalMethodName(MethodBase m, bool includePath = true)
         {
-            string fullname = m.DeclaringType.FullName;
+            string fullname = GetFullName(m.DeclaringType);
             if (m.DeclaringType.IsGenericType && fullname.IndexOf('[') != -1) fullname = fullname.Substring(0, fullname.IndexOf('['));
             string path = fullname.Replace(".__", ".");
             string type = m.Name;
@@ -26,17 +26,55 @@ namespace PolyCompiler
                 sig = type;
             foreach (var p in m.GetParameters())
             {
-                sig += "__" + p.ParameterType.FullName.Replace(".__", ".");
+                sig += "__" + GetFullName(p.ParameterType).Replace(".__", ".");
             }
 
             MethodInfo mi = m as MethodInfo;
-            if (mi != null) 
-                sig = mi.ReturnType.FullName + "__" + sig;
-
+            if (mi != null)
+            {
+                mi = GetDefinedMethod(mi);
+                sig = GetFullName(mi.ReturnType) + "__" + sig;
+            }
 
             System.Text.ASCIIEncoding encoder = new System.Text.ASCIIEncoding();
             string ret = "m" + BitConverter.ToString(sha.ComputeHash(encoder.GetBytes(sig))).Replace("-", "");
             return ConvertTypeToCName(ret.ToString());
+        }
+
+        private static MethodInfo GetDefinedMethod(MethodInfo mi)
+        {
+            string gtypename = GetFullName(mi.DeclaringType);
+            if (gtypename.IndexOf('[') != -1) gtypename = gtypename.Substring(0, gtypename.IndexOf('['));
+            var methods = mi.DeclaringType.Assembly.GetType(gtypename).GetMethods();
+            foreach (var mds in methods)
+            {
+                if (mds.Name == mi.Name)
+                {
+                    if (mds.ReturnType != mi.ReturnType)
+                    {
+                        if (!mds.ReturnType.IsGenericParameter)
+                        {
+                            continue;
+                        }
+                    }
+
+                    var miParams = mi.GetParameters();
+                    var mdsParams = mds.GetParameters();
+                    if (miParams.Length != mdsParams.Length) continue;
+                    bool notIt = false;
+                    for (int i = 0; i < miParams.Length && !notIt; i++)
+                    {
+                        if (miParams[i].ParameterType != mdsParams[i].ParameterType)
+                        {
+                            if (!mdsParams[i].ParameterType.IsGenericParameter) {
+                                notIt = true;
+                            }
+                        }
+                    }
+                    return mds;
+                }
+            }
+            return mi;
         }
         public static string GetInternalMethodName(string name)
         {
@@ -77,9 +115,9 @@ namespace PolyCompiler
         public static string ConvertTypeToCName(Type type)
         {
             string fullname = "";
-            if (!type.IsGenericType) return ConvertTypeToCName(type.FullName);
+            if (!type.IsGenericType) return ConvertTypeToCName(GetFullName(type));
 
-            fullname = type.FullName;
+            fullname = GetFullName(type);
             if (fullname.IndexOf('[') != -1) fullname = fullname.Substring(0, type.FullName.IndexOf('['));
             /*foreach (var p in type.GenericTypeArguments)
             {
@@ -88,5 +126,18 @@ namespace PolyCompiler
             return ConvertTypeToCName(fullname);
         }
 
+
+        internal static string GetFullName(Type type)
+        {
+            string fullname = type.FullName;
+            if (fullname == null)
+            {
+                fullname = type.Namespace;
+                if (fullname != null) fullname += ".";
+                else fullname = "";
+                fullname += type.Name;
+            }
+            return fullname;
+        }
     }
 }

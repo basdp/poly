@@ -9,9 +9,19 @@
 	callstack_push(func ## _sig, "(unknown)", 0);\
 	int res = CIL_call_dispatch(&func);\
 	if (res == 1) {\
-		/* exception has been thrown*/\
-		if (DEBUG_EXCEPTIONS) { printf("Func " #func " threw an exception\n"); }\
-		exception_throw_withInitStackTrace(0);\
+	/* exception has been thrown*/\
+	if (DEBUG_EXCEPTIONS) { printf("Func " #func " threw an exception\n"); }\
+	exception_throw_withInitStackTrace(0);\
+	}\
+}
+
+#define CIL_call_generic_ctor(base_typelist_length, base_typelist, func, name, nparams, isvirtual) {\
+	callstack_push(func ## _sig, "(unknown)", 0);\
+	int res = CIL_call_generic_ctor_dispatch(base_typelist_length, base_typelist, &func);\
+	if (res == 1) {\
+	/* exception has been thrown*/\
+	if (DEBUG_EXCEPTIONS) { printf("Func " #func " threw an exception\n"); }\
+	exception_throw_withInitStackTrace(0);\
 	}\
 }
 
@@ -209,9 +219,11 @@ void CIL_ldstr(const char*);
 							else { push_pointer((((struct type*)self)-> name)); } \
 }
 
-#define CIL_ldfld_generic(type, name)  {intptr_t self = peek_pointer(0); CIL_ldfld(type, name); \
-	enum CIL_Type type = ((struct type*)self)->name ## __type; \
-	if (type != stack_top_type()) { CIL_unbox_ciltype(type); } \
+#define CIL_ldfld_generic(type, name)  {intptr_t self = pop_pointer(); \
+	if (self == 0) { throw_NullReferenceException(); } \
+	enum CIL_Type t = ((struct type*)self)->name ## __type; \
+	push_pointer((((struct type*)self)-> name)); \
+	if (t != stack_top_type()) { CIL_unbox_ciltype(t); } \
 }
 
 #define CIL_stfld(type, name) { \

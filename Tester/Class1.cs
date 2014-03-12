@@ -11,28 +11,30 @@ namespace ILD
         public int c;
     }
 
-    class I<T>
+    class H<T, I>
     {
-        public T var;
+        public T ds;
+        public I var;
+    }
+
+    class I<T> : H<int, T>
+    {
+        public T var2;
         public int intvar;
+
+        public T getVar2()
+        {
+            return var2;
+        }
     }
 
     class X
     {
         public static int Main()
         {
-            //I<Test> a = new I<Test>();
-            //a.var = new Test() { a = 3, b = 5, c = 6 };
-            I<Int64> a = new I<Int64>();
-            a.var = 21474836478L;
-            a.intvar = 5;
-            Console.WriteLine(a.var);
-            Console.WriteLine(a.intvar);
-
-            I<string> b = new I<string>();
-            b.var = "hoi";
-
-            Console.WriteLine(b.var);
+            I<Int64> i = new I<Int64>();
+            i.var2 = 21474836478L;
+            Console.WriteLine(i.getVar2());
 
             return 200;
         }

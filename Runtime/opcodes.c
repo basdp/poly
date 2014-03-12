@@ -312,6 +312,15 @@ int CIL_call_dispatch(void* (*func)()) {
 	return res;
 }
 
+int CIL_call_generic_ctor_dispatch(int generictypelist_length, enum CIL_Type* generictypelist, void* (*func)(int, enum CIL_Type*)) {
+	// TODO: callstack_push() should be only called from here
+	//       We need to create a hashtable from function pointers to signature strings that this
+	//       function can use to get the right signature.
+	//       Now, the signature of the base class is displayed on virtual functions.
+	int res = (int)func(generictypelist_length, generictypelist);
+	return res;
+}
+
 int CIL_callvirt_dispatch(const char *symbol, unsigned int nparams, void* (*func)(), int isvirtual) {
 	uintptr_t object;
 	map_t symboltable;
@@ -603,6 +612,7 @@ void CIL_box_dispatch(const char* type) {
 }
 
 void CIL_box_ciltype_dispatch(enum CIL_type type) {
+	//printf("box to %d of size %d\n", type, cil_type_size(type));
 	if (type == CIL_int32) {
 		struct SYSTEM__INT32_proto *obj;
 		int32_t val = pop_value32();
@@ -871,17 +881,3 @@ int CIL_stfld_generic_dispatch(void* field, enum CIL_Type type) {
 	return 0;
 }
 
-int cil_type_size(enum CIL_Type type) {
-	switch (type) {
-	case CIL_float32:
-	case CIL_int32:
-		return 4;
-	case CIL_float64:
-	case CIL_int64:
-		return 8;
-	case CIL_pointer:
-	case CIL_native:
-		return sizeof(intptr_t);
-	default: return 0;
-	}
-}

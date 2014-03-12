@@ -11,3 +11,5 @@ enum CIL_Type {
 	CIL_float32,
 	CIL_float64
 };
+
+int cil_type_size(enum CIL_Type type);

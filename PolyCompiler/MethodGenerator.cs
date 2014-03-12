@@ -235,6 +235,19 @@ namespace PolyCompiler
                 // constructors get the object as last parameter on the stack instead of the first
                 context.Code.Append("    uintptr_t parameter0 = pop_pointer();\n");
                 context.Code.Append("    enum CIL_Type parameter0__type = CIL_pointer;\n");
+
+                if (m.DeclaringType.BaseType.GenericTypeArguments.Length > 0)
+                {
+                    context.Code.AppendLine("    int base_typelist_length = " + m.DeclaringType.BaseType.GenericTypeArguments.Length + ";");
+                    context.Code.AppendLine("    enum CIL_Type* base_typelist = malloc(sizeof(enum CIL_Type) * " + m.DeclaringType.BaseType.GenericTypeArguments.Length + ");");
+                    for (int i = 0; i < m.DeclaringType.BaseType.GenericTypeArguments.Length; i++)
+                    {
+                        var gtype = m.DeclaringType.BaseType.GenericTypeArguments[i];
+                        int i2 = m.DeclaringType.GetGenericArguments().ToList().IndexOf(gtype);
+                        if (i2 == -1) context.Code.AppendLine("    base_typelist[" + i + "] = " + TypeHelper.GetInternalType(gtype) + ";");
+                        else context.Code.AppendLine("    base_typelist[" + i + "] = generictypelist[" + i2 + "];");
+                    }
+                }
             }
 
             if (m.Name == ".cctor")
@@ -378,6 +391,7 @@ namespace PolyCompiler
                         switch (instr.Code.Name)
                         {
                             case "br.s":
+                            case "br":
                                 context.Code.Append("goto " + Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name) + SDILReader.ILInstruction.GetExpandedOffset((int)instr.Operand));
                                 break;
                             /*case "leave.s":

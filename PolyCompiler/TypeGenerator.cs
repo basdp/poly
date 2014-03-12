@@ -24,7 +24,7 @@ namespace PolyCompiler
 
             if (type.BaseType != null && type.FullName != "System.Object" && type.FullName != "System.__Object")
             {
-                context.Header.Append("  struct " + Naming.ConvertTypeToCName(type.BaseType.FullName) + " __base; // base class\n");
+                context.Header.Append("  struct " + Naming.ConvertTypeToCName(type.BaseType) + " __base; // base class\n");
             }
             if (type.GetCustomAttribute(typeof(StructureCodeAttribute), true) != null)
             {
@@ -158,7 +158,7 @@ namespace PolyCompiler
                 context.Code.AppendLine("char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses[" + baseTypes.Count + "] = {");
                 for (int i = 0; i < baseTypes.Count; i++)
                 {
-                    context.Code.Append("    \"" + baseTypes[i].FullName.Replace(".__", ".") + "\"");
+                    context.Code.Append("    \"" + Naming.GetFullName(baseTypes[i]).Replace(".__", ".") + "\"");
                     if (i < baseTypes.Count - 1) context.Code.Append(", ");
                     context.Code.Append("\n");
                 }

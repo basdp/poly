@@ -63,6 +63,12 @@
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tests\Class1.cs" />
+    <Content Include="Tests\test-019.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="Tests\test-020.cs">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Tests\test-018.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
