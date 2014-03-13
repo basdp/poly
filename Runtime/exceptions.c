@@ -79,7 +79,7 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 			printf("Uncaught Exception: ");
 
 			push_pointer((uintptr_t)exception);
-			CIL_callvirt_unsafe(mAF915A59A72145069E6562E6C996D1A7DE3D1BBC, "m1DBC7385BADBFDA548FB27E2160A33CF32C0F545", 0, 1); // Exception.ToString();
+			CIL_callvirt_unsafe(mAF915A59A72145069E6562E6C996D1A7DE3D1BBC, "m67927A3071253D828DCB5EC9A1AE8B0967E45059", 0, 1); // Exception.ToString();
 			char *excmess = CIL_getCStringFromSystemString(pop_pointer());
 			printf("%s\n", excmess);
 			// TODO: should probably execute all finally blocks

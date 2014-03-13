@@ -58,7 +58,8 @@ void CIL_conv__i4() {
 		push_value32(i, CIL_int32);
 		return;
 	}
-	fprintf(stderr, "Error: conv.i4 is not supported on operand");
+	fprintf(stderr, "Error: conv.i4 is not supported on operand\n");
+	exit(1);
 }
 
 void CIL_conv__i() {
@@ -333,8 +334,8 @@ int CIL_callvirt_dispatch(const char *symbol, unsigned int nparams, void* (*func
 	symboltable = *((map_t*)object);
 	ret = hashmap_get(symboltable, symbol, (any_t*)&func);
 	if (ret == MAP_MISSING) {
-		fprintf(stderr, "Could not find symbol in symboltable!\n");
-		exit(1);
+		fprintf(stderr, "Could not find symbol in symboltable: %s!\n", symbol);
+		return 2;
 	}
 	return CIL_call_dispatch(func);
 }
@@ -577,7 +578,7 @@ char *CIL_getCStringFromSystemString(intptr_t object) {
 }
 
 void CIL_box_dispatch(const char* type) {
-	printf("Boxing: %s\n", type);
+	//printf("Boxing: %s\n", type);
 	if (strcmp(type, "System.Int32") == 0) {
 		struct SYSTEM__INT32_proto *obj;
 		int32_t val = pop_value32();
@@ -630,8 +631,7 @@ void CIL_box_ciltype_dispatch(enum CIL_type type) {
 		return;
 	}
 	else if (type == CIL_pointer) {
-		fprintf(stderr, "Error: Can not box from pointer type!\n");
-		exit(1);
+		
 		return;
 	}
 	else {
@@ -640,25 +640,27 @@ void CIL_box_ciltype_dispatch(enum CIL_type type) {
 	}
 }
 
-void CIL_unbox_ciltype_dispatch(enum CIL_type type) {
+int CIL_unbox_ciltype_dispatch(enum CIL_type type) {
 	if (type == CIL_int32) {
 		struct SYSTEM__INT32_proto *obj = (struct SYSTEM__INT32_proto*)pop_pointer();
+		if (obj == 0) return 1;
 		push_value32(obj->value, CIL_int32);
-		return;
+		return 0;
 	}
 	if (type == CIL_int64) {
 		struct SYSTEM__INT64_proto *obj = (struct SYSTEM__INT64_proto*)pop_pointer();
+		if (obj == 0) return 1;
 		push_value64(obj->value, CIL_int64);
-		return;
+		return 0;
 	}
 	else if (type == CIL_pointer) {
 		fprintf(stderr, "Error: Can not box to pointer type!\n");
 		exit(1);
-		return;
+		return 0;
 	}
 	else {
 		// box a valuetype
-		return;
+		return 0;
 	}
 }
 

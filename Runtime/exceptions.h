@@ -116,6 +116,12 @@ extern struct SYSTEM__OBJECT_proto *lastThrownException;
 	GOTO_LABEL_ADDRESS(p); \
 }
 
+#define wrap_exception_handling(code) { int ret = code; \
+	if (ret == 1) { \
+		throw_NullReferenceException(); \
+	} \
+}
+
 // System.NullReferenceException
 extern void* m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C();
 extern char* m7478BF6EC5F04E0D28F88AAD2CE7EF9EDB108B0C_sig;

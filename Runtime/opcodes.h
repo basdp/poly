@@ -34,6 +34,8 @@
 			if (DEBUG_EXCEPTIONS) { printf("Func " name " threw an exception\n"); }\
 			/* exception has been thrown*/\
 			exception_throw_withInitStackTrace(0);\
+		} else if (res == 2) {\
+			fprintf(stderr, __FILE__":%d\tError: a virtual function has not been found\n", __LINE__);\
 		}\
 	}\
 }
@@ -336,8 +338,8 @@ int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
 void CIL_box_dispatch(const char*);
 #define CIL_box_ciltype(type) CIL_box_ciltype_dispatch(type)
 void CIL_box_ciltype_dispatch(enum CIL_type);
-#define CIL_unbox_ciltype(type) CIL_unbox_ciltype_dispatch(type)
-void CIL_unbox_ciltype_dispatch(enum CIL_type);
+#define CIL_unbox_ciltype(type) wrap_exception_handling(CIL_unbox_ciltype_dispatch(type))
+int CIL_unbox_ciltype_dispatch(enum CIL_type);
 
 #define CIL_newarr(type) CIL_newarr_dispatch(#type)
 void CIL_newarr_dispatch(const char*);

@@ -87,6 +87,12 @@ namespace PolyCompiler
                 FieldInfo[] fis = type.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                 for (int k = 0; k < fis.Length; k++)
                 {
+                    if (fis[k].FieldType.IsGenericParameter)
+                    {
+                        addedcode += "    push_default_value(((struct " + Naming.ConvertTypeToCName(type.FullName) + "*)parameter0)->" + Naming.GetInternalFieldName(fis[k].Name) + "__type);\n";
+                        addedcode += "    CIL_box_ciltype(((struct " + Naming.ConvertTypeToCName(type.FullName) + "*)parameter0)->" + Naming.GetInternalFieldName(fis[k].Name) + "__type);\n";
+                    }
+
                     addedcode += "    ((struct " + Naming.ConvertTypeToCName(type.FullName) +"*)parameter0)->";
                     if (fis[k].FieldType.IsValueType)
                     {
@@ -102,9 +108,17 @@ namespace PolyCompiler
                     }
                     else
                     {
-                        addedcode += Naming.GetInternalFieldName(fis[k].Name) + " = 0;";
+                        if (fis[k].FieldType.IsGenericParameter)
+                        {
+                            addedcode += Naming.GetInternalFieldName(fis[k].Name) + " = pop_pointer();";
+                        }
+                        else
+                        {
+                            addedcode += Naming.GetInternalFieldName(fis[k].Name) + " = 0;";
+                        }
                     }
                     addedcode += "\n";
+
                 }
 
                 ProcessMethodBody(cis[j], context, addedcode);
@@ -274,8 +288,20 @@ namespace PolyCompiler
                 }
                 else
                 {
-                    context.Code.Append("    uintptr_t parameter" + (p.Position + 1 - parameterOffset) + " = pop_pointer();\n");
-                    context.Code.Append("    enum CIL_Type parameter" + (p.Position + 1 - parameterOffset) + "__type = " + TypeHelper.GetInternalType(p.ParameterType) + "; // " + p.ParameterType.FullName + "\n");
+                    if (p.ParameterType.IsGenericParameter)
+                    {
+                        context.Code.AppendLine("    uintptr_t parameter" + (p.Position + 1 - parameterOffset) + ";");
+                        context.Code.AppendLine("    if (stack_top_type() != CIL_pointer) {");
+                        context.Code.AppendLine("        CIL_box_ciltype(stack_top_type());");
+                        context.Code.AppendLine("    }");
+                        context.Code.AppendLine("    parameter" + (p.Position + 1 - parameterOffset) + " = pop_pointer();");
+                        context.Code.AppendLine("    enum CIL_Type parameter" + (p.Position + 1 - parameterOffset) + "__type = CIL_pointer; // " + p.ParameterType.Name);
+                    }
+                    else
+                    {
+                        context.Code.Append("    uintptr_t parameter" + (p.Position + 1 - parameterOffset) + " = pop_pointer();\n");
+                        context.Code.Append("    enum CIL_Type parameter" + (p.Position + 1 - parameterOffset) + "__type = " + TypeHelper.GetInternalType(p.ParameterType) + "; // " + p.ParameterType.FullName + "\n");
+                    }
                 }
             }
             if (!m.IsStatic && !m.IsConstructor)

@@ -13,3 +13,4 @@ enum CIL_Type {
 };
 
 int cil_type_size(enum CIL_Type type);
+void push_default_value(enum CIL_Type type);

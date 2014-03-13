@@ -4,41 +4,27 @@ using System.Reflection;
 
 namespace ILD
 {
-    struct Test
+    class I<T>
     {
-        public int a;
-        public int b;
-        public int c;
-    }
-
-    class H<T, I>
-    {
-        public T ds;
-        public I var;
-        public I getVar() { return var; }
-    }
-
-    class I<T> : H<int, T>
-    {
-        public T var2;
+        public T var;
         public int intvar;
-
-        public T getVar2(T i)
-        {
-            return var2;
-        }
     }
 
     class X
     {
         public static int Main()
         {
-            I<Int64> i = new I<Int64>();
-            i.var2 = 21474836478L;
-            Console.WriteLine("hier");
-            Console.WriteLine(i.getVar2(99));
-            Console.WriteLine("hier");
-            Console.WriteLine(i.getVar());
+            I<Int64> a = new I<Int64>();
+            a.var = 21474836478L;
+            a.intvar = 5;
+
+            if (a.var != 21474836478L) return 1;
+            if (a.intvar != 5) return 2;
+
+            I<string> b = new I<string>();
+            b.var = "hoi";
+
+            if (b.var != "hoi") return 3;
 
             return 200;
         }
