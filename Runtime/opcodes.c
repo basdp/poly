@@ -313,6 +313,15 @@ int CIL_call_dispatch(void* (*func)()) {
 	return res;
 }
 
+int CIL_call_generic_dispatch(int generictypelist_length, enum CIL_Type* generictypelist, void* (*func)(int, enum CIL_Type*)) {
+	// TODO: callstack_push() should be only called from here
+	//       We need to create a hashtable from function pointers to signature strings that this
+	//       function can use to get the right signature.
+	//       Now, the signature of the base class is displayed on virtual functions.
+	int res = (int)func(generictypelist_length, generictypelist);
+	return res;
+}
+
 int CIL_call_generic_ctor_dispatch(int generictypelist_length, enum CIL_Type* generictypelist, void* (*func)(int, enum CIL_Type*)) {
 	// TODO: callstack_push() should be only called from here
 	//       We need to create a hashtable from function pointers to signature strings that this

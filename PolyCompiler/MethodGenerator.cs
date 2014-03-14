@@ -232,15 +232,13 @@ namespace PolyCompiler
             }
             else
             {
-                context.Header.Append("void *" + Naming.GetInternalMethodName(m) + "(/*");
-                if (m.GetParameters().Count() > 0)
-                    context.Header.Append(m.GetParameters().Select(p => p.ParameterType.Name + " " + p.Name).Aggregate((a, b) => a + ", " + b));
-                context.Header.Append("*/);\n");
+                context.Header.Append("void *" + Naming.GetInternalMethodName(m) + "(");
+                if (m.IsGenericMethod) context.Header.Append("int generictypelist_length, enum CIL_Type* generictypelist");
+                context.Header.Append(");\n");
 
-                context.Code.Append("void *" + Naming.GetInternalMethodName(m) + "(/*");
-                if (m.GetParameters().Count() > 0)
-                    context.Code.Append(m.GetParameters().Select(p => p.ParameterType.Name + " " + p.Name).Aggregate((a, b) => a + ", " + b));
-                context.Code.Append("*/) {\n");
+                context.Code.Append("void *" + Naming.GetInternalMethodName(m) + "(");
+                if (m.IsGenericMethod) context.Code.Append("int generictypelist_length, enum CIL_Type* generictypelist");
+                context.Code.Append(") {\n");
             }
 
             // parameters
@@ -363,7 +361,16 @@ namespace PolyCompiler
                             if (l.LocalType.IsGenericParameter)
                             {
                                 context.Code.Append("    int64_t local" + l.LocalIndex + " = 0;\n");
-                                context.Code.Append("    enum CIL_Type local" + l.LocalIndex + "__type = ((struct System__Object*)parameter0)->__CILgenerictypelist[" + l.LocalType.GenericParameterPosition + "]; // " + l.LocalType.FullName + "\n");
+                                if (l.LocalType.DeclaringMethod == null)
+                                {
+                                    // class generic
+                                    context.Code.Append("    enum CIL_Type local" + l.LocalIndex + "__type = ((struct System__Object*)parameter0)->__CILgenerictypelist[" + l.LocalType.GenericParameterPosition + "]; // " + l.LocalType.FullName + "\n");
+                                }
+                                else
+                                {
+                                    // method generic
+                                    context.Code.Append("    enum CIL_Type local" + l.LocalIndex + "__type = generictypelist[" + l.LocalType.GenericParameterPosition + "]; // " + l.LocalType.FullName + "\n");
+                                }
                             }
                             else
                             {

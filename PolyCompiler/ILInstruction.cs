@@ -59,31 +59,33 @@ namespace SDILReader
                     if (mOperand.ReflectedType.IsGenericType)
                     {
                         string def = "generic_" + Naming.ConvertTypeToCName(mOperand.ReflectedType);
+                        string typelist_name = "";
                         foreach (var gtype in mOperand.ReflectedType.GenericTypeArguments)
                         {
-                            def += "_G_" + Naming.ConvertTypeToCName(gtype);
+                            typelist_name += "__" + Naming.ConvertTypeToCName(gtype);
                         }
+                        def += typelist_name;
 
                         result += "CIL_newobj_generic(";
                         result += Naming.ConvertTypeToCName(mOperand.ReflectedType) + ", ";
                         result += Naming.GetInternalMethodName(mOperand) + ", ";
-                        result += def + "__typelist_length, ";
-                        result += def + "__typelist ";
+                        result += typelist_name + "__typelist_length, ";
+                        result += typelist_name + "__typelist ";
                         result += "/* " + mOperand.DeclaringType.FullName + "::" + mOperand.Name + " */";
 
-                        if (!context.GenericTypeListGenerated.Contains(mOperand.ReflectedType))
+                        if (!context.GenericTypeListGenerated.Contains(typelist_name))
                         {
-                            context.CodeHeader.AppendLine("static enum CIL_Type* " + def + "__typelist;");
-                            context.CodeHeader.AppendLine("static int " + def + "__typelist_length;");
-                            context.Init.AppendLine("    " + def + "__typelist_length = " + mOperand.ReflectedType.GenericTypeArguments.Length + ";");
-                            context.Init.AppendLine("    " + def + "__typelist = malloc(sizeof(enum CIL_Type) * " + mOperand.ReflectedType.GenericTypeArguments.Length + ");");
+                            context.CodeHeader.AppendLine("static enum CIL_Type* typelist" + typelist_name + ";");
+                            context.CodeHeader.AppendLine("static int typelist" + typelist_name + "_length;");
+                            context.Init.AppendLine("    typelist" + typelist_name + "_length = " + mOperand.ReflectedType.GenericTypeArguments.Length + ";");
+                            context.Init.AppendLine("    typelist" + typelist_name + " = malloc(sizeof(enum CIL_Type) * " + mOperand.ReflectedType.GenericTypeArguments.Length + ");");
                             for (int i = 0; i < mOperand.ReflectedType.GenericTypeArguments.Length; i++)
                             {
                                 var gtype = mOperand.ReflectedType.GenericTypeArguments[i];
-                                context.Init.AppendLine("    " + def + "__typelist[" + i + "] = " + TypeHelper.GetInternalType(gtype) + ";");
+                                context.Init.AppendLine("    typelist" + typelist_name + "[" + i + "] = " + TypeHelper.GetInternalType(gtype) + ";");
                             }
 
-                            context.GenericTypeListGenerated.Add(mOperand.ReflectedType);
+                            context.GenericTypeListGenerated.Add(typelist_name);
                         }
                     }
                     else
@@ -156,6 +158,38 @@ namespace SDILReader
                         {
                             result += "_generic_ctor(";
                             result += "base_typelist_length, base_typelist, ";
+                            putOpenParenthesis = false;
+                        }
+
+                        System.Reflection.MethodInfo mOperand = operand as MethodInfo;
+                        if (mOperand != null && mOperand.IsGenericMethod)
+                        {
+                            string typelist_name = "";
+                            foreach (var gtype in mOperand.GetGenericArguments())
+                            {
+                                typelist_name += "__" + Naming.ConvertTypeToCName(gtype);
+                            }
+
+                            result += "_generic(";
+                            result += "typelist" + typelist_name + "_length, ";
+                            result += "typelist" + typelist_name + ", ";
+
+                            // TODO: this is the same code as above for newobj, refactor
+                            if (!context.GenericTypeListGenerated.Contains(typelist_name))
+                            {
+                                context.CodeHeader.AppendLine("static enum CIL_Type* typelist" + typelist_name + ";");
+                                context.CodeHeader.AppendLine("static int typelist" + typelist_name + "_length;");
+                                context.Init.AppendLine("    typelist" + typelist_name + "_length = " + mOperand.GetGenericArguments().Length + ";");
+                                context.Init.AppendLine("    typelist" + typelist_name + " = malloc(sizeof(enum CIL_Type) * " + mOperand.GetGenericArguments().Length + ");");
+                                for (int i = 0; i < mOperand.GetGenericArguments().Length; i++)
+                                {
+                                    var gtype = mOperand.GetGenericArguments()[i];
+                                    context.Init.AppendLine("    typelist" + typelist_name + "[" + i + "] = " + TypeHelper.GetInternalType(gtype) + ";");
+                                }
+
+                                context.GenericTypeListGenerated.Add(typelist_name);
+                            }
+
                             putOpenParenthesis = false;
                         }
                     }

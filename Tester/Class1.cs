@@ -4,43 +4,31 @@ using System.Reflection;
 
 namespace ILD
 {
-    class D<T, U> 
+    /*class S<T> where T : new()
     {
-        public T tval;
-        public U uval;
-    }
+        public T hoi;
 
-    class H<T>: D<int, T>
-    {
-        public T t1val;
-    }
-
-    class I<T>: H<T>
-    {
-        public int intvar;
-
-        public void setVar(T v)
+        public T geth(T hoi)
         {
-            var = v;
+            T i = new T();
+            return i;
         }
 
-        public T var;
-        public T getVar()
-        {
-            return uval;
-        }
-    }
+    }*/
 
     class X
     {
+        public static DKJ Test<DKJ>(int i, DKJ u)
+        {
+            Console.WriteLine(i);
+            Console.WriteLine(u);
+            return u;
+        }
+
         public static int Main()
         {
-            I<long> a = new I<long>();
-            a.uval = 908765746576897L;
-            a.tval = 89;
 
-            Console.WriteLine(a.uval);
-            Console.WriteLine(a.getVar());
+            Console.WriteLine(Test<string>(4, "hoi"));
 
             return 200;
         }
