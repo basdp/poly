@@ -69,8 +69,8 @@ namespace SDILReader
                         result += "CIL_newobj_generic(";
                         result += Naming.ConvertTypeToCName(mOperand.ReflectedType) + ", ";
                         result += Naming.GetInternalMethodName(mOperand) + ", ";
-                        result += typelist_name + "__typelist_length, ";
-                        result += typelist_name + "__typelist ";
+                        result += "typelist" + typelist_name + "_length, ";
+                        result += "typelist" + typelist_name + " ";
                         result += "/* " + mOperand.DeclaringType.FullName + "::" + mOperand.Name + " */";
 
                         if (!context.GenericTypeListGenerated.Contains(typelist_name))
