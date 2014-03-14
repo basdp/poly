@@ -30,6 +30,12 @@ void push_pointer(uintptr_t c) {
 	types[ttop++] = CIL_pointer;
 }
 
+void push_valuetypepointer(uintptr_t c) {
+	memcpy(items + top, &c, sizeof(uintptr_t));
+	top += sizeof(uintptr_t);
+	types[ttop++] = CIL_valuetype;
+}
+
 int32_t pop_value32() {
 	int32_t r = *((int32_t*)(items + top - sizeof(int32_t)));
 	top -= 4;
@@ -80,6 +86,8 @@ uintptr_t peek_pointer(unsigned int offset) {
 			size = sizeof(intptr_t);
 		} else if (types[ttop - i - 1] == CIL_pointer) {
 			size = sizeof(intptr_t);
+		} else if (types[ttop - i - 1] == CIL_valuetype) {
+			size = sizeof(intptr_t);
 		} else if (types[ttop - i - 1] == CIL_float32) {
 			size = 4;
 		} else if (types[ttop - i - 1] == CIL_float64) {
@@ -108,6 +116,7 @@ int stack_top_size() {
 	case CIL_int64:
 		return 8;
 	case CIL_pointer:
+	case CIL_valuetype:
 	case CIL_native:
 		return sizeof(intptr_t);
 	default: return 0;
@@ -130,6 +139,7 @@ void stack_duplicate_top() {
 		push_value64(v, top_type); }
 		break;
 	case CIL_pointer:
+	case CIL_valuetype:
 	case CIL_native: {
 		intptr_t v = pop_pointer();
 		push_pointer(v);
@@ -179,7 +189,7 @@ void print_stack() {
 			double d;
 			memcpy(&d, &v, 8);
 			printf("float64\t\t"); 
-			printf("%f", d);
+			printf("%.14f", d);
 			t += sizeof(int64_t);
 		}  else if (types[i] == CIL_native) {
 			intptr_t v = *((intptr_t*)(items + t));
@@ -188,11 +198,17 @@ void print_stack() {
 			t += sizeof(intptr_t);
 		} else if (types[i] == CIL_pointer) {
 			intptr_t v = *((intptr_t*)(items + t));
-			printf("pointer\t\t"); 
+			printf("pointer\t\t");
 			printf("0x%x\t", v);
 			printf("%s", (char*)((struct SYSTEM__OBJECT_proto *)v)->__CILtype);
 			t += sizeof(intptr_t);
-		}		 
+		} else if (types[i] == CIL_valuetype) {
+			intptr_t v = *((intptr_t*)(items + t));
+			printf("value type\t"); 
+			printf("0x%x\t", v);
+			printf("%s", (char*)((struct SYSTEM__OBJECT_proto *)v)->__CILtype);
+			t += sizeof(intptr_t);
+		}	
 		printf("\n");
 	}
 	printf("\n");

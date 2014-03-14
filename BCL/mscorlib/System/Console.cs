@@ -38,7 +38,7 @@ namespace System
         [Poly.Internals.CompilerImplemented.InlineCode(@"
             double f;
             memcpy(&f, &parameter0, 8);
-            printf(""%f\n"", f);
+            printf(""%.14f\n"", f);
         ")]
         public static void WriteLine(double value) { }
 

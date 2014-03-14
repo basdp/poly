@@ -78,47 +78,49 @@ namespace PolyCompiler
                             }
                         }
                     }
-                }
-                foreach (var virtmethod in type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(m => m.IsVirtual))
-                {
-                    addedcode += "    hashmap_put(((struct System__Object*)parameter0)->__CILsymboltable, \"" + Naming.GetInternalMethodName(virtmethod, false) + "\", &" + Naming.GetInternalMethodName(virtmethod) +
-                   "); /* " + virtmethod.Name + " */\n";
-                }
-                FieldInfo[] fis = type.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-                for (int k = 0; k < fis.Length; k++)
-                {
-                    if (fis[k].FieldType.IsGenericParameter)
+                    foreach (var virtmethod in type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(m => m.IsVirtual))
                     {
-                        addedcode += "    push_default_value(((struct " + Naming.ConvertTypeToCName(type.FullName) + "*)parameter0)->" + Naming.GetInternalFieldName(fis[k].Name) + "__type);\n";
-                        addedcode += "    CIL_box_ciltype(((struct " + Naming.ConvertTypeToCName(type.FullName) + "*)parameter0)->" + Naming.GetInternalFieldName(fis[k].Name) + "__type);\n";
+                        addedcode += "    hashmap_put(((struct System__Object*)parameter0)->__CILsymboltable, \"" + Naming.GetInternalMethodName(virtmethod, false) + "\", &" + Naming.GetInternalMethodName(virtmethod) +
+                       "); /* " + virtmethod.Name + " */\n";
                     }
 
-                    addedcode += "    ((struct " + Naming.ConvertTypeToCName(type.FullName) +"*)parameter0)->";
-                    if (fis[k].FieldType.IsValueType)
+                    FieldInfo[] fis = type.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                    for (int k = 0; k < fis.Length; k++)
                     {
-                        int bits = TypeHelper.GetTypeSize(fis[k].FieldType);
-                        if (bits <= 64 && bits > 0)
+                        /*if (fis[k].FieldType.IsGenericParameter)
                         {
-                            addedcode += Naming.GetInternalFieldName(fis[k].Name) + " = 0;";
-                        }
-                        else
+                            addedcode += "    push_default_value(((struct " + Naming.ConvertTypeToCName(type.FullName) + "*)parameter0)->" + Naming.GetInternalFieldName(fis[k].Name) + "__type);\n";
+                            addedcode += "    CIL_box_ciltype(((struct " + Naming.ConvertTypeToCName(type.FullName) + "*)parameter0)->" + Naming.GetInternalFieldName(fis[k].Name) + "__type);\n";
+                        }*/
+
+                        addedcode += "    ((struct " + Naming.ConvertTypeToCName(type.FullName) + "*)parameter0)->";
+                        if (fis[k].FieldType.IsValueType)
                         {
-                            addedcode += Naming.GetInternalFieldName(fis[k].Name) + " = { 0 };";
-                        }
-                    }
-                    else
-                    {
-                        if (fis[k].FieldType.IsGenericParameter)
-                        {
-                            addedcode += Naming.GetInternalFieldName(fis[k].Name) + " = pop_pointer();";
+                            int bits = TypeHelper.GetTypeSize(fis[k].FieldType);
+                            if (bits <= 64 && bits > 0)
+                            {
+                                addedcode += Naming.GetInternalFieldName(fis[k].Name) + " = 0;";
+                            }
+                            else
+                            {
+                                addedcode += Naming.GetInternalFieldName(fis[k].Name) + " = { 0 };";
+                            }
                         }
                         else
                         {
                             addedcode += Naming.GetInternalFieldName(fis[k].Name) + " = 0;";
+                            /*if (fis[k].FieldType.IsGenericParameter)
+                            {
+                                addedcode += Naming.GetInternalFieldName(fis[k].Name) + " = pop_pointer();";
+                            }
+                            else
+                            {
+                                addedcode += Naming.GetInternalFieldName(fis[k].Name) + " = 0;";
+                            }*/
                         }
-                    }
-                    addedcode += "\n";
+                        addedcode += "\n";
 
+                    }
                 }
 
                 ProcessMethodBody(cis[j], context, addedcode);
@@ -148,7 +150,8 @@ namespace PolyCompiler
                     addedcode += "    hashmap_put(((struct System__Object*)parameter0)->__CILsymboltable, \"" + Naming.GetInternalMethodName(virtmethod, false) + "\", &" + Naming.GetInternalMethodName(virtmethod) +
                    "); /* " + virtmethod.Name + " */\n";
                 }
-                
+
+                context.Header.AppendLine("void *" + Naming.ConvertTypeToCName(type.FullName) + "__init();");
                 context.Code.Append("void *" + Naming.ConvertTypeToCName(type.FullName) + "__init() {\n");
                 context.Code.Append(addedcode);
                 context.Code.AppendLine("return 0; \n}");
@@ -290,12 +293,13 @@ namespace PolyCompiler
                 {
                     if (p.ParameterType.IsGenericParameter)
                     {
-                        context.Code.AppendLine("    uintptr_t parameter" + (p.Position + 1 - parameterOffset) + ";");
-                        context.Code.AppendLine("    if (stack_top_type() != CIL_pointer) {");
-                        context.Code.AppendLine("        CIL_box_ciltype(stack_top_type());");
+                        context.Code.AppendLine("    enum CIL_Type parameter" + (p.Position + 1 - parameterOffset) + "__type = stack_top_type(); // " + p.ParameterType.Name);
+                        context.Code.AppendLine("    int64_t parameter" + (p.Position + 1 - parameterOffset) + ";");
+                        context.Code.AppendLine("    if (stack_top_size() == 8) {");
+                        context.Code.AppendLine("        parameter" + (p.Position + 1 - parameterOffset) + " = pop_value64();");
+                        context.Code.AppendLine("    } else {");
+                        context.Code.AppendLine("        parameter" + (p.Position + 1 - parameterOffset) + " = pop_value32();");
                         context.Code.AppendLine("    }");
-                        context.Code.AppendLine("    parameter" + (p.Position + 1 - parameterOffset) + " = pop_pointer();");
-                        context.Code.AppendLine("    enum CIL_Type parameter" + (p.Position + 1 - parameterOffset) + "__type = CIL_pointer; // " + p.ParameterType.Name);
                     }
                     else
                     {
@@ -356,8 +360,16 @@ namespace PolyCompiler
                         }
                         else
                         {
-                            context.Code.Append("    uintptr_t local" + l.LocalIndex + " = 0;\n");
-                            context.Code.Append("    enum CIL_Type local" + l.LocalIndex + "__type = " + TypeHelper.GetInternalType(l.LocalType) + "; // " + l.LocalType.FullName + "\n");
+                            if (l.LocalType.IsGenericParameter)
+                            {
+                                context.Code.Append("    int64_t local" + l.LocalIndex + " = 0;\n");
+                                context.Code.Append("    enum CIL_Type local" + l.LocalIndex + "__type = ((struct System__Object*)parameter0)->__CILgenerictypelist[" + l.LocalType.GenericParameterPosition + "]; // " + l.LocalType.FullName + "\n");
+                            }
+                            else
+                            {
+                                context.Code.Append("    uintptr_t local" + l.LocalIndex + " = 0;\n");
+                                context.Code.Append("    enum CIL_Type local" + l.LocalIndex + "__type = " + TypeHelper.GetInternalType(l.LocalType) + "; // " + l.LocalType.FullName + "\n");
+                            }
                         }
                     }
 

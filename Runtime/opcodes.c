@@ -612,6 +612,10 @@ void CIL_box_dispatch(const char* type) {
 	exit(1);
 }
 
+void CIL_box_generic_dispatch() {
+	CIL_box_ciltype_dispatch(stack_top_type());
+}
+
 void CIL_box_ciltype_dispatch(enum CIL_type type) {
 	//printf("box to %d of size %d\n", type, cil_type_size(type));
 	if (type == CIL_int32) {
@@ -855,8 +859,12 @@ int CIL_castclass_dispatch(const char* type) {
 	}
 }
 
-int CIL_stfld_dispatch(void* field) {
-	if (stack_top_size() == 4) {
+int CIL_stfld_dispatch(void* field, int size) {
+	if (stack_top_type() == CIL_valuetype) {
+		intptr_t vt = pop_pointer();
+		intptr_t self = pop_pointer();
+		memcpy(field, (void*)vt, size);
+	} else if (stack_top_size() == 4) {
 		int32_t value = pop_value32();
 		intptr_t self = pop_pointer();
 		*(int32_t*)field = value;
@@ -865,8 +873,7 @@ int CIL_stfld_dispatch(void* field) {
 		int64_t value = pop_value64();
 		intptr_t self = pop_pointer();
 		*(int64_t*)field = value;
-	}
-	else {
+	}else {
 		intptr_t value = pop_pointer();
 		uintptr_t self = pop_pointer();
 		*(intptr_t*)field = value;
@@ -874,12 +881,36 @@ int CIL_stfld_dispatch(void* field) {
 	return 0;
 }
 
+struct ILD__I__1_proto {
+	struct SYSTEM__OBJECT_proto __base; // base class
+	int32_t intvar; // 67108868
+	int64_t var; // generic 67108869
+	enum CIL_Type var__type;
+};
+
 int CIL_stfld_generic_dispatch(void* field, enum CIL_Type type) {
-	// Generic type parameters are always pointers
-	if (type != CIL_pointer) { CIL_box_ciltype(type); }
-	uintptr_t value = pop_pointer();
-	uintptr_t self = pop_pointer();
-	*(uintptr_t*)field = value;
+	int ts = cil_type_size(type);
+	if (ts == 4) {
+		int32_t value = pop_value32();
+		uintptr_t self = pop_pointer();
+		*(int32_t*)field = value;
+	}
+	else if (ts == 8) {
+		int64_t value = pop_value64();
+		uintptr_t self = pop_pointer();
+		*(int64_t*)field = value;
+	}
+	else {
+		if (type == CIL_valuetype) {
+			uintptr_t value = pop_pointer();
+			uintptr_t self = pop_pointer();
+			*(uintptr_t*)field = value;
+		}
+		else {
+			fprintf(stderr, "CIL_stfld_generic_dispatch: %s value size is not 4 or 8??? %d\n", cil_type_to_string(type), ts);
+			exit(1);
+		}
+	}
 	return 0;
 }
 

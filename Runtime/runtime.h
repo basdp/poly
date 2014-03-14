@@ -14,3 +14,4 @@ enum CIL_Type {
 
 int cil_type_size(enum CIL_Type type);
 void push_default_value(enum CIL_Type type);
+const char* cil_type_to_string(enum CIL_Type type);

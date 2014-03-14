@@ -4,27 +4,43 @@ using System.Reflection;
 
 namespace ILD
 {
-    class I<T>
+    class D<T, U> 
     {
-        public T var;
+        public T tval;
+        public U uval;
+    }
+
+    class H<T>: D<int, T>
+    {
+        public T t1val;
+    }
+
+    class I<T>: H<T>
+    {
         public int intvar;
+
+        public void setVar(T v)
+        {
+            var = v;
+        }
+
+        public T var;
+        public T getVar()
+        {
+            return uval;
+        }
     }
 
     class X
     {
         public static int Main()
         {
-            I<Int64> a = new I<Int64>();
-            a.var = 21474836478L;
-            a.intvar = 5;
+            I<long> a = new I<long>();
+            a.uval = 908765746576897L;
+            a.tval = 89;
 
-            if (a.var != 21474836478L) return 1;
-            if (a.intvar != 5) return 2;
-
-            I<string> b = new I<string>();
-            b.var = "hoi";
-
-            if (b.var != "hoi") return 3;
+            Console.WriteLine(a.uval);
+            Console.WriteLine(a.getVar());
 
             return 200;
         }

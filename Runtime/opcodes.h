@@ -158,7 +158,6 @@ void CIL_ldstr(const char*);
 #define CIL_initblk(...) CIL_undefined()
 #define CIL_isinst(...) CIL_undefined()
 #define CIL_jmp(...) CIL_undefined()
-#define CIL_ldflda(...) CIL_undefined()
 #define CIL_ldftn(...) CIL_undefined()
 #define CIL_ldind__i(...) CIL_undefined()
 #define CIL_ldind__i1(...) CIL_undefined()
@@ -218,48 +217,81 @@ void CIL_ldstr(const char*);
 #define CIL_ldfld(type, name) { intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } \
 	else if (sizeof(((struct type*)self)->  name) == 4) { push_value32( ((struct type*)self)-> name, type ## _f_ ## name ## __type ); }  \
 							else if (sizeof(((struct type*)self)->  name) == 8) { push_value64( ((struct type*)self)-> name, type ## _f_ ## name ## __type ); }  \
+							else if (type ## _f_ ## name ## __type == CIL_valuetype) { push_valuetypepointer((uintptr_t)&(((struct type*)self)-> name)); } \
 							else { push_pointer((((struct type*)self)-> name)); } \
+}
+
+#define CIL_ldfld_valuetype(type, name) { intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } \
+	push_valuetypepointer((uintptr_t)&(((struct type*)self)-> name)); \
 }
 
 #define CIL_ldfld_generic(type, name)  {intptr_t self = pop_pointer(); \
 	if (self == 0) { throw_NullReferenceException(); } \
 	enum CIL_Type t = ((struct type*)self)->name ## __type; \
-	push_pointer((((struct type*)self)-> name)); \
-	if (t != stack_top_type()) { CIL_unbox_ciltype(t); } \
+	int ts = cil_type_size(t); \
+	if (ts == 4) { \
+		int32_t v; \
+		memcpy(&v, (void*)&((struct type*)self)->name, 4); \
+		push_value32(v, t);\
+	} else if (ts == 8) {\
+		int64_t v; \
+		memcpy(&v, (void*)&((struct type*)self)->name, 8); \
+		push_value64(v, t);\
+	}\
+	else {\
+		if (t == CIL_valuetype) {\
+			uintptr_t v;\
+			memcpy(&v, (void*)&((struct type*)self)->name, sizeof(uintptr_t)); \
+			push_valuetypepointer(v);\
+		}\
+		else {\
+			fprintf(stderr, "CIL_ldfld_generic: value size is not 4 or 8??? %d\n", ts);\
+			exit(1);\
+		}\
+	}\
+}
+
+#define CIL_ldflda(type, name) { intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } \
+	 push_pointer((intptr_t)&(((struct type*)self)-> name)); \
 }
 
 #define CIL_stfld(type, name) { \
 	uintptr_t self = peek_pointer(1); \
 	if (self == 0) { throw_NullReferenceException(); } \
-	CIL_stfld_dispatch(&(((struct type*)self)->name)); \
+	CIL_stfld_dispatch(&(((struct type*)self)->name), sizeof(((struct type*)self)->name)); \
 }
 #define CIL_stfld_generic(type, name) { \
 	uintptr_t self = peek_pointer(1); \
 	if (self == 0) { throw_NullReferenceException(); } \
 	CIL_stfld_generic_dispatch(&(((struct type*)self)->name), ((struct type*)self)->name ## __type); \
 }
-int CIL_stfld_dispatch(void*);
+int CIL_stfld_dispatch(void* field, int size);
 int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
 
-#define CIL_stfld_old(type, name) { if stack_top_size() == 4) { int32_t value = pop_value32(); intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } \
-				 else if (stack_top_size() == 8) { int64_t value = pop_value64(); intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } \
-				 else { intptr_t value = pop_pointer(); uintptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } }
+/*#define CIL_stfld_old(type, name) { \
+	if stack_top_size() == 4) { int32_t value = pop_value32(); intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } \
+	else if (stack_top_size() == 8) { int64_t value = pop_value64(); intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } \
+	else if (type ## _sf_ ## name ## __type == CIL_valuetype) { push_valuetypepointer(&(((struct type*)self)->name)); } \
+	else { intptr_t value = pop_pointer(); uintptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } }*/
 
 #define CIL_ldsfld(type, name) { type ## __cctor_init();  \
-	            if (sizeof(type ## _sf_ ## name) == 4) { push_value32( (type ## _sf_ ## name), (type ## _sf_ ## name ## __type) ); }  \
-				else if (sizeof(type ## _sf_ ## name) == 8) { push_value64( (type ## _sf_ ## name), (type ## _sf_ ## name ## __type) ); }  \
+	if (cil_type_size(type ## _sf_ ## name ## __type) == 4) { push_value32( (type ## _sf_ ## name), (type ## _sf_ ## name ## __type) ); }  \
+				else if (cil_type_size(type ## _sf_ ## name ## __type) == 8) { push_value64( (type ## _sf_ ## name), (type ## _sf_ ## name ## __type) ); }  \
+				else if (type ## _sf_ ## name ## __type == CIL_valuetype) { push_valuetypepointer((uintptr_t)&(type ## _sf_ ## name)); } \
 				else { push_pointer(type ## _sf_ ## name); } \
 }
 
 #define CIL_stsfld(type, name) { type ## __cctor_init();\
-	            if (stack_top_size() == 4) { int32_t value = pop_value32(); (type ## _sf_ ## name) = value; } \
+	if (stack_top_size() == 4) { int32_t value = pop_value32(); (type ## _sf_ ## name) = value; } \
 				else if (stack_top_size() == 8) { int64_t value = pop_value64(); (type ## _sf_ ## name) = value; } \
+				else if (stack_top_type() == CIL_valuetype) { intptr_t vt = pop_pointer(); memcpy(&(type ## _sf_ ## name), (void*)vt, sizeof(type ## _sf_ ## name)); } \
 				else { intptr_t value = pop_pointer(); (type ## _sf_ ## name) = value; } }
 
 #define CIL_ret() callstack_pop(); return 0;
 
-#define CIL_ldarg(n) {    if (sizeof(parameter ## n) == 4) push_value32((int32_t)parameter ## n, parameter ## n ## __type); \
-				 else if (sizeof(parameter ## n) == 8) push_value64((int64_t)parameter ## n, parameter ## n ## __type); \
+#define CIL_ldarg(n) {    if (cil_type_size(parameter ## n ## __type) == 4) push_value32((int32_t)parameter ## n, parameter ## n ## __type); \
+				 else if (cil_type_size(parameter ## n ## __type) == 8) push_value64((int64_t)parameter ## n, parameter ## n ## __type); \
+				 else if (parameter ## n ## __type == CIL_valuetype) { push_valuetypepointer((uintptr_t)&(parameter ## n)); } \
 				 else push_pointer((uintptr_t)parameter ## n); }
 
 #define CIL_ldarg__0() CIL_ldarg(0)
@@ -275,10 +307,13 @@ int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
 #define CIL_ldarga(i) push_pointer((uintptr_t)&parameter ## i)
 #define CIL_ldarga__s(i) CIL_ldarga(i)
 
-#define CIL_ldloc(n) { if (local ## n ## __type == CIL_valuetype) { push_pointer((uintptr_t)&local ## n); } \
-                 else if (sizeof(local ## n) == 4) push_value32((int32_t)local ## n, local ## n ## __type); \
-				 else if (sizeof(local ## n) == 8) push_value64((int64_t)local ## n, local ## n ## __type); \
-				 else printf("ldloc: error\n"); }
+#define CIL_ldloc(n) { \
+	if (sizeof(local ## n) > 8 && local ## n ## __type == CIL_valuetype) { push_valuetypepointer((uintptr_t)&local ## n); } \
+	else if (cil_type_size(local ## n ## __type) == 4) { push_value32((int32_t)local ## n, local ## n ## __type); } \
+	else if (cil_type_size(local ## n ## __type) == 8) { push_value64((int64_t)local ## n, local ## n ## __type); } \
+	else if (local ## n ## __type == CIL_valuetype) { push_valuetypepointer((uintptr_t)local ## n); } \
+	else { printf("ldloc: error\n"); } \
+}
 
 #define CIL_ldloc__0() CIL_ldloc(0)
 
@@ -293,10 +328,12 @@ int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
 #define CIL_ldloca(i) push_pointer((uintptr_t)&local ## i)
 #define CIL_ldloca__s(i) CIL_ldloca(i)
 
-#define CIL_stloc(n) { if (sizeof(local ## n) > 8 && local ## n ## __type == CIL_valuetype) { memcpy(&local ## 0, (void*)pop_pointer(), sizeof(local ## 0)); } \
-                 else if (sizeof(local ## n) == 4) { int32_t *tmp = (int32_t*)&local ## n; *tmp = pop_value32(); } \
-				 else if (sizeof(local ## n) == 8) { int64_t *tmp = (int64_t*)&local ## n; *tmp = pop_value64(); } \
-				 else printf("stloc: error\n"); }
+#define CIL_stloc(n) { \
+	if (sizeof(local ## n) > 8 && local ## n ## __type == CIL_valuetype) { memcpy(&local ## 0, (void*)pop_pointer(), sizeof(local ## 0)); } \
+	else if (cil_type_size(local ## n ## __type) == 4) { int32_t *tmp = (int32_t*)&local ## n; *tmp = pop_value32(); } \
+	else if (cil_type_size(local ## n ## __type) == 8) { int64_t *tmp = (int64_t*)&local ## n; *tmp = pop_value64(); } \
+	else if (local ## n ## __type == CIL_valuetype) { uintptr_t *tmp = (uintptr_t*)&local ## n; *tmp = pop_pointer(); } \
+	else printf("stloc: error stloc\n"); }
 
 #define CIL_stloc__0() CIL_stloc(0)
 
@@ -338,6 +375,9 @@ int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
 void CIL_box_dispatch(const char*);
 #define CIL_box_ciltype(type) CIL_box_ciltype_dispatch(type)
 void CIL_box_ciltype_dispatch(enum CIL_type);
+#define CIL_box_generic(type) CIL_box_generic_dispatch()
+void CIL_box_generic_dispatch();
+
 #define CIL_unbox_ciltype(type) wrap_exception_handling(CIL_unbox_ciltype_dispatch(type))
 int CIL_unbox_ciltype_dispatch(enum CIL_type);
 

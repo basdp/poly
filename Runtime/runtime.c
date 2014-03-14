@@ -62,3 +62,24 @@ void push_default_value(enum CIL_Type type) {
 		exit(1);
 	}
 }
+
+const char* cil_type_to_string(enum CIL_Type type) {
+	switch (type) {
+	case CIL_float32:
+		return "CIL_float32";
+	case CIL_int32:
+		return "CIL_int32";
+	case CIL_float64:
+		return "CIL_float64";
+	case CIL_int64:
+		return "CIL_int64";
+	case CIL_pointer:
+		return "CIL_pointer";
+	case CIL_native:
+		return "CIL_native";
+	case CIL_valuetype:
+		return "CIL_valuetype";
+	default: 
+		return "(unknown)";
+	}
+}

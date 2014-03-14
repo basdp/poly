@@ -94,7 +94,12 @@ namespace SDILReader
                         result += "/* " + mOperand.DeclaringType.FullName + "::" + mOperand.Name + " */";
                     }
                 }
-
+                else if (code.Name == "initobj")
+                {
+                    System.Reflection.TypeInfo mOperand = (System.Reflection.TypeInfo)operand;
+                    result += "CIL_initobj(";
+                    result += Naming.ConvertTypeToCName(mOperand);
+                }
                 /*else if (code.Name == "castclass")
                 {
                     System.Reflection.ConstructorInfo mOperand = (System.Reflection.ConstructorInfo)operand;
@@ -122,6 +127,22 @@ namespace SDILReader
                             {
                                 result += "";
                             }
+                        }
+                        else
+                        {
+                            if (fOperand.FieldType.IsValueType && TypeHelper.GetInternalType(fOperand.FieldType) == "CIL_valuetype")
+                            {
+                                result += "_valuetype";
+                            }
+                            result += "";
+                        }
+                    }
+                    if (code.Name == "box")
+                    {
+                        var fOperand = ((System.Reflection.TypeInfo)operand);
+                        if (fOperand.IsGenericParameter)
+                        {
+                            result += "_generic";
                         }
                         else
                         {
@@ -220,11 +241,15 @@ namespace SDILReader
                             break;
                         case OperandType.InlineR:
                             double d = (double)operand;
-                            result += d.ToString("F").Replace(',', '.');
+                            string dblstr = d.ToString("G").Replace(',', '.');
+                            if (dblstr.IndexOf('.') == -1) dblstr += ".0";
+                            result += dblstr;
                             break;
                         case OperandType.ShortInlineR:
                             Single s = (Single)operand;
-                            result += s.ToString("F").Replace(',', '.') + "f";
+                            string flstr = s.ToString("G").Replace(',', '.');
+                            if (flstr.IndexOf('.') == -1) flstr += ".0";
+                            result += flstr + "f";
                             break;
                         case OperandType.InlineTok:
                             if (operand is Type)

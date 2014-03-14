@@ -49,15 +49,31 @@ namespace PolyCompiler
                     }
                     else
                     {
-                        context.Header.Append("    int8_t " + Naming.GetInternalFieldName(fis[j].Name) + "[" + (bits / 8) + "]; // " + fis[j].MetadataToken + "\n");
+                        if (bits == -1)
+                        {
+                            context.Header.AppendLine("    struct " + Naming.ConvertTypeToCName(fis[j].FieldType) + " " + Naming.GetInternalFieldName(fis[j].Name) + "; // " + fis[j].MetadataToken);
+                        }
+                        else
+                        {
+                            context.Header.Append("    int8_t " + Naming.GetInternalFieldName(fis[j].Name) + "[" + (bits / 8) + "]; // " + fis[j].MetadataToken + "\n");
+                        }
                     }
                     classSize += bits / 8;
                 }
                 else
                 {
-                    context.Header.Append("    uintptr_t " + Naming.GetInternalFieldName(fis[j].Name) + "; //" + fis[j].MetadataToken + "\n");
-                    // TODO: 64 bit?
-                    classSize += 4;
+                    if (type.IsGenericTypeDefinition && fis[j].FieldType.IsGenericParameter)
+                    {
+                        // generic types reserve the full 64 bits, even if they only use the first 32
+                        context.Header.Append("    int64_t " + Naming.GetInternalFieldName(fis[j].Name) + "; // generic " + fis[j].MetadataToken + "\n");
+                        classSize += 8;   
+                    }
+                    else
+                    {
+                        context.Header.Append("    uintptr_t " + Naming.GetInternalFieldName(fis[j].Name) + "; //" + fis[j].MetadataToken + "\n");
+                        // TODO: 64 bit?
+                        classSize += 4;
+                    }
                 }
 
                 if (type.IsGenericTypeDefinition && fis[j].FieldType.IsGenericParameter)
@@ -101,7 +117,14 @@ namespace PolyCompiler
                     }
                     else
                     {
-                        context.Header.Append("int8_t " + Naming.ConvertTypeToCName(type.FullName) + "_sf_" + Naming.GetInternalFieldName(fis[j].Name) + "[" + (bits / 8) + "]; // " + fis[j].MetadataToken + "\n");
+                        if (bits == -1)
+                        {
+                            context.Header.AppendLine("    struct " + Naming.ConvertTypeToCName(fis[j].FieldType) + " " + Naming.ConvertTypeToCName(type.FullName) + "_sf_" + Naming.GetInternalFieldName(fis[j].Name) + "; // " + fis[j].MetadataToken);
+                        }
+                        else
+                        {
+                            context.Header.AppendLine("int8_t " + Naming.ConvertTypeToCName(type.FullName) + "_sf_" + Naming.GetInternalFieldName(fis[j].Name) + "[" + (bits / 8) + "]; // " + fis[j].MetadataToken);
+                        }
                     }
                 }
                 else

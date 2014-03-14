@@ -39,7 +39,7 @@ struct SYSTEM__OBJECT_proto {
 	int* __CILbaseinterfaces_length;
 	int __CILisgeneric;
 	enum CIL_Type* __CILgenerictypelist;
-	int _CILgenerictypelist_length;
+	int __CILgenerictypelist_length;
 };
 
 #define SYSTEM__STRING_ctor m8D858A38DA1EA05CB64209432DD7505A8FE82943
