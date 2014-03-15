@@ -139,7 +139,13 @@ namespace SDILReader
                         
                         // thanks to the guys from code project who commented on this missing feature
 
-                        instruction.Operand = module.ResolveType(metadataToken, this.mi.DeclaringType.GetGenericArguments(), this.mi.GetGenericArguments());
+                        try
+                        {
+                            instruction.Operand = module.ResolveType(metadataToken);
+                        } catch 
+                        {
+                            instruction.Operand = module.ResolveType(metadataToken, this.mi.DeclaringType.GetGenericArguments(), this.mi.GetGenericArguments());
+                        }
                         break;
                     case OperandType.InlineI:
                         {

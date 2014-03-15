@@ -17,8 +17,13 @@ namespace PolyCompiler
             List<Type> types = module.GetTypes().ToList();
             types.Sort(delegate(Type t1, Type t2)
             {
-                if (t1.FullName.Contains(".__")) t1 = Type.GetType(t1.FullName.Replace(".__", "."));
-                if (t2.FullName.Contains(".__")) t2 = Type.GetType(t2.FullName.Replace(".__", "."));
+                if (t1 == null) return 1;
+                if (t2 == null) return -1;
+                if (t1 == null && t2 == null) return 0;
+                if (t1.FullName.Contains(".__")) 
+                    t1 = Type.GetType(Naming.GetFullName(t1).Replace(".__", "."));
+                if (t2.FullName.Contains(".__")) 
+                    t2 = Type.GetType(Naming.GetFullName(t2).Replace(".__", "."));
                 if (t1.FullName == "System.Object") return -1;
                 if (t2.FullName == "System.Object") return 1;
                 if (t1.IsSubclassOf(t2))

@@ -1,33 +1,18 @@
 ﻿using System;
-using System.Threading;
-using System.Reflection;
+using System.Collections;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace ILD
+namespace jk
 {
-    class I<T>
+    class D
     {
-        public T var;
-        public int intvar;
-    }
-    
-    class X
-    {
-        public static int Main()
+        public static int Main(string[] args)
         {
-            I<Int64> a = new I<Int64>();
-            a.var = 21474836478L;
-            a.intvar = 5;
+            //ArrayList l = new ArrayList();
 
-            if (a.var != 21474836478L) return 1;
-            if (a.intvar != 5) return 2;
-
-            I<string> b = new I<string>();
-            b.var = "hoi";
-
-            if (b.var != "hoi") return 3;
-
-            return 200;
+            return 0;
         }
-
     }
 }

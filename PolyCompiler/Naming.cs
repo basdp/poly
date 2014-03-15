@@ -50,7 +50,8 @@ namespace PolyCompiler
             var methods = mi.DeclaringType.Assembly.GetType(gtypename).GetMethods();
             foreach (var mds in methods)
             {
-                if (mds.Name == mi.Name)
+                if (mds.MetadataToken == mi.MetadataToken) return mds;
+                /*if (mds.Name == mi.Name)
                 {
                     if (!mds.ReturnType.Equals(mi.ReturnType))
                     {
@@ -74,7 +75,7 @@ namespace PolyCompiler
                         }
                     }
                     if (!notIt) return mds;
-                }
+                }*/
             }
             return mi;
         }

@@ -38,7 +38,7 @@ namespace PolyCompiler
                 {
                     if ((type.Attributes & TypeAttributes.BeforeFieldInit) != 0)
                     {
-                        context.Init.Append(Naming.GetInternalMethodName(cis[j], true) + "();\n");
+                        context.Init.Append("CIL_call_unsafe(" + Naming.GetInternalMethodName(cis[j], true) + ", \"\", 0, 0);\n");
                     }
                     else
                     {
@@ -232,6 +232,7 @@ namespace PolyCompiler
             }
             else
             {
+                string hname = Naming.GetInternalMethodName(m);
                 context.Header.Append("void *" + Naming.GetInternalMethodName(m) + "(");
                 if (m.IsGenericMethod) context.Header.Append("int generictypelist_length, enum CIL_Type* generictypelist");
                 context.Header.Append(");\n");

@@ -15,6 +15,11 @@
 	}\
 }
 
+#define CIL_call_unsafe(func, name, nparams, isvirtual) {\
+	callstack_push(func ## _sig, "(unknown)", 0);\
+	int res = CIL_call_dispatch(&func);\
+}
+
 #define CIL_call_generic(base_typelist_length, base_typelist, func, name, nparams, isvirtual) {\
 	callstack_push(func ## _sig, "(unknown)", 0);\
 	int res = CIL_call_generic_dispatch(base_typelist_length, base_typelist, &func);\

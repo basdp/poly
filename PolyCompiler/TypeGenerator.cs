@@ -205,7 +205,7 @@ namespace PolyCompiler
                 context.Code.AppendLine("char* " + Naming.ConvertTypeToCName(type.FullName) + "__baseinterfaces[" + interfaces.Length + "] = {");
                 for (int i = 0; i < interfaces.Length; i++)
                 {
-                    context.Code.Append("    \"" + interfaces[i].FullName.Replace(".__", ".") + "\"");
+                    context.Code.Append("    \"" + Naming.GetFullName(interfaces[i]).Replace(".__", ".") + "\"");
                     if (i < interfaces.Length - 1) context.Code.Append(", ");
                     context.Code.Append("\n");
                 }
