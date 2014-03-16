@@ -18,10 +18,10 @@ namespace System.Collections
         public ArrayListEnumerator(ArrayList al)
         {
             list = al;
-            index = 0;
+            index = -1;
             count = al.Count;
             
-            startIndex = 0;
+            startIndex = -1;
             startCount = al.Count;
         }
 
@@ -30,10 +30,10 @@ namespace System.Collections
             if (count > al.Count + index) throw new IndexOutOfRangeException();
 
             list = al;
-            this.index = index;
+            this.index = index - 1;
             this.count = count;
 
-            startIndex = index;
+            startIndex = index - 1;
             startCount = count;
         }
 

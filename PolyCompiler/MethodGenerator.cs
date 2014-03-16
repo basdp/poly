@@ -78,10 +78,10 @@ namespace PolyCompiler
                             }
                         }
                     }
-                    foreach (var virtmethod in type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(m => m.IsVirtual))
+                    foreach (var virtmethod in type.GetMethods(BindingFlags.DeclaredOnly | BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic).Where(m => m.IsVirtual || m.IsFinal))
                     {
                         addedcode += "    hashmap_put(((struct System__Object*)parameter0)->__CILsymboltable, \"" + Naming.GetInternalMethodName(virtmethod, false) + "\", &" + Naming.GetInternalMethodName(virtmethod) +
-                       "); /* " + virtmethod.Name + " */\n";
+                       "); /* " + virtmethod.Name + " -> SIG: " + Naming.GetInternalMethodName(virtmethod, false, true) + " */\n";
                     }
 
                     addedcode += "    if (!skipDefaultInitialization) {\n";

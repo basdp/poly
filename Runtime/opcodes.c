@@ -927,13 +927,6 @@ int CIL_stfld_dispatch(void* field, int size) {
 	return 0;
 }
 
-struct ILD__I__1_proto {
-	struct SYSTEM__OBJECT_proto __base; // base class
-	int32_t intvar; // 67108868
-	int64_t var; // generic 67108869
-	enum CIL_Type var__type;
-};
-
 int CIL_stfld_generic_dispatch(void* field, enum CIL_Type type) {
 	int ts = cil_type_size(type);
 	if (ts == 4) {
@@ -960,3 +953,29 @@ int CIL_stfld_generic_dispatch(void* field, enum CIL_Type type) {
 	return 0;
 }
 
+int CIL_isinst_dispatch(const char* type) {
+	struct SYSTEM__OBJECT_proto* obj = (struct SYSTEM__OBJECT_proto*)pop_pointer();
+	if (obj == 0) {
+		push_pointer(0);
+		return 1;
+	}
+
+	char** baseclasses = (char**)obj->__CILbaseclasses;
+	char** interfaces = (char**)obj->__CILbaseinterfaces;
+	for (int i = 0; i < *obj->__CILbaseclasses_length; i++) {
+		if (strcmp(type, baseclasses[i]) == 0) {
+			push_pointer((uintptr_t)obj);
+			return 0;
+		}
+	}
+
+	for (int i = 0; i < *obj->__CILbaseinterfaces_length; i++) {
+		if (strcmp(type, interfaces[i]) == 0) {
+			push_pointer((uintptr_t)obj);
+			return 0;
+		}
+	}
+
+	push_pointer(0);
+	return 1;
+}

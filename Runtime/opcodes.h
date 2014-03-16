@@ -140,8 +140,6 @@ void CIL_ldstr(const char*);
 #define CIL_ble__s(...) CIL_undefined()
 #define CIL_ble__un(...) CIL_undefined()
 #define CIL_ble__un__s(...) CIL_undefined()
-#define CIL_blt(...) CIL_undefined()
-#define CIL_blt__s(...) CIL_undefined()
 #define CIL_blt__un(...) CIL_undefined()
 #define CIL_blt__un__s(...) CIL_undefined()
 #define CIL_bne(...) CIL_undefined()
@@ -186,7 +184,6 @@ void CIL_ldstr(const char*);
 #define CIL_endfilter(...) CIL_undefined()
 #define CIL_idind__u8(...) CIL_undefined()
 #define CIL_initblk(...) CIL_undefined()
-#define CIL_isinst(...) CIL_undefined()
 #define CIL_jmp(...) CIL_undefined()
 #define CIL_ldftn(...) CIL_undefined()
 #define CIL_ldind__i(...) CIL_undefined()
@@ -241,6 +238,8 @@ void CIL_ldstr(const char*);
 #define CIL_break() 
 
 #define CIL_br(label) goto label
+#define CIL_blt(target) { CIL_clt(); CIL_brtrue(target); }
+#define CIL_blt__s(target) CIL_blt(target)
 
 #define CIL_pop() pop()
 
@@ -480,3 +479,6 @@ void CIL_ldtoken_static_field_dispatch(void*, enum CIL_Type, int);
 
 #define CIL_castclass(type) { if (!CIL_castclass_dispatch(#type)) { throw_InvalidCastException(); } }
 int CIL_castclass_dispatch(const char*);
+
+#define CIL_isinst(type) CIL_isinst_dispatch(# type)
+int CIL_isinst_dispatch(const char* type);

@@ -25,7 +25,8 @@ namespace System.Collections
 
         public ArrayList(ICollection other)
         {
-            throw new NotImplementedException();
+            this.array = new object[other.Count];
+            foreach (object o in other) this.Add(o);
         }
 
         public ArrayList(int capacity)
@@ -62,7 +63,7 @@ namespace System.Collections
 
         public int IndexOf(object value)
         {
-            for (int i = 0; i < array.Length; i++)
+            for (int i = 0; i < length; i++)
             {
                 if (array[i].Equals(value)) return i;
             }
@@ -98,10 +99,12 @@ namespace System.Collections
         {
             get
             {
+                if (index < 0 || index > length - 1) throw new IndexOutOfRangeException();
                 return array[index];
             }
             set
             {
+                if (index < 0 || index > length - 1) throw new IndexOutOfRangeException();
                 array[index] = value;
             }
         }
@@ -126,11 +129,11 @@ namespace System.Collections
             get { throw new NotImplementedException(); }
         }
 
-        public IEnumerator GetEnumerator()
+        public virtual IEnumerator GetEnumerator()
         {
             return new ArrayListEnumerator(this);
         }
-        public IEnumerator GetEnumerator(int index, int count)
+        public virtual IEnumerator GetEnumerator(int index, int count)
         {
             return new ArrayListEnumerator(this, index, count);
         }

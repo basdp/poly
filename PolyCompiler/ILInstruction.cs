@@ -120,8 +120,8 @@ namespace SDILReader
                             if (gtypename == null) gtypename = "";
                             else gtypename += ".";
                             gtypename += fOperand.DeclaringType.Name;
-                            var thisfield = fOperand.DeclaringType.Assembly.GetType(gtypename).GetField(fOperand.Name);
-                            if (thisfield.FieldType.IsGenericParameter)
+                            var thisfield = fOperand.DeclaringType.Assembly.GetType(gtypename).GetField(fOperand.Name, BindingFlags.NonPublic | BindingFlags.Public);
+                            if (thisfield != null && thisfield.FieldType.IsGenericParameter)
                             {
                                 result += "_generic";
                             }
@@ -227,7 +227,7 @@ namespace SDILReader
                                 {
                                     result += param.ParameterType.FullName + ", ";
                                 }
-                                result += ") */";
+                                result += ") -> SIG: " + Naming.GetInternalMethodName(mOperand, false, true) + " */";
                             }
                             catch
                             {

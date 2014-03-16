@@ -7,66 +7,87 @@ namespace System.Collections.Generic
 {
     public class __List<T> : IList<T>, ICollection<T>, IList, ICollection, IReadOnlyList<T>, IReadOnlyCollection<T>, IEnumerable<T>, IEnumerable
     {
+        T listk;
+        ArrayList list;
+
+        public __List()
+        {
+            list = new ArrayList();
+        }
+
+        public __List(int capacity)
+        {
+            list = new ArrayList(capacity);
+        }
+
+        public __List(IEnumerable<T> collection)
+        {
+            list = new ArrayList();
+            foreach (object o in collection) list.Add(o);
+        }
+
         public int IndexOf(T item)
         {
-            throw new NotImplementedException();
+            return list.IndexOf(item);
         }
 
         public void Insert(int index, T item)
         {
-            throw new NotImplementedException();
+            list.Insert(index, item);
         }
 
         public void RemoveAt(int index)
         {
-            throw new NotImplementedException();
+            list.RemoveAt(index);
         }
 
         public T this[int index]
         {
             get
             {
-                throw new NotImplementedException();
+                return (T)list[index];
             }
             set
             {
-                throw new NotImplementedException();
+                list[index] = value;
             }
         }
 
         public void Add(T item)
         {
-            throw new NotImplementedException();
+            list.Add(item);
         }
 
         public void Clear()
         {
-            throw new NotImplementedException();
+            list.Clear();
         }
 
         public bool Contains(T item)
         {
-            throw new NotImplementedException();
+            return list.Contains(item);
         }
 
         public void CopyTo(T[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            list.CopyTo(array, arrayIndex);
         }
 
         public int Count
         {
-            get { throw new NotImplementedException(); }
+            get { return list.Count; }
         }
 
         public bool IsReadOnly
         {
-            get { throw new NotImplementedException(); }
+            get { return list.IsReadOnly; }
         }
 
         public bool Remove(T item)
         {
-            throw new NotImplementedException();
+            int size = list.Count;
+            list.Remove(item);
+            return list.Count != size;
         }
 
         public IEnumerator<T> GetEnumerator()
@@ -76,42 +97,44 @@ namespace System.Collections.Generic
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return list.GetEnumerator();
         }
 
         void ICollection<T>.Add(T item)
         {
-            throw new NotImplementedException();
+            list.Add(item);
         }
 
         void ICollection<T>.Clear()
         {
-            throw new NotImplementedException();
+            list.Clear();
         }
 
         bool ICollection<T>.Contains(T item)
         {
-            throw new NotImplementedException();
+            return list.Contains(item);
         }
 
         void ICollection<T>.CopyTo(T[] array, int arrayIndex)
         {
-            throw new NotImplementedException();
+            list.CopyTo(array, arrayIndex);
         }
 
         int ICollection<T>.Count
         {
-            get { throw new NotImplementedException(); }
+            get { return list.Count; }
         }
 
         bool ICollection<T>.IsReadOnly
         {
-            get { throw new NotImplementedException(); }
+            get { return list.IsReadOnly; }
         }
 
         bool ICollection<T>.Remove(T item)
         {
-            throw new NotImplementedException();
+            int size = list.Count;
+            list.Remove(item);
+            return list.Count != size;
         }
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
@@ -121,69 +144,69 @@ namespace System.Collections.Generic
 
         public int Add(object value)
         {
-            throw new NotImplementedException();
+            return list.Add(value);
         }
 
         public bool Contains(object value)
         {
-            throw new NotImplementedException();
+            return list.Contains(value);
         }
 
         public int IndexOf(object value)
         {
-            throw new NotImplementedException();
+            return list.IndexOf(value);
         }
 
         public void Insert(int index, object value)
         {
-            throw new NotImplementedException();
+            list.Insert(index, value);
         }
 
         public bool IsFixedSize
         {
-            get { throw new NotImplementedException(); }
+            get { return list.IsFixedSize; }
         }
 
         public void Remove(object value)
         {
-            throw new NotImplementedException();
+            list.Remove(value);
         }
 
         object IList.this[int index]
         {
             get
             {
-                throw new NotImplementedException();
+                return list[index];
             }
             set
             {
-                throw new NotImplementedException();
+                list[index] = value;
             }
         }
 
         public void CopyTo(Array array, int index)
         {
-            throw new NotImplementedException();
+            list.CopyTo(array, index);
         }
 
         public bool IsSynchronized
         {
-            get { throw new NotImplementedException(); }
+            get { return list.IsSynchronized; }
         }
 
         public object SyncRoot
         {
-            get { throw new NotImplementedException(); }
+            get { return list.SyncRoot; }
         }
 
         T IReadOnlyList<T>.this[int index]
         {
-            get { throw new NotImplementedException(); }
+            get { return (T)list[index]; }
         }
 
         int IReadOnlyCollection<T>.Count
         {
-            get { throw new NotImplementedException(); }
+            get { return list.Count; }
         }
     }
 }

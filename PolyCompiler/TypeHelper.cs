@@ -13,7 +13,7 @@ namespace PolyCompiler
         {
             if (GetInternalType(type) == "CIL_valuetype")
             {
-                int bits = Marshal.SizeOf(type) + 4 * 6;
+                //int bits = Marshal.SizeOf(type) + 4 * 6;
                 return -1;
             }
             else

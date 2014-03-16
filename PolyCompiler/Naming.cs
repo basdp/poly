@@ -11,13 +11,14 @@ namespace PolyCompiler
     class Naming
     {
         static SHA1 sha = new SHA1CryptoServiceProvider();
-
-        public static string GetInternalMethodName(MethodBase m, bool includePath = true)
+                
+        public static string GetInternalMethodName(MethodBase m, bool includePath = true, bool returnSig = false)
         {
             string fullname = GetFullName(m.DeclaringType);
             if (m.DeclaringType.IsGenericType && fullname.IndexOf('[') != -1) fullname = fullname.Substring(0, fullname.IndexOf('['));
             string path = fullname.Replace(".__", ".");
             string type = m.Name;
+            if (!includePath && type.IndexOf('.') != -1) type = type.Substring(type.LastIndexOf('.') + 1);
             type = type.TrimStart(new char[] { '_' });
             string sig;
             if (includePath)
@@ -38,9 +39,16 @@ namespace PolyCompiler
                 sig += "__" + GetFullName(p.ParameterType).Replace(".__", ".");
             }
 
-            System.Text.ASCIIEncoding encoder = new System.Text.ASCIIEncoding();
-            string ret = "m" + BitConverter.ToString(sha.ComputeHash(encoder.GetBytes(sig))).Replace("-", "");
-            return ConvertTypeToCName(ret.ToString());
+            if (returnSig)
+            {
+                return sig;
+            }
+            else
+            {
+                System.Text.ASCIIEncoding encoder = new System.Text.ASCIIEncoding();
+                string ret = "m" + BitConverter.ToString(sha.ComputeHash(encoder.GetBytes(sig))).Replace("-", "");
+                return ConvertTypeToCName(ret.ToString());
+            }
         }
 
         private static MethodInfo GetDefinedMethod(MethodInfo mi)

@@ -144,7 +144,14 @@ namespace SDILReader
                             instruction.Operand = module.ResolveType(metadataToken);
                         } catch 
                         {
-                            instruction.Operand = module.ResolveType(metadataToken, this.mi.DeclaringType.GetGenericArguments(), this.mi.GetGenericArguments());
+                            try
+                            {
+                                instruction.Operand = module.ResolveType(metadataToken, this.mi.DeclaringType.GetGenericArguments(), null);
+                            }
+                            catch
+                            {
+                                instruction.Operand = module.ResolveType(metadataToken, this.mi.DeclaringType.GetGenericArguments(), this.mi.GetGenericArguments());
+                            }
                         }
                         break;
                     case OperandType.InlineI:
