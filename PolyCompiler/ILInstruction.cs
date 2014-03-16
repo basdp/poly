@@ -154,12 +154,22 @@ namespace SDILReader
                     if (code.Name == "call")
                     {
                         System.Reflection.ConstructorInfo fOperand = operand as ConstructorInfo;
-                        if (fOperand != null && fOperand.DeclaringType.IsGenericType)
+                        if (fOperand != null && fOperand.IsConstructor)
                         {
-                            result += "_generic_ctor(";
-                            result += "base_typelist_length, base_typelist, ";
-                            putOpenParenthesis = false;
+                            if (fOperand.DeclaringType.IsGenericType)
+                            {
+                                result += "_generic_ctor(";
+                                result += "base_typelist_length, base_typelist, ";
+                                putOpenParenthesis = false;
+                            }
+                            else
+                            {
+                                result += "_base(parameter0, ";
+                                putOpenParenthesis = false;
+                            }
                         }
+
+
 
                         System.Reflection.MethodInfo mOperand = operand as MethodInfo;
                         if (mOperand != null && mOperand.IsGenericMethod)

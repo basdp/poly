@@ -20,6 +20,16 @@
 	int res = CIL_call_dispatch(&func);\
 }
 
+#define CIL_call_base(ptr, func, name, nparams, isvirtual) {\
+	callstack_push(func ## _sig, "(unknown)", 0);\
+	int res = CIL_call_base_dispatch(ptr, &func);\
+	if (res == 1) {\
+	/* exception has been thrown*/\
+	if (DEBUG_EXCEPTIONS) { printf("Func " #func " threw an exception\n"); }\
+	exception_throw_withInitStackTrace(0);\
+	}\
+}
+
 #define CIL_call_generic(base_typelist_length, base_typelist, func, name, nparams, isvirtual) {\
 	callstack_push(func ## _sig, "(unknown)", 0);\
 	int res = CIL_call_generic_dispatch(base_typelist_length, base_typelist, &func);\
@@ -65,6 +75,7 @@
 }
 int CIL_call_dispatch(void* (*func)());
 int CIL_callvirt_dispatch(const char *symbol, unsigned int nparams, void* (*func)(), int isvirtual);
+int CIL_call_base_dispatch(uintptr_t, void* (*func)());
 int CIL_call_generic_dispatch(int generictypelist_length, enum CIL_Type* generictypelist, void* (*func)(int, enum CIL_Type*));
 int CIL_call_generic_ctor_dispatch(int generictypelist_length, enum CIL_Type* generictypelist, void* (*func)(int, enum CIL_Type*));
 

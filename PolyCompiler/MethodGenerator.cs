@@ -383,11 +383,17 @@ namespace PolyCompiler
 
                     foreach (SDILReader.ILInstruction instr in mbr.instructions)
                     {
-                        if (skipFirstConstructorCall && instr.Code == System.Reflection.Emit.OpCodes.Call && ((MethodBase)instr.Operand).IsConstructor)
+                        if (instr.Code == System.Reflection.Emit.OpCodes.Call)
                         {
-                            context.Code.Append("    pop_pointer();\n");
-                            context.Code.Append(addedcode); // addedcode shoud have been afther this call, but this call is removed, so we handle the addedcode ourself.
-                            continue;
+                            if (((MethodBase)instr.Operand).IsConstructor)
+                            {
+                                if (skipFirstConstructorCall)
+                                {
+                                    context.Code.Append("    pop_pointer();\n");
+                                    context.Code.Append(addedcode); // addedcode shoud have been afther this call, but this call is removed, so we handle the addedcode ourself.
+                                    continue;
+                                }
+                            }
                         }
 
                         string scope = Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name);

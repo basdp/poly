@@ -7,23 +7,25 @@ using System.Threading.Tasks;
 
 namespace System.Collections
 {
-    public class __ArrayList : IList, ICollection, IEnumerable, ICloneable
+    public class ArrayList : IList, ICollection, IEnumerable, ICloneable
     {
         static readonly int DefaultCapacity = 0;
         object[] array;
 
-        public __ArrayList()
+        public ArrayList()
+            : this(DefaultCapacity)
         {
-            this.array = new object[DefaultCapacity];
+
         }
 
-        public __ArrayList(ICollection other)
+        public ArrayList(ICollection other)
         {
             throw new NotImplementedException();
         }
 
-        public __ArrayList(int capacity)
+        public ArrayList(int capacity)
         {
+            Console.WriteLine("New ArrayList of capacity " + capacity);
             this.array = new object[capacity];
         }
 

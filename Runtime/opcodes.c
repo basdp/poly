@@ -313,6 +313,22 @@ int CIL_call_dispatch(void* (*func)()) {
 	return res;
 }
 
+int CIL_call_base_dispatch(uintptr_t ptr, void* (*func)()) {
+	// TODO: callstack_push() should be only called from here
+	//       We need to create a hashtable from function pointers to signature strings that this
+	//       function can use to get the right signature.
+	//       Now, the signature of the base class is displayed on virtual functions.
+
+	// In the newobj opcode, we pushed the newly generated object pointer last on the stack (faster)
+	// But when C# generates code that calls the baseclass, the object pointer is pushed first, so we emulate that
+	// with this call_base opcode.
+
+	push_pointer(ptr);
+	int res = (int)func();
+	pop_pointer(); // pop the pointer that C# pushes for us, we don't use and need it but we need to clean it up.
+	return res;
+}
+
 int CIL_call_generic_dispatch(int generictypelist_length, enum CIL_Type* generictypelist, void* (*func)(int, enum CIL_Type*)) {
 	// TODO: callstack_push() should be only called from here
 	//       We need to create a hashtable from function pointers to signature strings that this
