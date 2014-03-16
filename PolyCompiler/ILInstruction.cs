@@ -120,7 +120,7 @@ namespace SDILReader
                             if (gtypename == null) gtypename = "";
                             else gtypename += ".";
                             gtypename += fOperand.DeclaringType.Name;
-                            var thisfield = fOperand.DeclaringType.Assembly.GetType(gtypename).GetField(fOperand.Name, BindingFlags.NonPublic | BindingFlags.Public);
+                            var thisfield = fOperand.DeclaringType.Assembly.GetType(gtypename).GetField(fOperand.Name);
                             if (thisfield != null && thisfield.FieldType.IsGenericParameter)
                             {
                                 result += "_generic";

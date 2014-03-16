@@ -549,7 +549,8 @@ enum CIL_Type typea = stack_top_type();\
 	return;\
 	}\
 }\
-	fprintf(stderr, "Error: " #name " is not supported on these operands");\
+	fprintf(stderr, "Error: " #name " is not supported on these operands\n");\
+	exit(1);\
 }
 
 COMPARER(ceq, == );
@@ -902,11 +903,7 @@ int CIL_castclass_dispatch(const char* type) {
 }
 
 int CIL_stfld_dispatch(void* field, int size) {
-	if (stack_top_type() == CIL_valuetype) {
-		intptr_t vt = pop_pointer();
-		intptr_t self = pop_pointer();
-		memcpy(field, (void*)vt, size);
-	} else if (stack_top_type() == CIL_array) {
+	if (stack_top_type() == CIL_array) {
 		intptr_t value = pop_pointer();
 		uintptr_t self = pop_pointer();
 		*(intptr_t*)field = value;
@@ -919,7 +916,11 @@ int CIL_stfld_dispatch(void* field, int size) {
 		int64_t value = pop_value64();
 		intptr_t self = pop_pointer();
 		*(int64_t*)field = value;
-	}else {
+	} else if (stack_top_type() == CIL_valuetype) {
+		intptr_t vt = pop_pointer();
+		intptr_t self = pop_pointer();
+		memcpy(field, (void*)vt, size);
+	} else {
 		intptr_t value = pop_pointer();
 		uintptr_t self = pop_pointer();
 		*(intptr_t*)field = value;
