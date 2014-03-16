@@ -56,5 +56,9 @@ namespace System
         CIL_ldstr(type);
         ")]
         public virtual string ToString() { return null; }
+
+        public static void SHOULD_NEVER_HAPPEN() {
+            throw new Exception("Virtual function not called");
+        }
     }
 }

@@ -61,6 +61,7 @@
 			exception_throw_withInitStackTrace(0);\
 		} else if (res == 2) {\
 			fprintf(stderr, __FILE__":%d\tError: a virtual function has not been found\n", __LINE__);\
+			exit(1);\
 		}\
 	}\
 }
@@ -325,7 +326,7 @@ int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
 #define CIL_ret() callstack_pop(); return 0;
 
 #define CIL_ldarg(n) {  \
-	if (parameter ## n ## __type == CIL_array) { push_arraypointer((uintptr_t)&(parameter ## n)); } \
+	if (parameter ## n ## __type == CIL_array) { push_arraypointer((uintptr_t)(parameter ## n)); } \
 	else if (cil_type_size(parameter ## n ## __type) == 4) push_value32((int32_t)parameter ## n, parameter ## n ## __type); \
 	else if (cil_type_size(parameter ## n ## __type) == 8) push_value64((int64_t)parameter ## n, parameter ## n ## __type); \
 	else if (parameter ## n ## __type == CIL_valuetype) { push_valuetypepointer((uintptr_t)&(parameter ## n)); } \

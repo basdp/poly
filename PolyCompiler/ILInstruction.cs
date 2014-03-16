@@ -219,7 +219,7 @@ namespace SDILReader
                             {
                                 System.Reflection.MethodInfo mOperand = (System.Reflection.MethodInfo)operand;
                                 if (!mOperand.IsStatic) result += "/*instance*/ ";
-                                result += "" + Naming.GetInternalMethodName(mOperand);
+                                result += "" + (mOperand.IsVirtual ? "mE162F2ED4CE5AD4D813F67A4F10F14E2361806D5" : Naming.GetInternalMethodName(mOperand));
                                 result += ", \"" + Naming.GetInternalMethodName(mOperand, false) + "\"";
                                 result += ", " + mOperand.GetParameters().Length + ", " + (mOperand.IsVirtual ? "1" : "0");
                                 result += "/* " + mOperand.ReturnParameter.ParameterType.FullName + " " + mOperand.DeclaringType.FullName + "::" + mOperand.Name + "(";
