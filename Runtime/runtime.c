@@ -15,6 +15,7 @@ int cil_type_size(enum CIL_Type type) {
 		return 8;
 	case CIL_pointer:
 	case CIL_native:
+	case CIL_array:
 		return sizeof(intptr_t);
 	default: return 0;
 	}
@@ -79,6 +80,8 @@ const char* cil_type_to_string(enum CIL_Type type) {
 		return "CIL_native";
 	case CIL_valuetype:
 		return "CIL_valuetype";
+	case CIL_array:
+		return "CIL_array";
 	default: 
 		return "(unknown)";
 	}

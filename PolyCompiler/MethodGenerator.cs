@@ -84,6 +84,7 @@ namespace PolyCompiler
                        "); /* " + virtmethod.Name + " */\n";
                     }
 
+                    addedcode += "    if (!skipDefaultInitialization) {\n";
                     FieldInfo[] fis = type.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                     for (int k = 0; k < fis.Length; k++)
                     {
@@ -93,7 +94,7 @@ namespace PolyCompiler
                             addedcode += "    CIL_box_ciltype(((struct " + Naming.ConvertTypeToCName(type.FullName) + "*)parameter0)->" + Naming.GetInternalFieldName(fis[k].Name) + "__type);\n";
                         }*/
 
-                        addedcode += "    ((struct " + Naming.ConvertTypeToCName(type.FullName) + "*)parameter0)->";
+                        addedcode += "        ((struct " + Naming.ConvertTypeToCName(type.FullName) + "*)parameter0)->";
                         if (fis[k].FieldType.IsValueType)
                         {
                             int bits = TypeHelper.GetTypeSize(fis[k].FieldType);
@@ -121,6 +122,7 @@ namespace PolyCompiler
                         addedcode += "\n";
 
                     }
+                    addedcode += "    }\n";
                 }
 
                 ProcessMethodBody(cis[j], context, addedcode);
@@ -251,6 +253,7 @@ namespace PolyCompiler
                 // constructors get the object as last parameter on the stack instead of the first
                 context.Code.Append("    uintptr_t parameter0 = pop_pointer();\n");
                 context.Code.Append("    enum CIL_Type parameter0__type = CIL_pointer;\n");
+                context.Code.Append("    int skipDefaultInitialization = 0;\n");
 
                 if (m.DeclaringType.BaseType.GenericTypeArguments.Length > 0)
                 {
@@ -392,6 +395,12 @@ namespace PolyCompiler
                                     context.Code.Append("    pop_pointer();\n");
                                     context.Code.Append(addedcode); // addedcode shoud have been afther this call, but this call is removed, so we handle the addedcode ourself.
                                     continue;
+                                }
+
+                                if (m.IsConstructor && ((ConstructorInfo)instr.Operand).DeclaringType == m.DeclaringType)
+                                {
+                                    // this is a constructor and it calls another constructor. This means that all fields are already set to a (default) value, and we shouldn't override it
+                                    context.Code.Append("    skipDefaultInitialization = 1;\n");
                                 }
                             }
                         }

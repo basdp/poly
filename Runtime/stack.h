@@ -7,6 +7,7 @@ void push_value32(int32_t, enum CIL_Type type);
 void push_value64(int64_t, enum CIL_Type type);
 void push_pointer(uintptr_t);
 void push_valuetypepointer(uintptr_t);
+void push_arraypointer(uintptr_t);
 int32_t pop_value32();
 int64_t pop_value64();
 uintptr_t pop_pointer();

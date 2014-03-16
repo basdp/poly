@@ -36,6 +36,12 @@ void push_valuetypepointer(uintptr_t c) {
 	types[ttop++] = CIL_valuetype;
 }
 
+void push_arraypointer(uintptr_t c) {
+	memcpy(items + top, &c, sizeof(uintptr_t));
+	top += sizeof(uintptr_t);
+	types[ttop++] = CIL_array;
+}
+
 int32_t pop_value32() {
 	int32_t r = *((int32_t*)(items + top - sizeof(int32_t)));
 	top -= 4;
@@ -88,6 +94,8 @@ uintptr_t peek_pointer(unsigned int offset) {
 			size = sizeof(intptr_t);
 		} else if (types[ttop - i - 1] == CIL_valuetype) {
 			size = sizeof(intptr_t);
+		} else if (types[ttop - i - 1] == CIL_array) {
+			size = sizeof(intptr_t);
 		} else if (types[ttop - i - 1] == CIL_float32) {
 			size = 4;
 		} else if (types[ttop - i - 1] == CIL_float64) {
@@ -117,6 +125,7 @@ int stack_top_size() {
 		return 8;
 	case CIL_pointer:
 	case CIL_valuetype:
+	case CIL_array:
 	case CIL_native:
 		return sizeof(intptr_t);
 	default: return 0;
@@ -140,6 +149,7 @@ void stack_duplicate_top() {
 		break;
 	case CIL_pointer:
 	case CIL_valuetype:
+	case CIL_array:
 	case CIL_native: {
 		intptr_t v = pop_pointer();
 		push_pointer(v);
@@ -208,7 +218,14 @@ void print_stack() {
 			printf("0x%x\t", v);
 			printf("%s", (char*)((struct SYSTEM__OBJECT_proto *)v)->__CILtype);
 			t += sizeof(intptr_t);
-		}	
+		} else if (types[i] == CIL_array) {
+			intptr_t v = *((intptr_t*)(items + t));
+			printf("array\t\t"); 
+			printf("0x%x\t", v);
+			int32_t len = ((int32_t*)v)[0];
+			printf("length: %d", len);
+			t += sizeof(intptr_t);
+		}
 		printf("\n");
 	}
 	printf("\n");

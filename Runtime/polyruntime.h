@@ -70,6 +70,22 @@ struct SYSTEM__INT64_proto {
 	int64_t value;
 };
 
+#define SYSTEM__SINGLE_ctor m710D991E28257C9E5006EA83D9B7347A5207CAA8
+#define SYSTEM__SINGLE_ctor_sig "System.Single::.ctor()"
+extern void *SYSTEM__SINGLE_ctor();
+struct SYSTEM__SINGLE_proto {
+	struct SYSTEM__VALUETYPE_proto __base;
+	int32_t value;
+};
+
+#define SYSTEM__DOUBLE_ctor mC4D8E87335A02F55762ED2158B3D14CD7D61F0B8
+#define SYSTEM__DOUBLE_ctor_sig "System.Single::.ctor()"
+extern void *SYSTEM__DOUBLE_ctor();
+struct SYSTEM__DOUBLE_proto {
+	struct SYSTEM__VALUETYPE_proto __base;
+	int64_t value;
+};
+
 #define SYSTEM__CHAR_ctor mF3EA68989C5CDF2CD019A151716D4F3CCDB873A6
 #define SYSTEM__CHAR_ctor_sig "System.Char::.ctor()"
 extern void *SYSTEM__CHAR_ctor();

@@ -31,7 +31,7 @@ namespace System
         [Poly.Internals.CompilerImplemented.InlineCode(@"
             float f;
             memcpy(&f, &parameter0, 4);
-            printf(""%f\n"", f);
+            printf(""%.6f\n"", f);
         ")]
         public static void WriteLine(float value) { }
 

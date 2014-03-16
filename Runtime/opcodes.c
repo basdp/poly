@@ -620,6 +620,22 @@ void CIL_box_dispatch(const char* type) {
 		obj->value = val;
 		return;
 	}
+	if (strcmp(type, "System.Double") == 0) {
+		struct SYSTEM__DOUBLE_proto *obj;
+		int64_t val = pop_value64();
+		CIL_newobj(SYSTEM__DOUBLE_proto, SYSTEM__DOUBLE_ctor);
+		obj = (struct SYSTEM__DOUBLE_proto *)peek_pointer(0);
+		obj->value = val;
+		return;
+	}
+	if (strcmp(type, "System.Single") == 0) {
+		struct SYSTEM__SINGLE_proto *obj;
+		int32_t val = pop_value32();
+		CIL_newobj(SYSTEM__SINGLE_proto, SYSTEM__SINGLE_ctor);
+		obj = (struct SYSTEM__SINGLE_proto *)peek_pointer(0);
+		obj->value = val;
+		return;
+	}
 	else if (strcmp(type, "System.Char") == 0) {
 		struct SYSTEM__CHAR_proto *obj;
 		int32_t val = pop_value32();
@@ -711,7 +727,7 @@ void CIL_newarr_dispatch(const char* type) {
 		intptr_t arr = (intptr_t)calloc(numElems + 2, 4);
 		((int32_t*)arr)[0] = numElems;
 		((int32_t*)arr)[1] = 4; // size
-		push_pointer(arr);
+		push_arraypointer(arr);
 		return;
 	}
 	else if (strcmp(type, "System.Int64") == 0 ||
@@ -722,29 +738,29 @@ void CIL_newarr_dispatch(const char* type) {
 		intptr_t arr = (intptr_t)calloc(numElems + 1, 8);
 		((int32_t*)arr)[0] = numElems;
 		((int32_t*)arr)[1] = 8; // size
-		push_pointer(arr);
+		push_arraypointer(arr);
 		return;
 	}
 	else if (strcmp(type, "System.Single") == 0) {
 		intptr_t arr = (intptr_t)calloc(numElems + 2, 4);
 		((int32_t*)arr)[0] = numElems;
 		((int32_t*)arr)[1] = 4; // size
-		push_pointer(arr);
+		push_arraypointer(arr);
 		return;
 	}
 	else if (strcmp(type, "System.Double") == 0) {
 		intptr_t arr = (intptr_t)calloc(numElems + 1, 8);
 		((int32_t*)arr)[0] = numElems;
 		((int32_t*)arr)[1] = 8; // size
-		push_pointer(arr);
+		push_arraypointer(arr);
 		return;
 	}
 	else {
 		// Object
-		intptr_t arr = (intptr_t)calloc(numElems + 2, sizeof(intptr_t));
+		uintptr_t arr = (uintptr_t)calloc(numElems + 2, sizeof(uintptr_t));
 		((int32_t*)arr)[0] = numElems;
 		((int32_t*)arr)[1] = sizeof(intptr_t); // size
-		push_pointer(arr);
+		push_arraypointer(arr);
 		return;
 	}
 
@@ -792,9 +808,9 @@ void CIL_stelem__r8() {
 }
 
 void CIL_stelem__ref() {
-	intptr_t value = pop_pointer();
+	uintptr_t value = pop_pointer();
 	int32_t index = pop_value32() + 2;
-	intptr_t* array = (intptr_t*)pop_pointer();
+	uintptr_t* array = (uintptr_t*)pop_pointer();
 	array[index] = value;
 }
 
@@ -833,12 +849,13 @@ void CIL_ldelem__r8() {
 
 void CIL_ldelem__ref() {
 	int32_t index = pop_value32();
-	intptr_t* array = (intptr_t*)pop_pointer();
+	uintptr_t* array = (uintptr_t*)pop_pointer();
 	int32_t numElems = ((int32_t*)array)[0];
 	if (index >= numElems) {
 		fprintf(stderr, "System.IndexOutOfRangeException\n");
 		exit(1);
 	}
+
 	push_pointer(array[index + 2]);
 }
 
@@ -889,6 +906,10 @@ int CIL_stfld_dispatch(void* field, int size) {
 		intptr_t vt = pop_pointer();
 		intptr_t self = pop_pointer();
 		memcpy(field, (void*)vt, size);
+	} else if (stack_top_type() == CIL_array) {
+		intptr_t value = pop_pointer();
+		uintptr_t self = pop_pointer();
+		*(intptr_t*)field = value;
 	} else if (stack_top_size() == 4) {
 		int32_t value = pop_value32();
 		intptr_t self = pop_pointer();

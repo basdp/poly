@@ -7,10 +7,15 @@ using System.Threading.Tasks;
 
 namespace System.Collections
 {
+    /*[Poly.Internals.CompilerImplemented.StructureCode(@"
+        int __length;
+        uintptr_t* __array;
+    ")]*/
     public class ArrayList : IList, ICollection, IEnumerable, ICloneable
     {
         static readonly int DefaultCapacity = 0;
         object[] array;
+        int length;
 
         public ArrayList()
             : this(DefaultCapacity)
@@ -25,28 +30,43 @@ namespace System.Collections
 
         public ArrayList(int capacity)
         {
-            Console.WriteLine("New ArrayList of capacity " + capacity);
             this.array = new object[capacity];
+            length = 0;
         }
 
         public int Add(object value)
         {
-            throw new NotImplementedException();
+            if (length >= array.Length)
+            {
+                object[] oldarr = array;
+                length += 1;
+                array = new object[length];
+                for (int i = 0; i < length - 1; i++)
+                {
+                    array[i] = oldarr[i];
+                }
+            }
+            array[length - 1] = value;
+            return length - 1;
         }
 
         public void Clear()
         {
-            throw new NotImplementedException();
+            length = 0;
         }
 
         public bool Contains(object value)
         {
-            throw new NotImplementedException();
+            return IndexOf(value) != -1;
         }
 
         public int IndexOf(object value)
         {
-            throw new NotImplementedException();
+            for (int i = 0; i < array.Length; i++)
+            {
+                if (array[i].Equals(value)) return i;
+            }
+            return -1;
         }
 
         public void Insert(int index, object value)
@@ -78,11 +98,11 @@ namespace System.Collections
         {
             get
             {
-                throw new NotImplementedException();
+                return array[index];
             }
             set
             {
-                throw new NotImplementedException();
+                array[index] = value;
             }
         }
 
@@ -93,7 +113,7 @@ namespace System.Collections
 
         public int Count
         {
-            get { throw new NotImplementedException(); }
+            get { return length; }
         }
 
         public bool IsSynchronized
@@ -108,12 +128,16 @@ namespace System.Collections
 
         public IEnumerator GetEnumerator()
         {
-            throw new NotImplementedException();
+            return new ArrayListEnumerator(this);
+        }
+        public IEnumerator GetEnumerator(int index, int count)
+        {
+            return new ArrayListEnumerator(this, index, count);
         }
 
         IEnumerator IEnumerable.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return new ArrayListEnumerator(this);
         }
 
         public object Clone()

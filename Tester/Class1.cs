@@ -6,47 +6,30 @@ using System.Threading.Tasks;
 
 namespace jk
 {
-    class A
-    {
-        public int val;
-
-        public A()
-        {
-            Console.WriteLine("A()");
-            val = 10;
-        }
-
-        public A(int v)
-        {
-            Console.WriteLine("A(int)");
-            val = v;
-        }
-    }
-
-    class B : A
-    {
-        public B()
-            : base(65)
-        {
-            Console.WriteLine("B()");
-        }
-
-    }
-
     class D
     {
         public static int Main(string[] args)
         {
-            A a1 = new A();
-            if (a1.val != 10) return 1;
+            ArrayList l = new ArrayList();
 
-            A a2 = new A(32);
-            if (a1.val != 32) return 1;
+            l.Add("string1");
+            l.Add("string2");
+            l.Add("string3");
+            l.Add("string4");
+            l.Add("string5");
+            l.Add(4);
 
-            B b = new B();
-            if (a1.val != 65) return 1;
+            l[2] = 4.45;
 
-            return 200;
+            foreach (var s in l)
+            {
+                Console.WriteLine(s);
+            }
+
+            //for (int i = 0; i < l.Count; i++)
+            //    Console.WriteLine(l[i]);
+
+                return 200;
         }
     }
 }

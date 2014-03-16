@@ -54,6 +54,8 @@ namespace PolyCompiler
                 default:
                     if (type.IsValueType)
                         return "CIL_valuetype";
+                    else if (type.IsArray)
+                        return "CIL_array";
                     else
                         return "CIL_pointer";
             }
