@@ -152,9 +152,20 @@ namespace PolyCompiler
                     addedcode += "    hashmap_put(((struct System__Object*)parameter0)->__CILsymboltable, \"" + Naming.GetInternalMethodName(virtmethod, false) + "\", &" + Naming.GetInternalMethodName(virtmethod) +
                    "); /* " + virtmethod.Name + " */\n";
                 }
+                if (type.IsGenericTypeDefinition)
+                {
+                    addedcode += "    ((struct System__Object*)parameter0)->__CILisgeneric = 1;\n";
+                    addedcode += "    ((struct System__Object*)parameter0)->__CILgenerictypelist_length = generictypelist_length;\n";
+                    addedcode += "    ((struct System__Object*)parameter0)->__CILgenerictypelist = generictypelist;\n";
+                }
 
-                context.Header.AppendLine("void *" + Naming.ConvertTypeToCName(type.FullName) + "__init();");
-                context.Code.Append("void *" + Naming.ConvertTypeToCName(type.FullName) + "__init() {\n");
+                context.Header.Append("void *" + Naming.ConvertTypeToCName(type.FullName) + "__init(");
+                if (type.IsGenericTypeDefinition) context.Header.Append("int, enum CIL_Type*");
+                context.Header.Append(");");
+
+                context.Code.Append("void *" + Naming.ConvertTypeToCName(type.FullName) + "__init(");
+                if (type.IsGenericTypeDefinition) context.Code.Append("int generictypelist_length, enum CIL_Type* generictypelist");                
+                context.Code.Append(") {\n");
                 context.Code.Append(addedcode);
                 context.Code.AppendLine("return 0; \n}");
 
@@ -234,11 +245,13 @@ namespace PolyCompiler
             }
             else
             {
-                string hname = Naming.GetInternalMethodName(m);
+                //string hname = Naming.GetInternalMethodName(m);
+
                 context.Header.Append("void *" + Naming.GetInternalMethodName(m) + "(");
                 if (m.IsGenericMethod) context.Header.Append("int generictypelist_length, enum CIL_Type* generictypelist");
                 context.Header.Append(");\n");
 
+                context.Code.AppendLine("// SIG: " + Naming.GetInternalMethodName(m, true, true));
                 context.Code.Append("void *" + Naming.GetInternalMethodName(m) + "(");
                 if (m.IsGenericMethod) context.Code.Append("int generictypelist_length, enum CIL_Type* generictypelist");
                 context.Code.Append(") {\n");
@@ -316,6 +329,24 @@ namespace PolyCompiler
                 context.Code.Append("    enum CIL_Type parameter0__type = CIL_pointer;\n");
             }
 
+            if (m.IsConstructor && m.DeclaringType.IsValueType)
+            {
+                // Call the init of the valuetype in the constructor
+                context.Code.AppendLine("    push_pointer(parameter0);");
+                if (m.DeclaringType.IsGenericTypeDefinition)
+                {
+                    context.Code.AppendLine("    CIL_initobj_generic(" + Naming.ConvertTypeToCName(m.DeclaringType) + ", generictypelist_length, generictypelist);");
+                }
+                else
+                {
+                    SDILReader.ILInstruction ili = new SDILReader.ILInstruction();
+                    ili.Code = System.Reflection.Emit.OpCodes.Initobj;
+                    ili.Operand = m.DeclaringType;
+                    context.Code.AppendLine(ili.GetCode(m, context));
+                }
+                //context.Code.AppendLine("    CIL_initobj(" + Naming.ConvertTypeToCName(m.DeclaringType) + ");");
+            }
+
             context.Code.AppendLine("    int entryStackSize = stack_size();");
             context.Code.AppendLine("    int boundExceptions = 0;");
 
@@ -356,7 +387,7 @@ namespace PolyCompiler
                             }
                             else
                             {
-                                context.Code.Append("    int8_t local" + l.LocalIndex + "[sizeof(struct " + Naming.ConvertTypeToCName(l.LocalType.FullName) + ")] = { 0 };\n");
+                                context.Code.Append("    int8_t local" + l.LocalIndex + "[sizeof(struct " + Naming.ConvertTypeToCName(l.LocalType) + ")] = { 0 };\n");
                             }
                             context.Code.Append("    enum CIL_Type local" + l.LocalIndex + "__type = " + TypeHelper.GetInternalType(l.LocalType) + "; // " + l.LocalType.FullName + "\n");
                         }

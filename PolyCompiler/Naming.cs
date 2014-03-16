@@ -120,6 +120,9 @@ namespace PolyCompiler
             type = type.Replace("=", "_eq_");
             type = type.Replace("`", "__");
 
+            if (type.IndexOf('[') != -1) 
+                type = type.Substring(0, type.IndexOf('['));
+
             return type;
         }
 
@@ -146,8 +149,31 @@ namespace PolyCompiler
                 fullname = type.Namespace;
                 if (fullname != null) fullname += ".";
                 else fullname = "";
-                fullname += type.Name;
+                string typename = type.Name;
+                if (typename.IndexOf('[') != -1) typename = type.Name.Substring(type.Name.IndexOf('['));
+                var dtype = type.DeclaringType;
+                while (dtype != null)
+                {
+                    string name = dtype.Name;
+                    if (name.IndexOf('[') != -1) name = name.Substring(name.IndexOf('['));
+                    typename = name + "+" + typename;
+                    dtype = dtype.DeclaringType;
+                }
+                fullname += typename;
+
             }
+            /*
+            string typename = fOperand.DeclaringType.Name;
+            var dtype = fOperand.DeclaringType.DeclaringType;
+            while (dtype != null)
+            {
+                typename = dtype.Name + "+" + typename;
+                dtype = dtype.DeclaringType;
+            }
+            gtypename += typename;*/
+
+
+
             return fullname;
         }
     }

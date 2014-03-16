@@ -20,12 +20,32 @@ namespace PolyCompiler
                 if (t1 == null) return 1;
                 if (t2 == null) return -1;
                 if (t1 == null && t2 == null) return 0;
-                if (t1.FullName.Contains(".__")) 
-                    t1 = Type.GetType(Naming.GetFullName(t1).Replace(".__", "."));
-                if (t2.FullName.Contains(".__")) 
-                    t2 = Type.GetType(Naming.GetFullName(t2).Replace(".__", "."));
+                if (t1.FullName.Contains(".__"))
+                {
+                    string tname = Naming.GetFullName(t1).Replace(".__", ".");
+                    t1 = t1.Assembly.GetType(tname);
+                    if (t1 == null)
+                    {
+                        // This is a renamed mscorlib type
+                        t1 = new Object().GetType().Assembly.GetType(tname);
+                    }
+                }
+                if (t2.FullName.Contains(".__"))
+                {
+                    string tname = Naming.GetFullName(t2).Replace(".__", ".");
+                    t2 = t2.Assembly.GetType(tname);
+                    if (t2== null)
+                    {
+                        // This is a renamed mscorlib type
+                        t2 = new Object().GetType().Assembly.GetType(tname);
+                    }
+                }
                 if (t1.FullName == "System.Object") return -1;
                 if (t2.FullName == "System.Object") return 1;
+
+                if (t1.FullName == "System.ValueType") return -1;
+                if (t2.FullName == "System.ValueType") return 1;
+
                 if (t1.IsSubclassOf(t2))
                 {
                     return 1;

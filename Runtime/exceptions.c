@@ -67,7 +67,7 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 		printf("(re)initialize the stack trace\n");
 #endif
 		push_pointer((uintptr_t)exception);
-		CIL_call(mCD4230286DD9DEFCC5EFCF854EBB6049454ED123, "m38EAC9CEA38B341E4916A3737AB09F8E8CCC0394", 0, 0);
+		CIL_call_unsafe(mCD4230286DD9DEFCC5EFCF854EBB6049454ED123, "m38EAC9CEA38B341E4916A3737AB09F8E8CCC0394", 0, 0);
 	}
 
 	struct ExceptionHandler eh;

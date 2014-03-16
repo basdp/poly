@@ -6,12 +6,16 @@
 #include <stdio.h>
 
 #define CIL_call(func, name, nparams, isvirtual) {\
-	callstack_push(func ## _sig, "(unknown)", 0);\
-	int res = CIL_call_dispatch(&func);\
-	if (res == 1) {\
-	/* exception has been thrown*/\
-	if (DEBUG_EXCEPTIONS) { printf("Func " #func " threw an exception\n"); }\
-	exception_throw_withInitStackTrace(0);\
+	if (isvirtual) {\
+		CIL_callvirt(func, name, nparams, isvirtual);\
+	} else {\
+		callstack_push(func ## _sig, "(unknown)", 0);\
+		int res = CIL_call_dispatch(&func);\
+		if (res == 1) {\
+			/* exception has been thrown*/\
+			if (DEBUG_EXCEPTIONS) { printf("Func " #func " threw an exception\n"); }\
+			exception_throw_withInitStackTrace(0);\
+		}\
 	}\
 }
 
@@ -236,6 +240,7 @@ void CIL_ldstr(const char*);
 
 #define CIL_nop() 
 #define CIL_break() 
+#define CIL_constrained__(type) // don't know for sure if this is okay to ignore in the Poly implementation...
 
 #define CIL_br(label) goto label
 #define CIL_blt(target) { CIL_clt(); CIL_brtrue(target); }
@@ -345,7 +350,7 @@ int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
 #define CIL_ldarga__s(i) CIL_ldarga(i)
 
 #define CIL_ldloc(n) { \
-	if (sizeof(local ## n) > 8 && local ## n ## __type == CIL_valuetype) { push_valuetypepointer((uintptr_t)&local ## n); } \
+	if (sizeof(local ## n) > 8 && local ## n ## __type == CIL_valuetype) { uintptr_t v = (uintptr_t)malloc(sizeof(local ## n)); memcpy((void*)v, &local ## n, sizeof(local ## n)); push_valuetypepointer(v); } \
 	else if (local ## n ## __type == CIL_array) { push_arraypointer((uintptr_t)local ## n); } \
 	else if (cil_type_size(local ## n ## __type) == 4) { push_value32((int32_t)local ## n, local ## n ## __type); } \
 	else if (cil_type_size(local ## n ## __type) == 8) { push_value64((int64_t)local ## n, local ## n ## __type); } \
@@ -363,11 +368,22 @@ int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
 
 #define CIL_ldloc__s(s) CIL_ldloc(s)
 
-#define CIL_ldloca(i) push_pointer((uintptr_t)&local ## i)
+#define CIL_ldloca(i) { \
+	if (local ## i ## __type == CIL_pointer) {\
+		push_pointer((uintptr_t)local ## i);\
+	} else if (local ## i ## __type == CIL_array) { \
+		push_arraypointer((uintptr_t)&local ## i);\
+	} else if (local ## i ## __type == CIL_valuetype) { \
+		push_valuetypepointer((uintptr_t)&local ## i);\
+	} else { \
+		push_pointer((uintptr_t)&local ## i);\
+	} \
+}
+
 #define CIL_ldloca__s(i) CIL_ldloca(i)
 
 #define CIL_stloc(n) { \
-	if (sizeof(local ## n) > 8 && local ## n ## __type == CIL_valuetype) { memcpy(&local ## 0, (void*)pop_pointer(), sizeof(local ## 0)); } \
+	if (sizeof(local ## n) > 8 && local ## n ## __type == CIL_valuetype) { memcpy(&local ## n, (void*)pop_pointer(), sizeof(local ## n)); } \
 	else if (local ## n ## __type == CIL_array) { uintptr_t *tmp = (uintptr_t*)&local ## n; *tmp = pop_pointer(); } \
 	else if (cil_type_size(local ## n ## __type) == 4) { int32_t *tmp = (int32_t*)&local ## n; *tmp = pop_value32(); } \
 	else if (cil_type_size(local ## n ## __type) == 8) { int64_t *tmp = (int64_t*)&local ## n; *tmp = pop_value64(); } \
@@ -408,6 +424,14 @@ int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
 	memset((void*)pointer, 0, sizeof(struct type));\
 	push_pointer(pointer);\
 	type ## __init();\
+}
+
+#define CIL_initobj_generic(type, typelist_length, typelist) {\
+	uintptr_t pointer = pop_pointer(); \
+	/* TODO: Garbage collect */ \
+	memset((void*)pointer, 0, sizeof(struct type));\
+	push_pointer(pointer);\
+	type ## __init(typelist_length, typelist);\
 }
 
 #define CIL_box(type) CIL_box_dispatch(#type)

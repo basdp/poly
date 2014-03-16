@@ -66,7 +66,8 @@ namespace SDILReader
                         }
                         def += typelist_name;
 
-                        result += "CIL_newobj_generic(";
+                        result += "CIL_newobj_generic";
+                        result += "(";
                         result += Naming.ConvertTypeToCName(mOperand.ReflectedType) + ", ";
                         result += Naming.GetInternalMethodName(mOperand) + ", ";
                         result += "typelist" + typelist_name + "_length, ";
@@ -99,8 +100,43 @@ namespace SDILReader
                 else if (code.Name == "initobj")
                 {
                     System.Reflection.TypeInfo mOperand = (System.Reflection.TypeInfo)operand;
-                    result += "CIL_initobj(";
-                    result += Naming.ConvertTypeToCName(mOperand);
+                    if (mOperand.ReflectedType.IsGenericType)
+                    {
+                        string def = "generic_" + Naming.ConvertTypeToCName(mOperand.ReflectedType);
+                        string typelist_name = "";
+                        foreach (var gtype in mOperand.ReflectedType.GenericTypeArguments)
+                        {
+                            typelist_name += "__" + Naming.ConvertTypeToCName(gtype);
+                        }
+                        def += typelist_name;
+
+                        result += "CIL_initobj_generic";
+                        result += "(";
+                        result += Naming.ConvertTypeToCName(mOperand.ReflectedType) + ", ";
+                        result += "typelist" + typelist_name + "_length, ";
+                        result += "typelist" + typelist_name + " ";
+                        result += "/* " + mOperand.DeclaringType.FullName + "::" + mOperand.Name + " */";
+
+                        if (!context.GenericTypeListGenerated.Contains(typelist_name))
+                        {
+                            context.CodeHeader.AppendLine("static enum CIL_Type* typelist" + typelist_name + ";");
+                            context.CodeHeader.AppendLine("static int typelist" + typelist_name + "_length;");
+                            context.Init.AppendLine("    typelist" + typelist_name + "_length = " + mOperand.ReflectedType.GenericTypeArguments.Length + ";");
+                            context.Init.AppendLine("    typelist" + typelist_name + " = malloc(sizeof(enum CIL_Type) * " + mOperand.ReflectedType.GenericTypeArguments.Length + ");");
+                            for (int i = 0; i < mOperand.ReflectedType.GenericTypeArguments.Length; i++)
+                            {
+                                var gtype = mOperand.ReflectedType.GenericTypeArguments[i];
+                                context.Init.AppendLine("    typelist" + typelist_name + "[" + i + "] = " + TypeHelper.GetInternalType(gtype) + ";");
+                            }
+
+                            context.GenericTypeListGenerated.Add(typelist_name);
+                        }
+                    }
+                    else
+                    {
+                        result += "CIL_initobj(";
+                        result += Naming.ConvertTypeToCName(mOperand);
+                    }
                 }
                 /*else if (code.Name == "castclass")
                 {
@@ -119,7 +155,14 @@ namespace SDILReader
                             string gtypename = fOperand.DeclaringType.Namespace;
                             if (gtypename == null) gtypename = "";
                             else gtypename += ".";
-                            gtypename += fOperand.DeclaringType.Name;
+                            string typename = fOperand.DeclaringType.Name;
+                            var dtype = fOperand.DeclaringType.DeclaringType;
+                            while (dtype != null)
+                            {
+                                typename = dtype.Name + "+" + typename;
+                                dtype = dtype.DeclaringType;
+                            }
+                            gtypename += typename;
                             var thisfield = fOperand.DeclaringType.Assembly.GetType(gtypename).GetField(fOperand.Name);
                             if (thisfield != null && thisfield.FieldType.IsGenericParameter)
                             {
@@ -227,7 +270,14 @@ namespace SDILReader
                                 {
                                     result += param.ParameterType.FullName + ", ";
                                 }
-                                result += ") -> SIG: " + Naming.GetInternalMethodName(mOperand, false, true) + " */";
+                                if (mOperand.IsVirtual)
+                                {
+                                    result += ") -> SIG: " + Naming.GetInternalMethodName(mOperand, false, true) + " */";
+                                }
+                                else
+                                {
+                                    result += ") -> SIG: " + Naming.GetInternalMethodName(mOperand, true, true) + " */";
+                                }
                             }
                             catch
                             {

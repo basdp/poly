@@ -5,22 +5,21 @@ using System.Threading.Tasks;
 
 namespace System.Collections.Generic
 {
-    public class __List<T> : IList<T>, ICollection<T>, IList, ICollection, IReadOnlyList<T>, IReadOnlyCollection<T>, IEnumerable<T>, IEnumerable
+    public class List<T> : IList<T>, ICollection<T>, IList, ICollection, IReadOnlyList<T>, IReadOnlyCollection<T>, IEnumerable<T>, IEnumerable
     {
-        T listk;
         ArrayList list;
 
-        public __List()
+        public List()
         {
             list = new ArrayList();
         }
 
-        public __List(int capacity)
+        public List(int capacity)
         {
             list = new ArrayList(capacity);
         }
 
-        public __List(IEnumerable<T> collection)
+        public List(IEnumerable<T> collection)
         {
             list = new ArrayList();
             foreach (object o in collection) list.Add(o);
@@ -90,9 +89,9 @@ namespace System.Collections.Generic
             return list.Count != size;
         }
 
-        public IEnumerator<T> GetEnumerator()
+        public Enumerator GetEnumerator()
         {
-            throw new NotImplementedException();
+            return new List<T>.Enumerator(list.GetEnumerator());
         }
 
         IEnumerator IEnumerable.GetEnumerator()
@@ -139,7 +138,7 @@ namespace System.Collections.Generic
 
         IEnumerator<T> IEnumerable<T>.GetEnumerator()
         {
-            throw new NotImplementedException();
+            return new List<T>.Enumerator(list.GetEnumerator());
         }
 
         public int Add(object value)
@@ -207,6 +206,41 @@ namespace System.Collections.Generic
         int IReadOnlyCollection<T>.Count
         {
             get { return list.Count; }
+        }
+
+        public struct Enumerator : IEnumerator<T>
+        {
+            IEnumerator ale;
+
+            public Enumerator(IEnumerator enumerator)
+            {
+                ale = enumerator;
+            }
+
+            public T Current
+            {
+                get { return (T)ale.Current; }
+            }
+
+            public void Dispose()
+            {
+                
+            }
+
+            object IEnumerator.Current
+            {
+                get { return ale.Current; }
+            }
+
+            public bool MoveNext()
+            {
+                return ale.MoveNext();
+            }
+
+            public void Reset()
+            {
+                ale.Reset();
+            }
         }
     }
 }
