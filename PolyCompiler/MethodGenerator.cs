@@ -161,7 +161,7 @@ namespace PolyCompiler
 
                 context.Header.Append("void *" + Naming.ConvertTypeToCName(type.FullName) + "__init(");
                 if (type.IsGenericTypeDefinition) context.Header.Append("int, enum CIL_Type*");
-                context.Header.Append(");");
+                context.Header.AppendLine(");");
 
                 context.Code.Append("void *" + Naming.ConvertTypeToCName(type.FullName) + "__init(");
                 if (type.IsGenericTypeDefinition) context.Code.Append("int generictypelist_length, enum CIL_Type* generictypelist");                
@@ -199,14 +199,15 @@ namespace PolyCompiler
                     context.Main.AppendLine("    push_value32(argc - 1, CIL_int32);");
                     context.Main.AppendLine("    CIL_newarr(System.String);");
                     context.Main.AppendLine("    uintptr_t args = pop_pointer();");
+                    context.Main.AppendLine("    gc_retain(0, args);");
                     context.Main.AppendLine("    int i;");
                     context.Main.AppendLine("    for(i = 1; i < argc; i++) {");
-                    context.Main.AppendLine("        push_pointer(args);");
+                    context.Main.AppendLine("        push_arraypointer(args);");
                     context.Main.AppendLine("        push_value32(i - 1, CIL_int32);");
                     context.Main.AppendLine("        CIL_ldstr(argv[i]);");
                     context.Main.AppendLine("        CIL_stelem__ref();");
                     context.Main.AppendLine("    }");
-                    context.Main.AppendLine("    push_pointer(args);");
+                    context.Main.AppendLine("    push_arraypointer(args);");
                 }
                 else if (m.GetParameters().Count() > 1)
                 {
@@ -215,6 +216,10 @@ namespace PolyCompiler
 
                 context.Main.AppendLine("    CIL_call(" + Naming.GetInternalMethodName(m) + ", \"" + Naming.GetInternalMethodName(m, false) + "\", " + m.GetParameters().Count() + ", 0);");
 
+                if (m.GetParameters().Count() == 1)
+                {
+                    context.Main.AppendLine("    gc_release(0, args);");
+                }
                 context.Main.AppendLine("    if (stack_size() > 1 || (stack_size() > 0 && stack_top_type() != CIL_int32)) { printf(\"DEBUG WARNING: Stack is not empty at end of program. (int32 for return is allowed)\\n\"); print_stack(); }");
                 context.Main.AppendLine("    if (stack_size() > 0 && stack_top_type() == CIL_int32) { return pop_value32(); }");
                 context.Main.AppendLine("    else { return 0; }");

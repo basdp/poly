@@ -100,7 +100,7 @@ namespace SDILReader
                 else if (code.Name == "initobj")
                 {
                     System.Reflection.TypeInfo mOperand = (System.Reflection.TypeInfo)operand;
-                    if (mOperand.ReflectedType.IsGenericType)
+                    if (mOperand.IsGenericType)
                     {
                         string def = "generic_" + Naming.ConvertTypeToCName(mOperand.ReflectedType);
                         string typelist_name = "";

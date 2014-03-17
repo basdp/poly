@@ -53,6 +53,7 @@ extern void *mCD4230286DD9DEFCC5EFCF854EBB6049454ED123();
 void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initStackTrace) {
 	*removedBoundExceptions = 0;
 	struct SYSTEM__OBJECT_proto *exception = (struct SYSTEM__OBJECT_proto *)pop_pointer();
+	gc_retain(0, (uintptr_t)exception);
 	lastThrownException = exception;
 
 #if DEBUG_EXCEPTIONS == 1
@@ -104,6 +105,7 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 		if (i > boundExceptions) {
 			// this is a handler outside of this method
 			push_pointer((uintptr_t)exception);
+			gc_release(0, (uintptr_t)exception);
 			return 0;
 		}
 		else {
@@ -117,6 +119,7 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 #endif
 				push_pointer((uintptr_t)exception);
 				push_pointer((uintptr_t)eh.labelAddress);
+				gc_release(0, (uintptr_t)exception);
 				return (void*)1;
 
 			}
@@ -142,5 +145,6 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 	
 	*removedBoundExceptions += 1;
 
+	gc_release(0, (uintptr_t)exception);
 	return eh.labelAddress;
 }

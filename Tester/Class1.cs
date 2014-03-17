@@ -1,35 +1,44 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using System.Threading;
 using System.Reflection;
 
-class R
+namespace ILD
 {
-
-}
-
-class U
-{
-    public int i;
-    public R hoi;
-
-    public void test(R t)
+    struct H
     {
-        hoi = t;
+        public int a;
+        public bool b;
+        public double d;
     }
-}
 
-class D
-{
-
-    public static int Main(string[] args)
+    class I<T>
     {
-        U u = new U();
-        u.hoi = new R();
-        u.test(new R());
+        public int intvar;
 
-        return 200;
+        public void setVar(T v)
+        {
+            var = v;
+        }
+
+        public T var;
+        public T getVar()
+        {
+            return var;
+        }
+    }
+
+    class X
+    {
+        public static int Main()
+        {
+            I<H> a = new I<H>();
+            a.var = new H() { a = 3, b = false, d = 23.34 };
+
+            if (a.getVar().d != 23.34)
+                return 1;
+
+            return 200;
+        }
+
     }
 }

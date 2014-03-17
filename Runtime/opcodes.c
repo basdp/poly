@@ -749,6 +749,9 @@ int CIL_unbox_dispatch(const char* box_type) {
 	exit(1);
 }
 
+
+// ARRAY
+
 void CIL_newarr_dispatch(const char* type) {
 	/* TODO: Garbage collect */
 
@@ -801,6 +804,7 @@ void CIL_newarr_dispatch(const char* type) {
 		((int32_t*)arr)[0] = numElems;
 		((int32_t*)arr)[1] = sizeof(intptr_t); // size
 		push_arraypointer(arr);
+		gc_new_arr(arr);
 		return;
 	}
 
@@ -851,7 +855,9 @@ void CIL_stelem__ref() {
 	uintptr_t value = pop_pointer();
 	int32_t index = pop_value32() + 2;
 	uintptr_t* array = (uintptr_t*)pop_pointer();
+
 	array[index] = value;
+
 }
 
 void CIL_ldelem__i() {
@@ -919,6 +925,8 @@ void CIL_ldlen() {
 	uintptr_t arr = pop_pointer();
 	push_value32(((int32_t*)arr)[0], CIL_native);
 }
+
+// </arrays>
 
 void CIL_ldtoken_static_field_dispatch(void* addr, enum CIL_Type type, int size) {
 	struct SYSTEM__RUNTIMEFIELDHANDLE_proto *obj;

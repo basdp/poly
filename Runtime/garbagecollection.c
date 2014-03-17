@@ -2,11 +2,24 @@
 #include <string.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
+#define DEBUG_GARBAGE_COLLECTION 0
+
+static struct LinkedList all_objects;
+static struct LinkedList all_arrays;
 static struct LinkedList root_scope;
 
 void gc_init() {
+	all_objects = linkedlist_new();
 	root_scope = linkedlist_new();
+
+	all_arrays = linkedlist_new();
+
+	srand((unsigned int)time(NULL));
+#if DEBUG_GARBAGE_COLLECTION == 1
+	printf("Initialize Garbage Collection\n");
+#endif
 }
 
 uintptr_t gc_alloc(size_t size) {
@@ -17,21 +30,36 @@ uintptr_t gc_alloc(size_t size) {
 
 void gc_new(uintptr_t o) {
 	struct SYSTEM__OBJECT_proto* obj = (struct SYSTEM__OBJECT_proto*)o;
+#if DEBUG_GARBAGE_COLLECTION==1
 	printf("new %s (%p)\n", obj->__CILtype, obj);
-	// TODO: place object in white set
+#endif
+	linkedlist_append(&all_objects, (uintptr_t)obj);
+}
+
+void gc_new_arr(uintptr_t o) {
+#if DEBUG_GARBAGE_COLLECTION==1
+	printf("new array %p\n", o);
+#endif
+	linkedlist_append(&all_arrays, o);
 }
 
 void gc_retain(uintptr_t s, uintptr_t ref) {
+	if (ref == 0) return;
+
 	struct SYSTEM__OBJECT_proto* self = (struct SYSTEM__OBJECT_proto*)s;
 	struct LinkedList *list;
 	if (self == 0) {
+#if DEBUG_GARBAGE_COLLECTION == 1
 		struct SYSTEM__OBJECT_proto* reference = (struct SYSTEM__OBJECT_proto*)ref;
-		printf("root scope retains %p (%s)\n", reference, reference->__CILtype);
+		printf("root scope retains %p\n", reference);
+#endif
 		list = &root_scope;
 	}
 	else {
+#if DEBUG_GARBAGE_COLLECTION == 1
 		struct SYSTEM__OBJECT_proto* reference = (struct SYSTEM__OBJECT_proto*)ref;
-		printf("%p (%s) retains %p (%s)\n", self, self->__CILtype, ref, reference->__CILtype);
+		printf("%p retains %p\n", self, ref);
+#endif
 		list = &self->__CILreferences;
 	}
 
@@ -40,17 +68,22 @@ void gc_retain(uintptr_t s, uintptr_t ref) {
 
 void gc_release(uintptr_t s, uintptr_t ref) {
 	if (ref == 0) return;
+
 	struct SYSTEM__OBJECT_proto* self = (struct SYSTEM__OBJECT_proto*)s;
 
 	struct LinkedList *list;
 	if (self == 0) {
+#if DEBUG_GARBAGE_COLLECTION == 1
 		struct SYSTEM__OBJECT_proto* reference = (struct SYSTEM__OBJECT_proto*)ref;
-		printf("root scope releases %p (%s)\n", ref, reference->__CILtype);
+		printf("root scope releases %p\n", ref);
+#endif
 		list = &root_scope;
 	}
 	else {
+#if DEBUG_GARBAGE_COLLECTION == 1
 		struct SYSTEM__OBJECT_proto* reference = (struct SYSTEM__OBJECT_proto*)ref;
-		printf("%p (%s) releases %p (%s)\n", self, self->__CILtype, ref, reference->__CILtype);
+		printf("%p releases %p\n", self, ref);
+#endif
 		list = &self->__CILreferences;
 	}	
 
@@ -58,10 +91,167 @@ void gc_release(uintptr_t s, uintptr_t ref) {
 	while (node != 0) {
 		if (node->ptr == ref) {
 			linkedlist_remove(list, node);
+
+			if (rand() % 5 == 0) {
+				gc_cycle();
+			}
+
 			return;
 		}
 		node = node->next;
 	}
 
 	printf("released something that wasn't retained!\n");
+}
+
+void gc_cycle() {
+#if DEBUG_GARBAGE_COLLECTION == 1
+	printf("Performing a Garbage Collection Cycle\n");
+	print_callstack();
+	print_stack();
+#endif
+
+	struct LinkedList white = linkedlist_new();
+	struct LinkedList grey = linkedlist_new();
+	struct LinkedList black = linkedlist_new();
+
+	struct Node *node = all_objects.first;
+	while (node != 0) {
+		if (linkedlist_contains(&root_scope, node->ptr)) {
+			linkedlist_append(&grey, node->ptr);
+		}
+		else {
+			linkedlist_append(&white, node->ptr);
+		}
+		node = node->next;
+	}
+	node = all_arrays.first;
+	while (node != 0) {
+		if (linkedlist_contains(&root_scope, node->ptr)) {
+			linkedlist_append(&grey, node->ptr);
+		}
+		else {
+			linkedlist_append(&white, node->ptr);
+		}
+		node = node->next;
+	}
+
+	int i = 0;
+	for (i = 0; i < stack_size(); i++) {
+		if (stack_offset_type(i) == CIL_pointer || stack_offset_type(i) == CIL_array) {
+			uintptr_t ptr = peek_pointer(i);
+			if (ptr == 0) continue;
+			if (!linkedlist_contains(&grey, ptr)) {
+				if (linkedlist_contains(&white, ptr)) {
+					// remove it from the white list, because the stack is global scope
+					linkedlist_removeValue(&white, ptr);
+				}
+				linkedlist_append(&grey, ptr);
+#if DEBUG_GARBAGE_COLLECTION == 1
+				struct SYSTEM__OBJECT_proto* reference = (struct SYSTEM__OBJECT_proto*)ptr;
+				printf("Added %p to the grey list, because it is on the stack\n", ptr);
+#endif
+			}
+		}
+	}
+
+#if DEBUG_GARBAGE_COLLECTION == 1
+	printf("root scope:\n");
+	node = root_scope.first;
+	while (node != 0) {
+		printf("    %p\n", node->ptr);
+		node = node->next;
+	}
+	printf("all objects:\n");
+	node = all_objects.first;
+	while (node != 0) {
+		printf("    %p\n", node->ptr);
+		node = node->next;
+	}
+	printf("all arrays:\n");
+	node = all_arrays.first;
+	while (node != 0) {
+		printf("    %p\n", node->ptr);
+		node = node->next;
+	}
+	printf("white:\n");
+	node = white.first;
+	while (node != 0) {
+		printf("    %p\n", node->ptr);
+		node = node->next;
+	}
+	printf("grey:\n");
+	node = grey.first;
+	while (node != 0) {
+		printf("    %p\n", node->ptr);
+		node = node->next;
+	}
+	printf("black:\n");
+	node = black.first;
+	while (node != 0) {
+		printf("    %p\n", node->ptr);
+		node = node->next;
+	}
+#endif
+		
+	node = grey.first;
+	while (node != 0) {
+		// remove this node from the grey set and blacken it (add to the black set)
+		linkedlist_append(&black, node->ptr);
+		if (linkedlist_contains(&all_arrays, node->ptr)) {
+			#if DEBUG_GARBAGE_COLLECTION == 1
+				printf("Blackening array %p\n", node->ptr);
+				printf("    %p contains references to:\n", node->ptr);
+			#endif
+			int len = ((int32_t*)node->ptr)[0];
+			uintptr_t* array = (uintptr_t*)node->ptr;
+			for (int i = 0; i < len; i++) {
+				struct SYSTEM__OBJECT_proto* r = (struct SYSTEM__OBJECT_proto*)array[i + 2];
+				#if DEBUG_GARBAGE_COLLECTION == 1
+					printf("        %p\n", r);
+				#endif
+				linkedlist_tryRemoveValue(&white, (uintptr_t)r);
+				linkedlist_append(&grey, (uintptr_t)r);
+			}
+		} else if (linkedlist_contains(&all_objects, node->ptr)) {
+			struct SYSTEM__OBJECT_proto* reference = (struct SYSTEM__OBJECT_proto*)node->ptr;
+			#if DEBUG_GARBAGE_COLLECTION == 1
+				printf("Blackening %p\n", reference);
+				printf("    %p references:\n", reference);
+			#endif
+			struct Node *subNode = reference->__CILreferences.first;
+			while (subNode != 0) {
+				struct SYSTEM__OBJECT_proto* r = (struct SYSTEM__OBJECT_proto*)subNode->ptr;
+				#if DEBUG_GARBAGE_COLLECTION == 1
+					printf("        %p\n", r);
+				#endif
+				linkedlist_tryRemoveValue(&white, subNode->ptr);
+				linkedlist_append(&grey, subNode->ptr);
+				subNode = subNode->next;
+			}
+		}
+		else {
+			// happens when the object is still in the constructor phase
+		}
+
+		struct Node* oldNode = node;
+		node = node->next;
+		linkedlist_remove(&grey, oldNode);
+	}
+	// Grey set is now empty, meaning that objects in the black set are still referenced, and objects in the white set are free
+
+	node = white.first;
+	while (node != 0) {
+		struct SYSTEM__OBJECT_proto* reference = (struct SYSTEM__OBJECT_proto*)node->ptr;
+#if DEBUG_GARBAGE_COLLECTION == 1
+		printf("    freeing %p\n", reference);
+#endif
+		if (!linkedlist_tryRemoveValue(&all_objects, node->ptr)) linkedlist_removeValue(&all_arrays, node->ptr);
+		free((void*)node->ptr);
+		node = node->next;
+	}
+
+#if DEBUG_GARBAGE_COLLECTION == 1
+	printf("End of Garbage Collection Cycle\n");
+#endif
 }

@@ -50,14 +50,31 @@ void linkedlist_remove(struct LinkedList* list, struct Node* node) {
 	if (list->first == node) {
 		list->first = node->next;
 	}
-	else if (list->last == node) {
+
+	if (list->last == node) {
 		list->last = node->prev;
 	}
+
 	if (node->prev != 0) node->prev->next = node->next;
 	if (node->next != 0) node->next->prev = node->prev;
 
 	free(node);
 	list->length--;
+}
+
+void linkedlist_removeValue(struct LinkedList* list, uintptr_t ptr) {
+	linkedlist_remove(list, linkedlist_getNode(list, ptr));
+}
+
+int linkedlist_tryRemoveValue(struct LinkedList* list, uintptr_t ptr) {
+	struct Node * node = linkedlist_getNode(list, ptr);
+	if (node != 0) {
+		linkedlist_remove(list, node);
+		return 1;
+	}
+	else {
+		return 0;
+	}
 }
 
 void linkedlist_removeFirst(struct LinkedList* list) {
@@ -72,4 +89,26 @@ void linkedlist_removeLast(struct LinkedList* list) {
 	list->last = node->prev;
 	free(node);
 	list->length--;
+}
+
+int linkedlist_contains(struct LinkedList* list, uintptr_t ptr) {
+	struct Node *node = list->first;
+	while (node != 0) {
+		if (node->ptr == ptr) {
+			return 1;
+		}
+		node = node->next;
+	}
+	return 0;
+}
+
+struct Node *linkedlist_getNode(struct LinkedList* list, uintptr_t ptr) {
+	struct Node *node = list->first;
+	while (node != 0) {
+		if (node->ptr == ptr) {
+			return node;
+		}
+		node = node->next;
+	}
+	return 0;
 }
