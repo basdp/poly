@@ -710,6 +710,45 @@ int CIL_unbox_ciltype_dispatch(enum CIL_type type) {
 	}
 }
 
+int CIL_unbox_dispatch(const char* box_type) {
+	struct SYSTEM__OBJECT_proto *o = (struct SYSTEM__OBJECT_proto *)peek_pointer(0);
+	const char* type = (const char*)o->__CILtype;
+
+	if (strcmp(type, "System.Int32") == 0) {
+		struct SYSTEM__INT32_proto *obj = (struct SYSTEM__INT32_proto *)pop_pointer();
+		push_value32(obj->value, CIL_int32);
+		return 0;
+	}
+	if (strcmp(type, "System.Int64") == 0) {
+		struct SYSTEM__INT64_proto *obj = (struct SYSTEM__INT64_proto *)pop_pointer();
+		push_value64(obj->value, CIL_int64);
+		return 0;
+	}
+	if (strcmp(type, "System.Double") == 0) {
+		struct SYSTEM__DOUBLE_proto *obj = (struct SYSTEM__DOUBLE_proto *)pop_pointer();
+		push_value64(obj->value, CIL_float64);
+		return 0;
+	}
+	if (strcmp(type, "System.Single") == 0) {
+		struct SYSTEM__SINGLE_proto *obj = (struct SYSTEM__SINGLE_proto *)pop_pointer();
+		push_value32(obj->value, CIL_float32);
+		return 0;
+	}
+	else if (strcmp(type, "System.Char") == 0) {
+		struct SYSTEM__CHAR_proto *obj = (struct SYSTEM__CHAR_proto *)pop_pointer();
+		int32_t val = obj->value;
+		push_value32(val, CIL_int32);
+		return 0;
+	}
+	else {
+		// box a valuetype
+		return 0;
+	}
+
+	fprintf(stderr, "Error: Can not box to type %s!\n", type);
+	exit(1);
+}
+
 void CIL_newarr_dispatch(const char* type) {
 	/* TODO: Garbage collect */
 

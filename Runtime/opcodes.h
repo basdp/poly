@@ -201,7 +201,6 @@ void CIL_ldstr(const char*);
 #define CIL_ldind__u1(...) CIL_undefined()
 #define CIL_ldind__u2(...) CIL_undefined()
 #define CIL_ldind__u4(...) CIL_undefined()
-#define CIL_ldobj(...) CIL_undefined()
 #define CIL_ldsflda(...) CIL_undefined()
 #define CIL_ldvirtftn(...) CIL_undefined()
 #define CIL_leave(...) CIL_undefined()
@@ -234,8 +233,6 @@ void CIL_ldstr(const char*);
 #define CIL_sub__ovf(...) CIL_undefined()
 #define CIL_sub__ovf__un(...) CIL_undefined()
 #define CIL_switch(...) CIL_undefined()
-#define CIL_unbox(...) CIL_undefined()
-#define CIL_unbox__any(...) CIL_undefined()
 #define CIL_xor(...) CIL_undefined()
 
 #define CIL_nop() 
@@ -443,6 +440,11 @@ void CIL_box_generic_dispatch();
 
 #define CIL_unbox_ciltype(type) wrap_exception_handling(CIL_unbox_ciltype_dispatch(type))
 int CIL_unbox_ciltype_dispatch(enum CIL_type);
+#define CIL_unbox(type) wrap_exception_handling(CIL_unbox_dispatch(#type))
+int CIL_unbox_dispatch(const char*);
+#define CIL_unbox__any(type) { CIL_unbox(type); CIL_ldobj(type); }
+
+#define CIL_ldobj(type) // do nothing (for now), as we do this under the hood
 
 #define CIL_newarr(type) CIL_newarr_dispatch(#type)
 void CIL_newarr_dispatch(const char*);

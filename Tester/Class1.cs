@@ -10,13 +10,13 @@ class D
 {
     public static int Main(string[] args)
     {
-        List<string> l = new List<string>();
+        List<long> l = new List<long>();
 
-        l.Add("string1");
-        l.Add("string2");
-        l.Add("string3");
-        l.Add("string4");
-        l.Add("string5");
+        l.Add(9);
+        l.Add(12345678908);
+        l.Add(7);
+        l.Add(6);
+        l.Add(5);
 
         foreach (var s in l)
         {
