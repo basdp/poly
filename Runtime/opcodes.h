@@ -2,6 +2,7 @@
 #include "stack.h"
 #include "hashmap.h"
 #include "exceptions.h"
+#include "garbagecollection.h"
 #include <stdlib.h>
 #include <stdio.h>
 
@@ -275,15 +276,15 @@ void CIL_ldstr(const char*);
 #define CIL_stfld(type, name) { \
 	uintptr_t self = peek_pointer(1); \
 	if (self == 0) { throw_NullReferenceException(); } \
-	CIL_stfld_dispatch(&(((struct type*)self)->name), sizeof(((struct type*)self)->name)); \
+	CIL_stfld_dispatch(self, &(((struct type*)self)->name), sizeof(((struct type*)self)->name)); \
 }
 #define CIL_stfld_generic(type, name) { \
 	uintptr_t self = peek_pointer(1); \
 	if (self == 0) { throw_NullReferenceException(); } \
-	CIL_stfld_generic_dispatch(&(((struct type*)self)->name), ((struct type*)self)->name ## __type); \
+	CIL_stfld_generic_dispatch(self, &(((struct type*)self)->name), ((struct type*)self)->name ## __type); \
 }
-int CIL_stfld_dispatch(void* field, int size);
-int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
+int CIL_stfld_dispatch(uintptr_t self, void* field, int size);
+int CIL_stfld_generic_dispatch(uintptr_t, void*, enum CIL_Type);
 
 /*#define CIL_stfld_old(type, name) { \
 	if stack_top_size() == 4) { int32_t value = pop_value32(); intptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } \
@@ -292,7 +293,7 @@ int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
 	else { intptr_t value = pop_pointer(); uintptr_t self = pop_pointer(); if (self == 0) { throw_NullReferenceException(); } else ((struct type*)self)-> name = value; } }*/
 
 #define CIL_ldsfld(type, name) { type ## __cctor_init();  \
-				if (type ## _sf_ ## name ## __type == CIL_array) { push_arraypointer((uintptr_t)&(type ## _sf_ ## name)); } \
+	if (type ## _sf_ ## name ## __type == CIL_array) { push_arraypointer((uintptr_t)&(type ## _sf_ ## name)); } \
 				else if (cil_type_size(type ## _sf_ ## name ## __type) == 4) { push_value32( (type ## _sf_ ## name), (type ## _sf_ ## name ## __type) ); }  \
 				else if (cil_type_size(type ## _sf_ ## name ## __type) == 8) { push_value64( (type ## _sf_ ## name), (type ## _sf_ ## name ## __type) ); }  \
 				else if (type ## _sf_ ## name ## __type == CIL_valuetype) { push_valuetypepointer((uintptr_t)&(type ## _sf_ ## name)); } \
@@ -300,12 +301,21 @@ int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
 }
 
 #define CIL_stsfld(type, name) { type ## __cctor_init();\
+	if (stack_top_type() == CIL_pointer) { gc_release(0, type ## _sf_ ## name); gc_retain(0, peek_pointer(0)); } \
 	if (stack_top_size() == 4) { int32_t value = pop_value32(); (type ## _sf_ ## name) = value; } \
 	else if (stack_top_size() == 8) { int64_t value = pop_value64(); (type ## _sf_ ## name) = value; } \
 	else if (stack_top_type() == CIL_valuetype) { intptr_t vt = pop_pointer(); memcpy(&(type ## _sf_ ## name), (void*)vt, sizeof(type ## _sf_ ## name)); } \
 	else { intptr_t value = pop_pointer(); (type ## _sf_ ## name) = value; } }
 
-#define CIL_ret() callstack_pop(); return 0;
+#define CIL_ret() { \
+	struct Node *gcNode = gcList.first;\
+	while (gcNode != 0) { \
+		gc_release(0, *(uintptr_t*)gcNode->ptr); \
+		gcNode = gcNode->next; \
+	}\
+	callstack_pop(); \
+	return 0; \
+}
 
 #define CIL_ldarg(n) {  \
 	if (parameter ## n ## __type == CIL_array) { push_arraypointer((uintptr_t)(parameter ## n)); } \
@@ -361,6 +371,7 @@ int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
 #define CIL_ldloca__s(i) CIL_ldloca(i)
 
 #define CIL_stloc(n) { \
+	if (stack_top_type() == CIL_pointer) { gc_release(0, (uintptr_t)local ## n); gc_retain(0, peek_pointer(0)); } \
 	if (sizeof(local ## n) > 8 && local ## n ## __type == CIL_valuetype) { memcpy(&local ## n, (void*)pop_pointer(), sizeof(local ## n)); } \
 	else if (local ## n ## __type == CIL_array) { uintptr_t *tmp = (uintptr_t*)&local ## n; *tmp = pop_pointer(); } \
 	else if (cil_type_size(local ## n ## __type) == 4) { int32_t *tmp = (int32_t*)&local ## n; *tmp = pop_value32(); } \
@@ -402,21 +413,23 @@ int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
 
 
 #define CIL_newobj(type, ctor) { \
-	void* pointer = calloc(1, sizeof(struct type)); \
+	uintptr_t pointer = gc_alloc(sizeof(struct type)); \
 	/* TODO: Garbage collect */ \
-	push_pointer((uintptr_t)pointer); \
+	push_pointer(pointer); \
 	callstack_push(ctor ## _sig, "(unknown)", 0);\
 	ctor(); \
-	push_pointer((uintptr_t)pointer); \
+	gc_new(pointer); \
+	push_pointer(pointer); \
 } 
 
 #define CIL_newobj_generic(type, ctor, typelist_length, typelist) { \
-	void* pointer = calloc(1, sizeof(struct type)); \
+	uintptr_t pointer = gc_alloc(sizeof(struct type)); \
 	/* TODO: Garbage collect */ \
-	push_pointer((uintptr_t)pointer); \
+	push_pointer(pointer); \
 	callstack_push(ctor ## _sig, "(unknown)", 0);\
 	ctor(typelist_length, typelist); \
-	push_pointer((uintptr_t)pointer); \
+	gc_new(pointer); \
+	push_pointer(pointer); \
 } 
 
 #define CIL_initobj(type) {\

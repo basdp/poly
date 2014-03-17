@@ -6,6 +6,8 @@
 #include "hashmap.h"
 #include "stack.h"
 #include "shims.h"
+#include "linkedlist.h"
+#include "garbagecollection.h"
 
 #ifdef _MSC_VER
 #define _CRT_SECURE_NO_WARNINGS
@@ -33,10 +35,14 @@
 struct SYSTEM__OBJECT_proto {
 	map_t __CILsymboltable;
 	intptr_t __CILtype;
+	
+	struct LinkedList __CILreferences;
+
 	intptr_t __CILbaseclasses;
 	int* __CILbaseclasses_length;
 	intptr_t __CILbaseinterfaces;
 	int* __CILbaseinterfaces_length;
+
 	int __CILisgeneric;
 	enum CIL_Type* __CILgenerictypelist;
 	int __CILgenerictypelist_length;

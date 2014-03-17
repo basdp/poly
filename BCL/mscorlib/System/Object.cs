@@ -5,10 +5,14 @@ namespace System
     [Poly.Internals.CompilerImplemented.StructureCode(@"
     map_t __CILsymboltable;
     intptr_t __CILtype;
+
+	struct LinkedList __CILreferences;
+    
     intptr_t __CILbaseclasses;
     int* __CILbaseclasses_length;
     intptr_t __CILbaseinterfaces;
     int* __CILbaseinterfaces_length;
+    
     int __CILisgeneric;
     enum CIL_Type* __CILgenerictypelist;
     int __CILgenerictypelist_length;
@@ -17,6 +21,7 @@ namespace System
     {
         [Poly.Internals.CompilerImplemented.InlineCode(@"
         ((struct System__Object*)parameter0)->__CILsymboltable = hashmap_new();
+        ((struct System__Object*)parameter0)->__CILreferences = linkedlist_new();
         ((struct System__Object*)parameter0)->__CILisgeneric = 0;
         ((struct System__Object*)parameter0)->__CILgenerictypelist_length = 0;
         ", replaceCompleteImplementation: false)]

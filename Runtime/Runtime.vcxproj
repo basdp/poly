@@ -63,7 +63,9 @@
   <ItemGroup>
     <ClCompile Include="callstack.c" />
     <ClCompile Include="exceptions.c" />
+    <ClCompile Include="garbagecollection.c" />
     <ClCompile Include="hashmap.c" />
+    <ClCompile Include="linkedlist.c" />
     <ClCompile Include="object.c" />
     <ClCompile Include="opcodes.c" />
     <ClCompile Include="runtime.c" />
@@ -72,7 +74,9 @@
   <ItemGroup>
     <ClInclude Include="callstack.h" />
     <ClInclude Include="exceptions.h" />
+    <ClInclude Include="garbagecollection.h" />
     <ClInclude Include="hashmap.h" />
+    <ClInclude Include="linkedlist.h" />
     <ClInclude Include="object.h" />
     <ClInclude Include="opcodes.h" />
     <ClInclude Include="polyruntime.h" />

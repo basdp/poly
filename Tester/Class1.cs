@@ -5,19 +5,30 @@ using System.Text;
 using System.Threading;
 using System.Reflection;
 
+class R
+{
+
+}
+
+class U
+{
+    public int i;
+    public R hoi;
+
+    public void test(R t)
+    {
+        hoi = t;
+    }
+}
 
 class D
 {
-    public static void test(out long hoi)
-    {
-        hoi = 1234567890987;
-    }
 
     public static int Main(string[] args)
     {
-        long hoi = 9;
-        test(out hoi);
-        Console.WriteLine(hoi);
+        U u = new U();
+        u.hoi = new R();
+        u.test(new R());
 
         return 200;
     }

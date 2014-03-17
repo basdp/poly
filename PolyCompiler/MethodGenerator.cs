@@ -141,7 +141,7 @@ namespace PolyCompiler
             // if this type has no default constructor (.ctor()) for any reason, generate it
             if (type.IsValueType)
             {
-                string addedcode = "    uintptr_t parameter0 = pop_pointer();\n    enum CIL_Type parameter0__type = CIL_pointer;\n    int entryStackSize = stack_size();\n    int boundExceptions = 0;\n    ((struct System__Object*)parameter0)->__CILtype = (intptr_t)\"" + type.FullName.Replace(".__", ".") + "\";\n";
+                string addedcode = "    uintptr_t parameter0 = pop_pointer();\n    enum CIL_Type parameter0__type = CIL_pointer;\n    struct LinkedList gcList = linkedlist_new();\n    int entryStackSize = stack_size();\n    int boundExceptions = 0;\n    ((struct System__Object*)parameter0)->__CILtype = (intptr_t)\"" + type.FullName.Replace(".__", ".") + "\";\n";
                 addedcode += "    CIL_ldarg__0();\n    CIL_call(/*constructor*/ mEDC8295D0100B7A05696604AA16180D59191E3E6, \"NONE\", 0, 0 /* System.ValueType::.ctor() */);\n";
                 addedcode += "    ((struct System__Object*)parameter0)->__CILbaseclasses = (intptr_t)&" + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses;\n";
                 addedcode += "    ((struct System__Object*)parameter0)->__CILbaseclasses_length = &" + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses_length;\n";
@@ -187,6 +187,8 @@ namespace PolyCompiler
                 context.IsExecutable = true;
 
                 context.Main.AppendLine("int main(int argc, char** argv) {");
+                context.Main.AppendLine("    gc_init();");
+                context.Main.AppendLine("    struct LinkedList gcList = linkedlist_new();");
                 context.Main.AppendLine("    int entryStackSize = 0;");
                 context.Main.AppendLine("    int boundExceptions = 0;");
 
@@ -257,6 +259,8 @@ namespace PolyCompiler
                 context.Code.Append(") {\n");
             }
 
+            context.Code.AppendLine("    struct LinkedList gcList = linkedlist_new();");
+
             // parameters
             int parameterOffset = 0;
             if (m.IsStatic) parameterOffset = 1;
@@ -266,6 +270,7 @@ namespace PolyCompiler
                 // constructors get the object as last parameter on the stack instead of the first
                 context.Code.Append("    uintptr_t parameter0 = pop_pointer();\n");
                 context.Code.Append("    enum CIL_Type parameter0__type = CIL_pointer;\n");
+                context.Code.Append("    gc_retain(0, parameter0);\n    linkedlist_append(&gcList, (uintptr_t)&parameter0);\n");
                 context.Code.Append("    int skipDefaultInitialization = 0;\n");
 
                 if (m.DeclaringType.BaseType.GenericTypeArguments.Length > 0)
@@ -315,18 +320,25 @@ namespace PolyCompiler
                         context.Code.AppendLine("    } else {");
                         context.Code.AppendLine("        parameter" + (p.Position + 1 - parameterOffset) + " = pop_value32();");
                         context.Code.AppendLine("    }");
+                        context.Code.AppendLine("    if (parameter" + (p.Position + 1 - parameterOffset) + "__type == CIL_pointer) {\n        gc_retain(0, parameter" + (p.Position + 1 - parameterOffset) + ");\n    linkedlist_append(&gcList, (uintptr_t)&parameter" + (p.Position + 1 - parameterOffset) + ");\n    }");
                     }
                     else
                     {
                         context.Code.Append("    uintptr_t parameter" + (p.Position + 1 - parameterOffset) + " = pop_pointer();\n");
                         context.Code.Append("    enum CIL_Type parameter" + (p.Position + 1 - parameterOffset) + "__type = " + TypeHelper.GetInternalType(p.ParameterType) + "; // " + p.ParameterType.FullName + "\n");
+                        if (TypeHelper.GetInternalType(p.ParameterType) == "CIL_pointer") {
+                            context.Code.AppendLine("    gc_retain(0, parameter" + (p.Position + 1 - parameterOffset) + ");");
+                            context.Code.AppendLine("    linkedlist_append(&gcList, (uintptr_t)&parameter" + (p.Position + 1 - parameterOffset) + ");");
+                        }
                     }
                 }
             }
             if (!m.IsStatic && !m.IsConstructor)
             {
-                context.Code.Append("    uintptr_t parameter0 = pop_pointer();\n");
-                context.Code.Append("    enum CIL_Type parameter0__type = CIL_pointer;\n");
+                context.Code.AppendLine("    uintptr_t parameter0 = pop_pointer();");
+                context.Code.AppendLine("    enum CIL_Type parameter0__type = CIL_pointer;");
+                context.Code.AppendLine("    gc_retain(0, parameter0);");
+                context.Code.AppendLine("    linkedlist_append(&gcList, (uintptr_t)&parameter0);");
             }
 
             if (m.IsConstructor && m.DeclaringType.IsValueType)
@@ -390,6 +402,10 @@ namespace PolyCompiler
                                 context.Code.Append("    int8_t local" + l.LocalIndex + "[sizeof(struct " + Naming.ConvertTypeToCName(l.LocalType) + ")] = { 0 };\n");
                             }
                             context.Code.Append("    enum CIL_Type local" + l.LocalIndex + "__type = " + TypeHelper.GetInternalType(l.LocalType) + "; // " + l.LocalType.FullName + "\n");
+                            if (TypeHelper.GetInternalType(l.LocalType) == "CIL_pointer")
+                            {
+                                context.Code.AppendLine("    linkedlist_append(&gcList, (uintptr_t)&local" + (l.LocalIndex) + ");");
+                            }                            
                         }
                         else
                         {
@@ -406,11 +422,16 @@ namespace PolyCompiler
                                     // method generic
                                     context.Code.Append("    enum CIL_Type local" + l.LocalIndex + "__type = generictypelist[" + l.LocalType.GenericParameterPosition + "]; // " + l.LocalType.FullName + "\n");
                                 }
+                                context.Code.AppendLine("    if (local" + l.LocalIndex + "__type == CIL_pointer) { linkedlist_append(&gcList, (uintptr_t)&local" + (l.LocalIndex) + "); }");
                             }
                             else
                             {
                                 context.Code.Append("    uintptr_t local" + l.LocalIndex + " = 0;\n");
                                 context.Code.Append("    enum CIL_Type local" + l.LocalIndex + "__type = " + TypeHelper.GetInternalType(l.LocalType) + "; // " + l.LocalType.FullName + "\n");
+                                if (TypeHelper.GetInternalType(l.LocalType) == "CIL_pointer")
+                                {
+                                    context.Code.AppendLine("    linkedlist_append(&gcList, (uintptr_t)&local" + (l.LocalIndex) + ");");
+                                }  
                             }
                         }
                     }
