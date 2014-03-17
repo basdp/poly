@@ -190,17 +190,6 @@ void CIL_ldstr(const char*);
 #define CIL_initblk(...) CIL_undefined()
 #define CIL_jmp(...) CIL_undefined()
 #define CIL_ldftn(...) CIL_undefined()
-#define CIL_ldind__i(...) CIL_undefined()
-#define CIL_ldind__i1(...) CIL_undefined()
-#define CIL_ldind__i2(...) CIL_undefined()
-#define CIL_ldind__i4(...) CIL_undefined()
-#define CIL_ldind__i8(...) CIL_undefined()
-#define CIL_ldind__r4(...) CIL_undefined()
-#define CIL_ldind__r8(...) CIL_undefined()
-#define CIL_ldind__ref(...) CIL_undefined()
-#define CIL_ldind__u1(...) CIL_undefined()
-#define CIL_ldind__u2(...) CIL_undefined()
-#define CIL_ldind__u4(...) CIL_undefined()
 #define CIL_ldsflda(...) CIL_undefined()
 #define CIL_ldvirtftn(...) CIL_undefined()
 #define CIL_leave(...) CIL_undefined()
@@ -221,14 +210,6 @@ void CIL_ldstr(const char*);
 #define CIL_sizeof(...) CIL_undefined()
 #define CIL_starg(...) CIL_undefined()
 #define CIL_starg__s(...) CIL_undefined()
-#define CIL_stind__i(...) CIL_undefined()
-#define CIL_stind__i1(...) CIL_undefined()
-#define CIL_stind__i2(...) CIL_undefined()
-#define CIL_stind__i4(...) CIL_undefined()
-#define CIL_stind__i8(...) CIL_undefined()
-#define CIL_stind__r4(...) CIL_undefined()
-#define CIL_stind__r8(...) CIL_undefined()
-#define CIL_stind__ref(...) CIL_undefined()
 #define CIL_stobj(...) CIL_undefined()
 #define CIL_sub__ovf(...) CIL_undefined()
 #define CIL_sub__ovf__un(...) CIL_undefined()
@@ -396,6 +377,29 @@ int CIL_stfld_generic_dispatch(void*, enum CIL_Type);
 #define CIL_stloc__3() CIL_stloc(3)
 
 #define CIL_stloc__s(s) CIL_stloc(s)
+
+
+#define CIL_ldind__i() CIL_undefined()
+#define CIL_ldind__i1() CIL_undefined()
+#define CIL_ldind__i2() CIL_undefined()
+#define CIL_ldind__i4() push_value32(*((int32_t*)pop_pointer()), CIL_int32)
+#define CIL_ldind__i8() push_value64(*((int64_t*)pop_pointer()), CIL_int64)
+#define CIL_ldind__r4() CIL_undefined()
+#define CIL_ldind__r8() CIL_undefined()
+#define CIL_ldind__ref() CIL_undefined()
+#define CIL_ldind__u1() CIL_undefined()
+#define CIL_ldind__u2() CIL_undefined()
+#define CIL_ldind__u4() CIL_undefined()
+
+#define CIL_stind__i() CIL_undefined()
+#define CIL_stind__i1() CIL_undefined()
+#define CIL_stind__i2() CIL_undefined()
+#define CIL_stind__i4() { int32_t val = pop_value32(); *((int32_t*)pop_pointer()) = val; }
+#define CIL_stind__i8() { int64_t val = pop_value64(); *((int64_t*)pop_pointer()) = val; }
+#define CIL_stind__r4() CIL_undefined()
+#define CIL_stind__r8() CIL_undefined()
+#define CIL_stind__ref() CIL_undefined()
+
 
 #define CIL_newobj(type, ctor) { \
 	void* pointer = calloc(1, sizeof(struct type)); \

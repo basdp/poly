@@ -8,23 +8,16 @@ using System.Reflection;
 
 class D
 {
+    public static void test(out long hoi)
+    {
+        hoi = 1234567890987;
+    }
+
     public static int Main(string[] args)
     {
-        List<long> l = new List<long>();
-
-        l.Add(9);
-        l.Add(12345678908);
-        l.Add(7);
-        l.Add(6);
-        l.Add(5);
-
-        foreach (var s in l)
-        {
-            Console.WriteLine(s);
-        }
-
-        //for (int i = 0; i < l.Count; i++)
-        //    Console.WriteLine(l[i]);
+        long hoi = 9;
+        test(out hoi);
+        Console.WriteLine(hoi);
 
         return 200;
     }
