@@ -16,6 +16,7 @@ struct LinkedList {
 };
 
 struct LinkedList linkedlist_new();
+void linkedlist_free(struct LinkedList*);
 void linkedlist_prepend(struct LinkedList*, uintptr_t ptr);
 void linkedlist_append(struct LinkedList*, uintptr_t ptr);
 void linkedlist_insertAfter(struct LinkedList*, struct Node*, uintptr_t ptr);

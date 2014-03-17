@@ -10,6 +10,15 @@ struct LinkedList linkedlist_new() {
 	return ll;
 }
 
+void linkedlist_free(struct LinkedList* list) {
+	struct Node *node = list->first;
+	while (node != 0) {
+		struct Node *oldNode = node;
+		node = node->next;
+		free(oldNode);
+	}
+}
+
 void linkedlist_prepend(struct LinkedList* list, uintptr_t ptr) {
 	struct Node *newNode = malloc(sizeof(struct Node));
 	if (list->first != 0) list->first->prev = newNode;

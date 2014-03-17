@@ -351,7 +351,7 @@ int CIL_callvirt_dispatch(const char *symbol, unsigned int nparams, void* (*func
 	uintptr_t object;
 	map_t symboltable;
 	int ret;
-
+	
 	if (!isvirtual) { return CIL_call_dispatch(func); }
 
 	object = peek_pointer(nparams);

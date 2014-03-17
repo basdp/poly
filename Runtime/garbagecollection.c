@@ -92,9 +92,9 @@ void gc_release(uintptr_t s, uintptr_t ref) {
 		if (node->ptr == ref) {
 			linkedlist_remove(list, node);
 
-			if (rand() % 5 == 0) {
+			//if (rand() % 5 == 0) {
 				gc_cycle();
-			}
+			//}
 
 			return;
 		}
@@ -103,6 +103,9 @@ void gc_release(uintptr_t s, uintptr_t ref) {
 
 	printf("released something that wasn't retained!\n");
 }
+
+extern void* mDA7BB6FE2475319A165CB49FA632EE1D1F8A71BA();
+extern char* mDA7BB6FE2475319A165CB49FA632EE1D1F8A71BA_sig;
 
 void gc_cycle() {
 #if DEBUG_GARBAGE_COLLECTION == 1
@@ -246,7 +249,23 @@ void gc_cycle() {
 #if DEBUG_GARBAGE_COLLECTION == 1
 		printf("    freeing %p\n", reference);
 #endif
-		if (!linkedlist_tryRemoveValue(&all_objects, node->ptr)) linkedlist_removeValue(&all_arrays, node->ptr);
+		if (!linkedlist_tryRemoveValue(&all_objects, node->ptr)) {
+			// this is an array
+			if (!linkedlist_tryRemoveValue(&all_arrays, node->ptr)) {
+				node = node->next;
+				continue;
+			}
+		}
+		else {
+			// this is an object
+			// finalize the object
+			int stackSize = stack_size();
+			push_pointer(node->ptr);
+			callstack_push("Finalize", "", 0);
+			CIL_callvirt_dispatch("mF826D67105FC9EE6FA183DB08AB63B7C77D9484D", 0, &mDA7BB6FE2475319A165CB49FA632EE1D1F8A71BA, 1);
+			if (stack_size() > stackSize) stack_shrink(stackSize);
+		}
+		
 		free((void*)node->ptr);
 		node = node->next;
 	}
@@ -254,4 +273,8 @@ void gc_cycle() {
 #if DEBUG_GARBAGE_COLLECTION == 1
 	printf("End of Garbage Collection Cycle\n");
 #endif
+
+	linkedlist_free(&white);
+	linkedlist_free(&grey);
+	linkedlist_free(&black);
 }

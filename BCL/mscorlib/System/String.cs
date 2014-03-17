@@ -220,5 +220,16 @@
         public char get_Chars(int i)
         { return '0'; }
 
+        [Poly.Internals.CompilerImplemented.InlineCode(@"
+        struct System__String *this = (struct System__String*)parameter0;
+        free(this->str);
+        ")]
+        private void __cleanup() { }
+
+        ~__String() 
+        {
+            __cleanup();
+        }
+
     }
 }

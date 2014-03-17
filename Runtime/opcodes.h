@@ -7,16 +7,12 @@
 #include <stdio.h>
 
 #define CIL_call(func, name, nparams, isvirtual) {\
-	if (isvirtual) {\
-		CIL_callvirt(func, name, nparams, isvirtual);\
-	} else {\
-		callstack_push(func ## _sig, "(unknown)", 0);\
-		int res = CIL_call_dispatch(&func);\
-		if (res == 1) {\
-			/* exception has been thrown*/\
-			if (DEBUG_EXCEPTIONS) { printf("Func " #func " threw an exception\n"); }\
-			exception_throw_withInitStackTrace(0);\
-		}\
+	callstack_push(func ## _sig, "(unknown)", 0);\
+	int res = CIL_call_dispatch(&func);\
+	if (res == 1) {\
+		/* exception has been thrown*/\
+		if (DEBUG_EXCEPTIONS) { printf("Func " #func " threw an exception\n"); }\
+		exception_throw_withInitStackTrace(0);\
 	}\
 }
 
@@ -313,6 +309,7 @@ int CIL_stfld_generic_dispatch(uintptr_t, void*, enum CIL_Type);
 		gc_release(0, *(uintptr_t*)gcNode->ptr); \
 		gcNode = gcNode->next; \
 	}\
+	linkedlist_free(&gcList); \
 	callstack_pop(); \
 	return 0; \
 }

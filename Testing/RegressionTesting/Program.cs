@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -99,8 +100,11 @@ namespace RegressionTesting
             comp.UseShellExecute = false;
             var proc = new System.Diagnostics.Process();
             proc.StartInfo = comp;
+            Stopwatch sw = new Stopwatch();
             proc.Start();
+            sw.Start();
             proc.WaitForExit();
+            sw.Stop();
 
             FileInfo fi = new FileInfo(executable);
             string testName = fi.Name.Substring(0, fi.Name.ToLower().LastIndexOf(".poly.exe"));
@@ -112,7 +116,7 @@ namespace RegressionTesting
             output = output.Split(new char[] { '\n' }).Select(s => s.Trim()).Aggregate((i, j) => i + "\n" + j);
             if (expectedOutput == output)
             {
-                Console.WriteLine("PASS");
+                Console.WriteLine("PASS (" + sw.ElapsedMilliseconds + "ms)");
                 return true;
             }
             else
@@ -137,8 +141,11 @@ namespace RegressionTesting
             comp.UseShellExecute = false;
             var proc = new System.Diagnostics.Process();
             proc.StartInfo = comp;
+            Stopwatch sw = new Stopwatch();
             proc.Start();
+            sw.Start();
             proc.WaitForExit();
+            sw.Stop();
 
             FileInfo fi = new FileInfo(executable);
             string testName = fi.Name.Substring(0, fi.Name.ToLower().LastIndexOf(".poly.exe"));
@@ -149,7 +156,7 @@ namespace RegressionTesting
             int ret = proc.ExitCode;
             if (ret == expectedRet)
             {
-                Console.WriteLine("PASS");
+                Console.WriteLine("PASS (" + sw.ElapsedMilliseconds + "ms)");
                 return true;
             }
             else

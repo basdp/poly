@@ -220,6 +220,8 @@ namespace PolyCompiler
                 {
                     context.Main.AppendLine("    gc_release(0, args);");
                 }
+
+                context.Main.AppendLine("    linkedlist_free(&gcList);");
                 context.Main.AppendLine("    if (stack_size() > 1 || (stack_size() > 0 && stack_top_type() != CIL_int32)) { printf(\"DEBUG WARNING: Stack is not empty at end of program. (int32 for return is allowed)\\n\"); print_stack(); }");
                 context.Main.AppendLine("    if (stack_size() > 0 && stack_top_type() == CIL_int32) { return pop_value32(); }");
                 context.Main.AppendLine("    else { return 0; }");
@@ -278,6 +280,7 @@ namespace PolyCompiler
                 context.Code.Append("    gc_retain(0, parameter0);\n    linkedlist_append(&gcList, (uintptr_t)&parameter0);\n");
                 context.Code.Append("    int skipDefaultInitialization = 0;\n");
 
+                // TODO: typelist generation should be in init, so there is only one place typelists are malloc'd
                 if (m.DeclaringType.BaseType.GenericTypeArguments.Length > 0)
                 {
                     context.Code.AppendLine("    int base_typelist_length = " + m.DeclaringType.BaseType.GenericTypeArguments.Length + ";");

@@ -37,6 +37,10 @@ namespace System
             return objA == objB;
         }
 
+        [Poly.Internals.CompilerImplemented.InlineCode(@"
+        hashmap_free(((struct System__Object*)parameter0)->__CILsymboltable);
+        linkedlist_free(&((struct System__Object*)parameter0)->__CILreferences);
+        ")]
         protected virtual void Finalize() { }
 
         public virtual int GetHashCode() { return 0; }
