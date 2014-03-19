@@ -210,9 +210,9 @@ void print_stack() {
 			intptr_t v = *((intptr_t*)(items + t));
 			printf("pointer\t\t");
 			printf("0x%x\t", v);
-			if (v != 0) {
+			/*if (v != 0) {
 				printf("%s", (char*)((struct SYSTEM__OBJECT_proto *)v)->__CILtype);
-			}
+			}*/
 			t += sizeof(intptr_t);
 		} else if (types[i] == CIL_valuetype) {
 			intptr_t v = *((intptr_t*)(items + t));

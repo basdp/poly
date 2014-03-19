@@ -328,13 +328,14 @@ namespace PolyCompiler
                         context.Code.AppendLine("    } else {");
                         context.Code.AppendLine("        parameter" + (p.Position + 1 - parameterOffset) + " = pop_value32();");
                         context.Code.AppendLine("    }");
-                        context.Code.AppendLine("    if (parameter" + (p.Position + 1 - parameterOffset) + "__type == CIL_pointer) {\n        gc_retain(0, parameter" + (p.Position + 1 - parameterOffset) + ");\n    linkedlist_append(&gcList, (uintptr_t)&parameter" + (p.Position + 1 - parameterOffset) + ");\n    }");
+                        context.Code.AppendLine("    if (parameter" + (p.Position + 1 - parameterOffset) + "__type == CIL_pointer || parameter" + (p.Position + 1 - parameterOffset) + "__type == CIL_array) {\n        gc_retain(0, parameter" + (p.Position + 1 - parameterOffset) + ");\n    linkedlist_append(&gcList, (uintptr_t)&parameter" + (p.Position + 1 - parameterOffset) + ");\n    }");
                     }
                     else
                     {
                         context.Code.Append("    uintptr_t parameter" + (p.Position + 1 - parameterOffset) + " = pop_pointer();\n");
                         context.Code.Append("    enum CIL_Type parameter" + (p.Position + 1 - parameterOffset) + "__type = " + TypeHelper.GetInternalType(p.ParameterType) + "; // " + p.ParameterType.FullName + "\n");
-                        if (TypeHelper.GetInternalType(p.ParameterType) == "CIL_pointer") {
+                        if (TypeHelper.GetInternalType(p.ParameterType) == "CIL_pointer" || TypeHelper.GetInternalType(p.ParameterType) == "CIL_array")
+                        {
                             context.Code.AppendLine("    gc_retain(0, parameter" + (p.Position + 1 - parameterOffset) + ");");
                             context.Code.AppendLine("    linkedlist_append(&gcList, (uintptr_t)&parameter" + (p.Position + 1 - parameterOffset) + ");");
                         }
@@ -410,7 +411,7 @@ namespace PolyCompiler
                                 context.Code.Append("    int8_t local" + l.LocalIndex + "[sizeof(struct " + Naming.ConvertTypeToCName(l.LocalType) + ")] = { 0 };\n");
                             }
                             context.Code.Append("    enum CIL_Type local" + l.LocalIndex + "__type = " + TypeHelper.GetInternalType(l.LocalType) + "; // " + l.LocalType.FullName + "\n");
-                            if (TypeHelper.GetInternalType(l.LocalType) == "CIL_pointer")
+                            if (TypeHelper.GetInternalType(l.LocalType) == "CIL_pointer" || TypeHelper.GetInternalType(l.LocalType) == "CIL_array")
                             {
                                 context.Code.AppendLine("    linkedlist_append(&gcList, (uintptr_t)&local" + (l.LocalIndex) + ");");
                             }                            
@@ -430,13 +431,13 @@ namespace PolyCompiler
                                     // method generic
                                     context.Code.Append("    enum CIL_Type local" + l.LocalIndex + "__type = generictypelist[" + l.LocalType.GenericParameterPosition + "]; // " + l.LocalType.FullName + "\n");
                                 }
-                                context.Code.AppendLine("    if (local" + l.LocalIndex + "__type == CIL_pointer) { linkedlist_append(&gcList, (uintptr_t)&local" + (l.LocalIndex) + "); }");
+                                context.Code.AppendLine("    if (local" + l.LocalIndex + "__type == CIL_pointer || local" + l.LocalIndex + "__type == CIL_array) { linkedlist_append(&gcList, (uintptr_t)&local" + (l.LocalIndex) + "); }");
                             }
                             else
                             {
                                 context.Code.Append("    uintptr_t local" + l.LocalIndex + " = 0;\n");
                                 context.Code.Append("    enum CIL_Type local" + l.LocalIndex + "__type = " + TypeHelper.GetInternalType(l.LocalType) + "; // " + l.LocalType.FullName + "\n");
-                                if (TypeHelper.GetInternalType(l.LocalType) == "CIL_pointer")
+                                if (TypeHelper.GetInternalType(l.LocalType) == "CIL_pointer" || TypeHelper.GetInternalType(l.LocalType) == "CIL_array")
                                 {
                                     context.Code.AppendLine("    linkedlist_append(&gcList, (uintptr_t)&local" + (l.LocalIndex) + ");");
                                 }  

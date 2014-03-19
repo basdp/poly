@@ -950,9 +950,9 @@ int CIL_castclass_dispatch(const char* type) {
 }
 
 int CIL_stfld_dispatch(uintptr_t self, void* field, int size) {
-	if (stack_top_type() == CIL_pointer) {
-		gc_release(self, *(uintptr_t*)field);
+	if (stack_top_type() == CIL_pointer || stack_top_type() == CIL_array) {
 		gc_retain(self, peek_pointer(0));
+		gc_release(self, *(uintptr_t*)field);
 	}
 
 	if (stack_top_type() == CIL_array) {
@@ -981,9 +981,9 @@ int CIL_stfld_dispatch(uintptr_t self, void* field, int size) {
 }
 
 int CIL_stfld_generic_dispatch(uintptr_t self, void* field, enum CIL_Type type) {
-	if (stack_top_type() == CIL_pointer) {
-		gc_release(self, *(uintptr_t*)field);
+	if (stack_top_type() == CIL_pointer || stack_top_type() == CIL_array) {
 		gc_retain(self, peek_pointer(0));
+		gc_release(self, *(uintptr_t*)field);
 	}
 
 	int ts = cil_type_size(type);

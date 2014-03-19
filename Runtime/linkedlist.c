@@ -4,8 +4,8 @@
 
 struct LinkedList linkedlist_new() {
 	struct LinkedList ll;
-	ll.first = 0;
-	ll.last = 0;
+	ll.first = NULL;
+	ll.last = NULL;
 	ll.length = 0;
 	return ll;
 }
@@ -21,6 +21,7 @@ void linkedlist_free(struct LinkedList* list) {
 
 void linkedlist_prepend(struct LinkedList* list, uintptr_t ptr) {
 	struct Node *newNode = malloc(sizeof(struct Node));
+	if (newNode == 0) { printf("Out of memory\n"); exit(1); }
 	if (list->first != 0) list->first->prev = newNode;
 	newNode->next = list->first;
 	newNode->prev = 0;
@@ -32,10 +33,11 @@ void linkedlist_prepend(struct LinkedList* list, uintptr_t ptr) {
 
 void linkedlist_append(struct LinkedList* list, uintptr_t ptr) {
 	struct Node *newNode = malloc(sizeof(struct Node));
-	if (list->last != 0) list->last->next = newNode;
+	if (newNode == 0) { printf("Out of memory\n"); exit(1); }
 	newNode->next = 0;
 	newNode->prev = list->last;
 	newNode->ptr = ptr;
+	if (list->last != 0) list->last->next = newNode;
 	list->last = newNode;
 	if (list->first == 0) list->first = newNode;
 	list->length++;
@@ -43,6 +45,7 @@ void linkedlist_append(struct LinkedList* list, uintptr_t ptr) {
 
 void linkedlist_insertAfter(struct LinkedList* list, struct Node* node, uintptr_t ptr) {
 	struct Node *newNode = malloc(sizeof(struct Node));
+	if (newNode == 0) { printf("Out of memory\n"); exit(1); }
 	newNode->next = node->next;
 	newNode->prev = node;
 	newNode->ptr = ptr;
@@ -56,6 +59,10 @@ void linkedlist_insertAfter(struct LinkedList* list, struct Node* node, uintptr_
 }
 
 void linkedlist_remove(struct LinkedList* list, struct Node* node) {
+	if (list == 0 || node == 0) {
+		printf("linkedlist_remove: list or node is null!\n"); exit(1);
+	}
+
 	if (list->first == node) {
 		list->first = node->next;
 	}
@@ -89,6 +96,7 @@ int linkedlist_tryRemoveValue(struct LinkedList* list, uintptr_t ptr) {
 void linkedlist_removeFirst(struct LinkedList* list) {
 	struct Node *node = list->first;
 	list->first = node->next;
+	if (list->last == node) list->last = 0;
 	free(node);
 	list->length--;
 }
@@ -96,6 +104,7 @@ void linkedlist_removeFirst(struct LinkedList* list) {
 void linkedlist_removeLast(struct LinkedList* list) {
 	struct Node *node = list->last;
 	list->last = node->prev;
+	if (list->first == node) list->first = 0;
 	free(node);
 	list->length--;
 }

@@ -297,7 +297,7 @@ int CIL_stfld_generic_dispatch(uintptr_t, void*, enum CIL_Type);
 }
 
 #define CIL_stsfld(type, name) { type ## __cctor_init();\
-	if (stack_top_type() == CIL_pointer) { gc_release(0, type ## _sf_ ## name); gc_retain(0, peek_pointer(0)); } \
+	if (stack_top_type() == CIL_pointer || stack_top_type() == CIL_array) { gc_retain(0, peek_pointer(0)); gc_release(0, type ## _sf_ ## name); } \
 	if (stack_top_size() == 4) { int32_t value = pop_value32(); (type ## _sf_ ## name) = value; } \
 	else if (stack_top_size() == 8) { int64_t value = pop_value64(); (type ## _sf_ ## name) = value; } \
 	else if (stack_top_type() == CIL_valuetype) { intptr_t vt = pop_pointer(); memcpy(&(type ## _sf_ ## name), (void*)vt, sizeof(type ## _sf_ ## name)); } \
@@ -368,7 +368,7 @@ int CIL_stfld_generic_dispatch(uintptr_t, void*, enum CIL_Type);
 #define CIL_ldloca__s(i) CIL_ldloca(i)
 
 #define CIL_stloc(n) { \
-	if (stack_top_type() == CIL_pointer) { gc_release(0, (uintptr_t)local ## n); gc_retain(0, peek_pointer(0)); } \
+	if (stack_top_type() == CIL_pointer || stack_top_type() == CIL_array) { gc_retain(0, peek_pointer(0)); gc_release(0, (uintptr_t)local ## n); } \
 	if (sizeof(local ## n) > 8 && local ## n ## __type == CIL_valuetype) { memcpy(&local ## n, (void*)pop_pointer(), sizeof(local ## n)); } \
 	else if (local ## n ## __type == CIL_array) { uintptr_t *tmp = (uintptr_t*)&local ## n; *tmp = pop_pointer(); } \
 	else if (cil_type_size(local ## n ## __type) == 4) { int32_t *tmp = (int32_t*)&local ## n; *tmp = pop_value32(); } \

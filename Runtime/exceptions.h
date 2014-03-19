@@ -45,7 +45,7 @@ struct ExceptionHandler {
 
 #ifdef _MSC_VER
 #define STORE_LABEL_ADDRESS(var, label) __asm { mov [var], offset label }
-#define GOTO_LABEL_ADDRESS(var) __asm { jmp var }
+#define GOTO_LABEL_ADDRESS(var) { __asm { jmp var } }
 #endif
 
 #ifdef __GNUC__
@@ -69,23 +69,23 @@ extern struct SYSTEM__OBJECT_proto *lastThrownException;
 	if (DEBUG_EXCEPTIONS && removedBoundExceptions > 0) printf("Removed %d from bound exceptions\n", removedBoundExceptions);\
 	boundExceptions -= removedBoundExceptions; \
 	if (lbl == 0) { \
-		/* continue with exception in previous method */ \
-		callstack_pop(); \
-		return (void*)1; \
+	/* continue with exception in previous method */ \
+	callstack_pop(); \
+	return (void*)1; \
 	} else if (lbl == (void*)1) { \
-		/* continue with finally in THIS method */\
-		if (DEBUG_EXCEPTIONS) printf("continue with finally in this method\n");\
-		boundExceptions--; \
-		uintptr_t finallyAddr = pop_pointer(); \
-		push_pointer(0);\
-		GOTO_LABEL_ADDRESS(finallyAddr); \
+	/* continue with finally in THIS method */\
+	if (DEBUG_EXCEPTIONS) printf("continue with finally in this method\n");\
+	boundExceptions--; \
+	uintptr_t finallyAddr = pop_pointer(); \
+	push_pointer(0);\
+	GOTO_LABEL_ADDRESS(finallyAddr); \
 	} else {\
 	GOTO_LABEL_ADDRESS(lbl); \
-	} \
+} \
 }
 
 #define exception_leave(label) {\
-	if (DEBUG_EXCEPTIONS) printf("exception_leave %d\n", entryStackSize);\
+	if (DEBUG_EXCEPTIONS) { printf("exception_leave %d\n", entryStackSize); printf("in %s -> %s:%d\n", __FUNCTION__, __FILE__, __LINE__); print_exceptionstack(); printf("boundExceptions: %d\n", boundExceptions);}\
 	stack_shrink(entryStackSize); \
 	if (boundExceptions > 0) {\
 		struct ExceptionHandler eh = exceptionstack_pop();\
@@ -107,7 +107,7 @@ extern struct SYSTEM__OBJECT_proto *lastThrownException;
 }
 
 #define exception_endfinally() {\
-	if (DEBUG_EXCEPTIONS) { printf("endfinally\n"); } \
+	if (DEBUG_EXCEPTIONS) { printf("endfinally\n"); printf("in %s -> %s:%d\n", __FUNCTION__, __FILE__, __LINE__); } \
 	uintptr_t p = pop_pointer(); \
 	if (p == 0) {\
 	if (DEBUG_EXCEPTIONS) { printf("return was 0\n");print_stack(); }\

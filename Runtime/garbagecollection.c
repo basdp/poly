@@ -6,15 +6,15 @@
 
 #define DEBUG_GARBAGE_COLLECTION 0
 
-static struct LinkedList all_objects;
-static struct LinkedList all_arrays;
-static struct LinkedList root_scope;
+struct LinkedList _gc_all_objects;
+struct LinkedList _gc_all_arrays;
+struct LinkedList _gc_root_scope;
 
 void gc_init() {
-	all_objects = linkedlist_new();
-	root_scope = linkedlist_new();
+	_gc_all_objects = linkedlist_new();
+	_gc_root_scope = linkedlist_new();
 
-	all_arrays = linkedlist_new();
+	_gc_all_arrays = linkedlist_new();
 
 	srand((unsigned int)time(NULL));
 #if DEBUG_GARBAGE_COLLECTION == 1
@@ -33,14 +33,14 @@ void gc_new(uintptr_t o) {
 #if DEBUG_GARBAGE_COLLECTION==1
 	printf("new %s (%p)\n", obj->__CILtype, obj);
 #endif
-	linkedlist_append(&all_objects, (uintptr_t)obj);
+	linkedlist_append(&_gc_all_objects, (uintptr_t)obj);
 }
 
 void gc_new_arr(uintptr_t o) {
 #if DEBUG_GARBAGE_COLLECTION==1
 	printf("new array %p\n", o);
 #endif
-	linkedlist_append(&all_arrays, o);
+	linkedlist_append(&_gc_all_arrays, o);
 }
 
 void gc_retain(uintptr_t s, uintptr_t ref) {
@@ -51,9 +51,10 @@ void gc_retain(uintptr_t s, uintptr_t ref) {
 	if (self == 0) {
 #if DEBUG_GARBAGE_COLLECTION == 1
 		struct SYSTEM__OBJECT_proto* reference = (struct SYSTEM__OBJECT_proto*)ref;
-		printf("root scope retains %p\n", reference);
+		printf("root scope retains ");
+		printf("%p\n", reference);
 #endif
-		list = &root_scope;
+		list = &_gc_root_scope;
 	}
 	else {
 #if DEBUG_GARBAGE_COLLECTION == 1
@@ -62,6 +63,7 @@ void gc_retain(uintptr_t s, uintptr_t ref) {
 #endif
 		list = &self->__CILreferences;
 	}
+
 
 	linkedlist_append(list, ref);
 }
@@ -77,7 +79,7 @@ void gc_release(uintptr_t s, uintptr_t ref) {
 		struct SYSTEM__OBJECT_proto* reference = (struct SYSTEM__OBJECT_proto*)ref;
 		printf("root scope releases %p\n", ref);
 #endif
-		list = &root_scope;
+		list = &_gc_root_scope;
 	}
 	else {
 #if DEBUG_GARBAGE_COLLECTION == 1
@@ -107,20 +109,23 @@ void gc_release(uintptr_t s, uintptr_t ref) {
 extern void* mDA7BB6FE2475319A165CB49FA632EE1D1F8A71BA();
 extern char* mDA7BB6FE2475319A165CB49FA632EE1D1F8A71BA_sig;
 
+static int gc_cycle_in_progress = 0;
 void gc_cycle() {
+	if (gc_cycle_in_progress) return;
+	gc_cycle_in_progress = 1;
 #if DEBUG_GARBAGE_COLLECTION == 1
 	printf("Performing a Garbage Collection Cycle\n");
-	print_callstack();
-	print_stack();
+	//print_callstack();
+	//print_stack();
 #endif
 
 	struct LinkedList white = linkedlist_new();
 	struct LinkedList grey = linkedlist_new();
 	struct LinkedList black = linkedlist_new();
 
-	struct Node *node = all_objects.first;
+	struct Node *node = _gc_all_objects.first;
 	while (node != 0) {
-		if (linkedlist_contains(&root_scope, node->ptr)) {
+		if (linkedlist_contains(&_gc_root_scope, node->ptr)) {
 			linkedlist_append(&grey, node->ptr);
 		}
 		else {
@@ -128,9 +133,9 @@ void gc_cycle() {
 		}
 		node = node->next;
 	}
-	node = all_arrays.first;
+	node = _gc_all_arrays.first;
 	while (node != 0) {
-		if (linkedlist_contains(&root_scope, node->ptr)) {
+		if (linkedlist_contains(&_gc_root_scope, node->ptr)) {
 			linkedlist_append(&grey, node->ptr);
 		}
 		else {
@@ -147,7 +152,7 @@ void gc_cycle() {
 			if (!linkedlist_contains(&grey, ptr)) {
 				if (linkedlist_contains(&white, ptr)) {
 					// remove it from the white list, because the stack is global scope
-					linkedlist_removeValue(&white, ptr);
+					linkedlist_tryRemoveValue(&white, ptr);
 				}
 				linkedlist_append(&grey, ptr);
 #if DEBUG_GARBAGE_COLLECTION == 1
@@ -160,19 +165,19 @@ void gc_cycle() {
 
 #if DEBUG_GARBAGE_COLLECTION == 1
 	printf("root scope:\n");
-	node = root_scope.first;
+	node = _gc_root_scope.first;
 	while (node != 0) {
 		printf("    %p\n", node->ptr);
 		node = node->next;
 	}
 	printf("all objects:\n");
-	node = all_objects.first;
+	node = _gc_all_objects.first;
 	while (node != 0) {
 		printf("    %p\n", node->ptr);
 		node = node->next;
 	}
 	printf("all arrays:\n");
-	node = all_arrays.first;
+	node = _gc_all_arrays.first;
 	while (node != 0) {
 		printf("    %p\n", node->ptr);
 		node = node->next;
@@ -201,7 +206,7 @@ void gc_cycle() {
 	while (node != 0) {
 		// remove this node from the grey set and blacken it (add to the black set)
 		linkedlist_append(&black, node->ptr);
-		if (linkedlist_contains(&all_arrays, node->ptr)) {
+		if (linkedlist_contains(&_gc_all_arrays, node->ptr)) {
 			#if DEBUG_GARBAGE_COLLECTION == 1
 				printf("Blackening array %p\n", node->ptr);
 				printf("    %p contains references to:\n", node->ptr);
@@ -209,14 +214,14 @@ void gc_cycle() {
 			int len = ((int32_t*)node->ptr)[0];
 			uintptr_t* array = (uintptr_t*)node->ptr;
 			for (int i = 0; i < len; i++) {
-				struct SYSTEM__OBJECT_proto* r = (struct SYSTEM__OBJECT_proto*)array[i + 2];
+				uintptr_t r = (uintptr_t)array[i + 2];
 				#if DEBUG_GARBAGE_COLLECTION == 1
 					printf("        %p\n", r);
 				#endif
-				linkedlist_tryRemoveValue(&white, (uintptr_t)r);
-				linkedlist_append(&grey, (uintptr_t)r);
+				linkedlist_tryRemoveValue(&white, r);
+				linkedlist_append(&grey, r);
 			}
-		} else if (linkedlist_contains(&all_objects, node->ptr)) {
+		} else if (linkedlist_contains(&_gc_all_objects, node->ptr)) {
 			struct SYSTEM__OBJECT_proto* reference = (struct SYSTEM__OBJECT_proto*)node->ptr;
 			#if DEBUG_GARBAGE_COLLECTION == 1
 				printf("Blackening %p\n", reference);
@@ -235,6 +240,10 @@ void gc_cycle() {
 		}
 		else {
 			// happens when the object is still in the constructor phase
+			//linkedlist_tryRemoveValue(&white, node->ptr);
+			//linkedlist_tryRemoveValue(&grey, node->ptr);
+			//linkedlist_tryRemoveValue(&black, node->ptr);
+			//linkedlist_append(&black, node->ptr);
 		}
 
 		struct Node* oldNode = node;
@@ -249,9 +258,9 @@ void gc_cycle() {
 #if DEBUG_GARBAGE_COLLECTION == 1
 		printf("    freeing %p\n", reference);
 #endif
-		if (!linkedlist_tryRemoveValue(&all_objects, node->ptr)) {
+		if (!linkedlist_tryRemoveValue(&_gc_all_objects, node->ptr)) {
 			// this is an array
-			if (!linkedlist_tryRemoveValue(&all_arrays, node->ptr)) {
+			if (!linkedlist_tryRemoveValue(&_gc_all_arrays, node->ptr)) {
 				node = node->next;
 				continue;
 			}
@@ -277,4 +286,6 @@ void gc_cycle() {
 	linkedlist_free(&white);
 	linkedlist_free(&grey);
 	linkedlist_free(&black);
+
+	gc_cycle_in_progress = 0;
 }
