@@ -753,8 +753,6 @@ int CIL_unbox_dispatch(const char* box_type) {
 // ARRAY
 
 void CIL_newarr_dispatch(const char* type) {
-	/* TODO: Garbage collect */
-
 	int32_t numElems = pop_value32();
 	if (strcmp(type, "System.Int32") == 0 ||
 		strcmp(type, "System.Byte") == 0 ||
@@ -771,6 +769,7 @@ void CIL_newarr_dispatch(const char* type) {
 		((int32_t*)arr)[0] = numElems;
 		((int32_t*)arr)[1] = 4; // size
 		push_arraypointer(arr);
+		gc_new_valuearray(arr);
 		return;
 	}
 	else if (strcmp(type, "System.Int64") == 0 ||
@@ -782,6 +781,7 @@ void CIL_newarr_dispatch(const char* type) {
 		((int32_t*)arr)[0] = numElems;
 		((int32_t*)arr)[1] = 8; // size
 		push_arraypointer(arr);
+		gc_new_valuearray(arr);
 		return;
 	}
 	else if (strcmp(type, "System.Single") == 0) {
@@ -789,6 +789,7 @@ void CIL_newarr_dispatch(const char* type) {
 		((int32_t*)arr)[0] = numElems;
 		((int32_t*)arr)[1] = 4; // size
 		push_arraypointer(arr);
+		gc_new_valuearray(arr);
 		return;
 	}
 	else if (strcmp(type, "System.Double") == 0) {
@@ -796,6 +797,7 @@ void CIL_newarr_dispatch(const char* type) {
 		((int32_t*)arr)[0] = numElems;
 		((int32_t*)arr)[1] = 8; // size
 		push_arraypointer(arr);
+		gc_new_valuearray(arr);
 		return;
 	}
 	else {

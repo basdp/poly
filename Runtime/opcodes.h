@@ -411,7 +411,6 @@ int CIL_stfld_generic_dispatch(uintptr_t, void*, enum CIL_Type);
 
 #define CIL_newobj(type, ctor) { \
 	uintptr_t pointer = gc_alloc(sizeof(struct type)); \
-	/* TODO: Garbage collect */ \
 	push_pointer(pointer); \
 	callstack_push(ctor ## _sig, "(unknown)", 0);\
 	ctor(); \
@@ -421,7 +420,6 @@ int CIL_stfld_generic_dispatch(uintptr_t, void*, enum CIL_Type);
 
 #define CIL_newobj_generic(type, ctor, typelist_length, typelist) { \
 	uintptr_t pointer = gc_alloc(sizeof(struct type)); \
-	/* TODO: Garbage collect */ \
 	push_pointer(pointer); \
 	callstack_push(ctor ## _sig, "(unknown)", 0);\
 	ctor(typelist_length, typelist); \

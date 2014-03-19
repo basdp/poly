@@ -58,9 +58,6 @@
     </Bscmake>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <Text Include="ReadMe.txt" />
-  </ItemGroup>
-  <ItemGroup>
     <ClCompile Include="callstack.c" />
     <ClCompile Include="exceptions.c" />
     <ClCompile Include="garbagecollection.c" />

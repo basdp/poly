@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -10,11 +11,17 @@ namespace RegressionTesting
     class CompilerSuite
     {
         private static string csc = @"C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe";
+        private static string dmcs = @"dmcs";
+        private static string mono = @"mono";
         private static string poly = @"PolyCompiler.exe";
         private static string cl = @"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\cl.exe";
         private static string cl_includes = @"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\include";
         private static string cl_libs = @"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\lib";
+        private static string gcc = @"gcc";
+
         private static string windowsSdkDir = Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.1", "InstallationFolder", "").ToString();
+
+        public static string Environment = "Microsoft";
 
         public static bool Compile(string filename, string output)
         {
@@ -24,7 +31,19 @@ namespace RegressionTesting
             {
                 case ".cs":
                     {
-                        var proc = ExecuteProcess(csc, "/out:" + output + " " + filename);
+                        Process proc;
+                        if (Environment == "Microsoft")
+                        {
+                            proc = ExecuteProcess(csc, "/out:" + output + " " + filename);
+                        }
+                        else if (Environment == "Mono")
+                        {
+                            proc = ExecuteProcess(dmcs, "-out:" + output + " " + filename);
+                        }
+                        else
+                        {
+                            throw new NotImplementedException("Environment " + Environment + " is not supported!");
+                        }
 
                         if (proc.ExitCode != 0)
                         {
@@ -41,7 +60,19 @@ namespace RegressionTesting
                 case ".exe":
                 case ".dll":
                     {
-                        var proc = ExecuteProcess(poly, '"' + filename + '"' + ' ' + '"' + output + '"');
+                        Process proc;
+                        if (Environment == "Microsoft")
+                        {
+                            proc = ExecuteProcess(poly, '"' + filename + '"' + ' ' + '"' + output + '"');
+                        }
+                        else if (Environment == "Mono")
+                        {
+                            proc = ExecuteProcess(mono, poly + " \"" + filename + '"' + ' ' + '"' + output + '"');
+                        }
+                        else
+                        {
+                            throw new NotImplementedException("Environment " + Environment + " is not supported!");
+                        }
 
                         if (proc.ExitCode != 0)
                         {
@@ -56,7 +87,19 @@ namespace RegressionTesting
                     }
                 case ".c":
                     {
-                        var proc = ExecuteProcess(cl, "/nologo /O2 /Fo" + output + @" /I include\ /I """ + cl_includes + "\" /c " + filename + " /link /LIBPATH:\"" + cl_libs + "\"");
+                        Process proc;
+                        if (Environment == "Microsoft")
+                        {
+                            proc = ExecuteProcess(cl, "/nologo /O2 /Fo" + output + @" /I include\ /I """ + cl_includes + "\" /c " + filename + " /link /LIBPATH:\"" + cl_libs + "\"");
+                        }
+                        else if (Environment == "Mono")
+                        {
+                            proc = ExecuteProcess(gcc, "-m32 \"" + filename + '"' + " -o " + '"' + output + '"');
+                        }
+                        else
+                        {
+                            throw new NotImplementedException("Environment " + Environment + " is not supported!");
+                        }
 
                         if (proc.ExitCode != 0)
                         {
@@ -71,7 +114,19 @@ namespace RegressionTesting
                     }
                 case ".obj":
                     {
-                        var proc = ExecuteProcess(cl, "/nologo /O2 " + filename + @" Runtime.lib /Fe" + output + " /link /LIBPATH:\"" + cl_libs + "\" /LIBPATH:\"" + windowsSdkDir + @"\Lib\winv6.3\um\x86" + "\"");
+                        Process proc;
+                        if (Environment == "Microsoft")
+                        {
+                            proc = ExecuteProcess(cl, "/nologo /O2 " + filename + @" Runtime.lib /Fe" + output + " /link /LIBPATH:\"" + cl_libs + "\" /LIBPATH:\"" + windowsSdkDir + @"\Lib\winv6.3\um\x86" + "\"");
+                        }
+                        else if (Environment == "Mono")
+                        {
+                            proc = ExecuteProcess(gcc, "-m32 \"" + filename + '"' + " -o " + '"' + output + '"');
+                        }
+                        else
+                        {
+                            throw new NotImplementedException("Environment " + Environment + " is not supported!");
+                        }
 
                         if (proc.ExitCode != 0)
                         {

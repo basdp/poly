@@ -55,7 +55,7 @@ namespace PolyCompiler
         {
             string gtypename = GetFullName(mi.DeclaringType);
             if (gtypename.IndexOf('[') != -1) gtypename = gtypename.Substring(0, gtypename.IndexOf('['));
-            var methods = mi.DeclaringType.Assembly.GetType(gtypename).GetMethods();
+            var methods = mi.DeclaringType.Assembly.GetType(gtypename).GetMethods(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.Instance);
             foreach (var mds in methods)
             {
                 if (mds.MetadataToken == mi.MetadataToken) return mds;

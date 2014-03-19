@@ -8,6 +8,7 @@
 
 struct LinkedList _gc_all_objects;
 struct LinkedList _gc_all_arrays;
+struct LinkedList _gc_all_valuearrays;
 struct LinkedList _gc_root_scope;
 
 void gc_init() {
@@ -15,6 +16,7 @@ void gc_init() {
 	_gc_root_scope = linkedlist_new();
 
 	_gc_all_arrays = linkedlist_new();
+	_gc_all_valuearrays = linkedlist_new();
 
 	srand((unsigned int)time(NULL));
 #if DEBUG_GARBAGE_COLLECTION == 1
@@ -41,6 +43,13 @@ void gc_new_arr(uintptr_t o) {
 	printf("new array %p\n", o);
 #endif
 	linkedlist_append(&_gc_all_arrays, o);
+}
+
+void gc_new_valuearray(uintptr_t arr) {
+#if DEBUG_GARBAGE_COLLECTION==1
+	printf("new value array %p\n", o);
+#endif
+	linkedlist_append(&_gc_all_valuearrays, arr);
 }
 
 void gc_retain(uintptr_t s, uintptr_t ref) {
@@ -143,6 +152,16 @@ void gc_cycle() {
 		}
 		node = node->next;
 	}
+	node = _gc_all_valuearrays.first;
+	while (node != 0) {
+		if (linkedlist_contains(&_gc_root_scope, node->ptr)) {
+			linkedlist_append(&grey, node->ptr);
+		}
+		else {
+			linkedlist_append(&white, node->ptr);
+		}
+		node = node->next;
+	}
 
 	int i = 0;
 	for (i = 0; i < stack_size(); i++) {
@@ -162,45 +181,6 @@ void gc_cycle() {
 			}
 		}
 	}
-
-#if DEBUG_GARBAGE_COLLECTION == 1
-	printf("root scope:\n");
-	node = _gc_root_scope.first;
-	while (node != 0) {
-		printf("    %p\n", node->ptr);
-		node = node->next;
-	}
-	printf("all objects:\n");
-	node = _gc_all_objects.first;
-	while (node != 0) {
-		printf("    %p\n", node->ptr);
-		node = node->next;
-	}
-	printf("all arrays:\n");
-	node = _gc_all_arrays.first;
-	while (node != 0) {
-		printf("    %p\n", node->ptr);
-		node = node->next;
-	}
-	printf("white:\n");
-	node = white.first;
-	while (node != 0) {
-		printf("    %p\n", node->ptr);
-		node = node->next;
-	}
-	printf("grey:\n");
-	node = grey.first;
-	while (node != 0) {
-		printf("    %p\n", node->ptr);
-		node = node->next;
-	}
-	printf("black:\n");
-	node = black.first;
-	while (node != 0) {
-		printf("    %p\n", node->ptr);
-		node = node->next;
-	}
-#endif
 		
 	node = grey.first;
 	while (node != 0) {
@@ -237,6 +217,8 @@ void gc_cycle() {
 				linkedlist_append(&grey, subNode->ptr);
 				subNode = subNode->next;
 			}
+		} else if (linkedlist_contains(&_gc_all_valuearrays, node->ptr)) {
+			// do nothing with it's contents
 		}
 		else {
 			// happens when the object is still in the constructor phase
@@ -259,10 +241,17 @@ void gc_cycle() {
 		printf("    freeing %p\n", reference);
 #endif
 		if (!linkedlist_tryRemoveValue(&_gc_all_objects, node->ptr)) {
-			// this is an array
 			if (!linkedlist_tryRemoveValue(&_gc_all_arrays, node->ptr)) {
-				node = node->next;
-				continue;
+				if (!linkedlist_tryRemoveValue(&_gc_all_valuearrays, node->ptr)) {
+					node = node->next;
+					continue;
+				}
+				else {
+					// this is an value array
+				}
+			}
+			else {
+				// this is an array
 			}
 		}
 		else {
@@ -288,4 +277,26 @@ void gc_cycle() {
 	linkedlist_free(&black);
 
 	gc_cycle_in_progress = 0;
+}
+
+void print_heap() {
+	printf("Heap: (size: %d objects, %d arrays)\n", _gc_all_objects.length, _gc_all_arrays.length);
+	printf("Objects:\n");
+	struct Node* node = _gc_all_objects.first;
+	while (node != 0) {
+		struct SYSTEM__OBJECT_proto* reference = (struct SYSTEM__OBJECT_proto*)node->ptr;
+		printf("    %p\t%s\n", node->ptr, reference->__CILtype);
+		node = node->next;
+	}
+	printf("Arrays:\n");
+	node = _gc_all_arrays.first;
+	while (node != 0) {
+		int32_t len = ((int32_t*)node->ptr)[0];
+		printf("    %p\tlength: %d\n", node->ptr, len);
+		node = node->next;
+	}
+}
+
+int heap_size() {
+	return _gc_all_objects.length + _gc_all_arrays.length;
 }

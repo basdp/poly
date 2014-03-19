@@ -86,6 +86,8 @@ namespace PolyCompiler
 
             File.WriteAllText(codefile, context.CodeHeader.ToString() + "\n" + context.Code.ToString());
             File.WriteAllText(headerfile, context.Header.ToString());
+
+            Console.WriteLine("Output: {0}", codefile);
         }        
 
         
