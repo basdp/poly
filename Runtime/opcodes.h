@@ -1,3 +1,6 @@
+#pragma once
+
+#include "runtime.h"
 #include "stdint.h"
 #include "stack.h"
 #include "hashmap.h"
@@ -129,22 +132,6 @@ void CIL_ldstr(const char*);
 #define CIL_add__ovf__un() CIL_undefined()
 #define CIL_and() CIL_undefined()
 #define CIL_arglist() CIL_undefined()
-#define CIL_beq(...) CIL_undefined()
-#define CIL_beq__s(...) CIL_undefined()
-#define CIL_bge__un(...) CIL_undefined()
-#define CIL_bge__un__s(...) CIL_undefined()
-#define CIL_bgt(...) CIL_undefined()
-#define CIL_bgt__s(...) CIL_undefined()
-#define CIL_bgt__un(...) CIL_undefined()
-#define CIL_bgt__un__s(...) CIL_undefined()
-#define CIL_ble(...) CIL_undefined()
-#define CIL_ble__s(...) CIL_undefined()
-#define CIL_ble__un(...) CIL_undefined()
-#define CIL_ble__un__s(...) CIL_undefined()
-#define CIL_blt__un(...) CIL_undefined()
-#define CIL_blt__un__s(...) CIL_undefined()
-#define CIL_bne(...) CIL_undefined()
-#define CIL_bne__s(...) CIL_undefined()
 #define CIL_brinst(...) CIL_undefined()
 #define CIL_brinst__s(...) CIL_undefined()
 #define CIL_calli(...) CIL_undefined()
@@ -220,6 +207,21 @@ void CIL_ldstr(const char*);
 #define CIL_br(label) goto label
 #define CIL_blt(target) { CIL_clt(); CIL_brtrue(target); }
 #define CIL_blt__s(target) CIL_blt(target)
+#define CIL_beq(target) { CIL_ceq(); CIL_brtrue(target); }
+#define CIL_beq__s(target) CIL_beq(target)
+
+#define CIL_bge__un(target) { CIL_clt__un(); CIL_brfalse(target); }
+#define CIL_bge__un__s(target) CIL_undefined(target)
+#define CIL_bgt(target) { CIL_cgt(); CIL_brtrue(target); }
+#define CIL_bgt__s(target) CIL_bgt(target)
+#define CIL_bgt__un(target) { CIL_cgt__un(); CIL_brtrue(target); }
+#define CIL_bgt__un__s(target) CIL_bgt__un(target)
+#define CIL_ble(target) { CIL_cgt(); CIL_brfalse(target); } // TODO: cgt.un if stack operands are floating point
+#define CIL_ble__s(target) CIL_ble(target)
+#define CIL_ble__un(target) { CIL_cgt(); CIL_brfalse(target); } // TODO: cgt if stack operands are floating point
+#define CIL_ble__un__s(target) CIL_ble__un(target)
+#define CIL_blt__un(target) { CIL_clt__un(); CIL_brtrue(target); }
+#define CIL_blt__un__s(target) CIL_blt__un(target)
 
 #define CIL_pop() pop()
 
@@ -446,12 +448,12 @@ int CIL_stfld_generic_dispatch(uintptr_t, void*, enum CIL_Type);
 #define CIL_box(type) CIL_box_dispatch(#type)
 void CIL_box_dispatch(const char*);
 #define CIL_box_ciltype(type) CIL_box_ciltype_dispatch(type)
-void CIL_box_ciltype_dispatch(enum CIL_type);
+void CIL_box_ciltype_dispatch(enum CIL_Type);
 #define CIL_box_generic(type) CIL_box_generic_dispatch()
 void CIL_box_generic_dispatch();
 
 #define CIL_unbox_ciltype(type) wrap_exception_handling(CIL_unbox_ciltype_dispatch(type))
-int CIL_unbox_ciltype_dispatch(enum CIL_type);
+int CIL_unbox_ciltype_dispatch(enum CIL_Type);
 #define CIL_unbox(type) wrap_exception_handling(CIL_unbox_dispatch(#type))
 int CIL_unbox_dispatch(const char*);
 #define CIL_unbox__any(type) { CIL_unbox(type); CIL_ldobj(type); }

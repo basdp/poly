@@ -3,6 +3,7 @@
 #include <string.h>
 #include <stdint.h>
 
+#include "runtime.h"
 #include "hashmap.h"
 #include "stack.h"
 #include "shims.h"

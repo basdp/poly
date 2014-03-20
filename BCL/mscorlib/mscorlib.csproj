@@ -7,8 +7,8 @@
     <ProjectGuid>{80F565EF-E5AA-488A-B5D9-26CE8A8D8358}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>mscorlib</RootNamespace>
-    <AssemblyName>mscorlib</AssemblyName>
+    <RootNamespace>System</RootNamespace>
+    <AssemblyName>__mscorlib</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
   </PropertyGroup>

@@ -658,7 +658,7 @@ void CIL_box_generic_dispatch() {
 	CIL_box_ciltype_dispatch(stack_top_type());
 }
 
-void CIL_box_ciltype_dispatch(enum CIL_type type) {
+void CIL_box_ciltype_dispatch(enum CIL_Type type) {
 	//printf("box to %d of size %d\n", type, cil_type_size(type));
 	if (type == CIL_int32) {
 		struct SYSTEM__INT32_proto *obj;
@@ -686,7 +686,7 @@ void CIL_box_ciltype_dispatch(enum CIL_type type) {
 	}
 }
 
-int CIL_unbox_ciltype_dispatch(enum CIL_type type) {
+int CIL_unbox_ciltype_dispatch(enum CIL_Type type) {
 	if (type == CIL_int32) {
 		struct SYSTEM__INT32_proto *obj = (struct SYSTEM__INT32_proto*)pop_pointer();
 		if (obj == 0) return 1;

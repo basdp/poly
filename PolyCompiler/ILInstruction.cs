@@ -62,7 +62,17 @@ namespace SDILReader
                         string typelist_name = "";
                         foreach (var gtype in mOperand.ReflectedType.GenericTypeArguments)
                         {
-                            typelist_name += "__" + Naming.ConvertTypeToCName(gtype);
+                            int i;
+                            if (int.TryParse(gtype.Name, out i))
+                            {
+                                // MONO HACK
+                                // unknown type
+                                typelist_name += "__" + gtype.Name;
+                            }
+                            else
+                            {
+                                typelist_name += "__" + Naming.ConvertTypeToCName(gtype);
+                            }
                         }
                         def += typelist_name;
 

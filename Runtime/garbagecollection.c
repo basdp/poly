@@ -285,14 +285,14 @@ void print_heap() {
 	struct Node* node = _gc_all_objects.first;
 	while (node != 0) {
 		struct SYSTEM__OBJECT_proto* reference = (struct SYSTEM__OBJECT_proto*)node->ptr;
-		printf("    %p\t%s\n", node->ptr, reference->__CILtype);
+		printf("    %p\t%s\n", (void*)node->ptr, (char*)reference->__CILtype);
 		node = node->next;
 	}
 	printf("Arrays:\n");
 	node = _gc_all_arrays.first;
 	while (node != 0) {
 		int32_t len = ((int32_t*)node->ptr)[0];
-		printf("    %p\tlength: %d\n", node->ptr, len);
+		printf("    %p\tlength: %d\n", (void*)node->ptr, len);
 		node = node->next;
 	}
 }
