@@ -29,7 +29,7 @@ namespace PolyCompiler
                 {
                     return 1;
                 }
-                return 0;
+                return t1.Name.CompareTo(t2.Name);
             });
             for (int j = 0; j < cis.Count; j++)
             {
@@ -262,6 +262,7 @@ namespace PolyCompiler
                 if (m.IsGenericMethod) context.Header.Append("int generictypelist_length, enum CIL_Type* generictypelist");
                 context.Header.Append(");\n");
 
+                string s = Naming.GetInternalMethodName(m, true, true);
                 context.Code.AppendLine("// SIG: " + Naming.GetInternalMethodName(m, true, true));
                 context.Code.Append("void *" + Naming.GetInternalMethodName(m) + "(");
                 if (m.IsGenericMethod) context.Code.Append("int generictypelist_length, enum CIL_Type* generictypelist");

@@ -143,6 +143,9 @@ namespace PolyCompiler
 
         internal static string GetFullName(Type type)
         {
+            if (type.IsGenericParameter)
+                return type.Name;
+
             string fullname = type.FullName;
             if (fullname == null)
             {
@@ -150,7 +153,8 @@ namespace PolyCompiler
                 if (fullname != null) fullname += ".";
                 else fullname = "";
                 string typename = type.Name;
-                if (typename.IndexOf('[') != -1) typename = type.Name.Substring(type.Name.IndexOf('['));
+                if (typename.IndexOf('[') != -1) 
+                    typename = type.Name.Substring(0, type.Name.IndexOf('['));
                 var dtype = type.DeclaringType;
                 while (dtype != null)
                 {
@@ -172,7 +176,7 @@ namespace PolyCompiler
             }
             gtypename += typename;*/
 
-
+            if (fullname.IndexOf('[') != -1) fullname = fullname.Substring(0, fullname.IndexOf('['));
 
             return fullname;
         }
