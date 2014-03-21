@@ -209,7 +209,7 @@ void CIL_ldstr(const char*);
 #define CIL_beq(target) { CIL_ceq(); CIL_brtrue(target); }
 #define CIL_beq__s(target) CIL_beq(target)
 
-#define CIL_bge(target) { if (stack_top_type_is_float() { CIL_clt__un(); CIL_brfalse(target); } else { CIL_clt(); CIL_brfalse(target); } }
+#define CIL_bge(target) { if (stack_top_type_is_float()) { CIL_clt__un(); CIL_brfalse(target); } else { CIL_clt(); CIL_brfalse(target); } }
 #define CIL_bge__s(target) CIL_bge(target)
 #define CIL_bge__un(target) { CIL_clt__un(); CIL_brfalse(target); }
 #define CIL_bge__un__s(target) CIL_bge__un(target)
