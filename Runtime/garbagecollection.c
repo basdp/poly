@@ -193,7 +193,8 @@ void gc_cycle() {
 			#endif
 			int len = ((int32_t*)node->ptr)[0];
 			uintptr_t* array = (uintptr_t*)node->ptr;
-			for (int i = 0; i < len; i++) {
+			int i;
+			for (i = 0; i < len; i++) {
 				uintptr_t r = (uintptr_t)array[i + 2];
 				#if DEBUG_GARBAGE_COLLECTION == 1
 					printf("        %p\n", r);

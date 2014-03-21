@@ -1022,14 +1022,15 @@ int CIL_isinst_dispatch(const char* type) {
 
 	char** baseclasses = (char**)obj->__CILbaseclasses;
 	char** interfaces = (char**)obj->__CILbaseinterfaces;
-	for (int i = 0; i < *obj->__CILbaseclasses_length; i++) {
+	int i;
+	for (i = 0; i < *obj->__CILbaseclasses_length; i++) {
 		if (strcmp(type, baseclasses[i]) == 0) {
 			push_pointer((uintptr_t)obj);
 			return 0;
 		}
 	}
 
-	for (int i = 0; i < *obj->__CILbaseinterfaces_length; i++) {
+	for (i = 0; i < *obj->__CILbaseinterfaces_length; i++) {
 		if (strcmp(type, interfaces[i]) == 0) {
 			push_pointer((uintptr_t)obj);
 			return 0;
