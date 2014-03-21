@@ -208,7 +208,7 @@
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
     <PostBuildEvent>copy /Y "$(SolutionDir)\Runtime\Release\Runtime.lib" . &gt; NUL
-copy /Y "$(SolutionDir)BCL\mscorlib\bin\$(ConfigurationName)\mscorlib.dll" .\mscorlib_.dll &gt; NUL
+copy /Y "$(SolutionDir)BCL\mscorlib\bin\$(ConfigurationName)\__mscorlib.dll" .\__mscorlib.dll &gt; NUL
 if NOT EXIST include mkdir include
 copy /Y "$(SolutionDir)Runtime\*.h" include &gt; NUL</PostBuildEvent>
   </PropertyGroup>

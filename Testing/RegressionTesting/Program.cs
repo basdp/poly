@@ -26,7 +26,7 @@ namespace RegressionTesting
             InitializeEnvironment();
 
             XmlDocument testdef = new XmlDocument();
-            testdef.LoadXml(File.ReadAllText(@"Tests\definitions.xml"));
+            testdef.LoadXml(File.ReadAllText(@"Tests" + Path.DirectorySeparatorChar + "definitions.xml"));
 
             Console.WriteLine("Test                Result\n==========================");
 
@@ -46,7 +46,7 @@ namespace RegressionTesting
                     if (!CompiledTests.ContainsKey(file))
                     {
                         CompileCsToPolyExe(file, @"tmp\" + basename + ".poly.exe");
-                        if (!File.Exists(@"tmp\" + basename + ".poly.exe"))
+                        if (!File.Exists(@"tmp" + Path.DirectorySeparatorChar + basename + ".poly.exe"))
                         {
                             Console.Write(displayname + new string(' ', 20 - displayname.Length));
                             Console.WriteLine("FAIL");
@@ -93,6 +93,8 @@ namespace RegressionTesting
         {
             expectedOutput = expectedOutput.Split(new char[] { '\n' }).Select(s => s.Trim()).Aggregate((i, j) => i + "\n" + j);
 
+            executable = executable.Replace('\\', Path.DirectorySeparatorChar);
+
             var comp = new System.Diagnostics.ProcessStartInfo(executable, parameters);
             comp.RedirectStandardOutput = true;
             comp.RedirectStandardError = true;
@@ -134,6 +136,8 @@ namespace RegressionTesting
 
         private static bool ExpectExitCode(string executable, string parameters, int expectedRet)
         {
+            executable = executable.Replace('\\', Path.DirectorySeparatorChar);
+
             var comp = new System.Diagnostics.ProcessStartInfo(executable, parameters);
             comp.RedirectStandardOutput = true;
             comp.RedirectStandardError = true;
@@ -172,18 +176,18 @@ namespace RegressionTesting
             FileInfo fi = new FileInfo(cs);
             string basename = fi.Name.Substring(0, fi.Name.LastIndexOf("."));
             CompilerSuite.Compile(cs, @"tmp\" + basename + ".exe");
-            if (!File.Exists(@"tmp\" + basename + ".exe")) return;
+            if (!File.Exists(@"tmp" + Path.DirectorySeparatorChar + basename + ".exe")) return;
             CompilerSuite.Compile(@"tmp\" + basename + ".exe", @"tmp");
-            if (!File.Exists(@"tmp\" + basename + ".c")) return;
+            if (!File.Exists(@"tmp" + Path.DirectorySeparatorChar + basename + ".c")) return;
             CompilerSuite.Compile(@"tmp\" + basename + ".c", @"tmp\" + basename + ".obj");
-            if (!File.Exists(@"tmp\" + basename + ".obj")) return;
+            if (!File.Exists(@"tmp" + Path.DirectorySeparatorChar + basename + ".obj")) return;
             CompilerSuite.Compile(@"tmp\" + basename + @".obj tmp\mscorlib.obj tmp\Poly.Internals.obj", output);
-            if (!File.Exists(@"tmp\" + basename + ".poly.exe")) return;
+            if (!File.Exists(@"tmp" + Path.DirectorySeparatorChar + basename + ".poly.exe")) return;
         }
 
         private static void InitializeEnvironment()
         {
-            CompilerSuite.Compile(@"mscorlib_.dll", @"tmp");
+            CompilerSuite.Compile(@"__mscorlib.dll", @"tmp");
             CompilerSuite.Compile(@"Poly.Internals.dll", @"tmp");
             CompilerSuite.Compile(@"tmp\mscorlib.c", @"tmp\mscorlib.obj");
             CompilerSuite.Compile(@"tmp\Poly.Internals.c", @"tmp\Poly.Internals.obj");

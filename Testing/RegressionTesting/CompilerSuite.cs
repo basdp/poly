@@ -21,10 +21,13 @@ namespace RegressionTesting
 
         private static string windowsSdkDir = Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.1", "InstallationFolder", "").ToString();
 
-        public static string Environment = "Microsoft";
+        public static string Environment = "Mono";
 
         public static bool Compile(string filename, string output)
         {
+            filename = filename.Replace('\\', Path.DirectorySeparatorChar);
+            output = output.Replace('\\', Path.DirectorySeparatorChar);
+
             var file = new FileInfo(filename);
 
             switch (file.Extension.ToLower())
@@ -94,7 +97,8 @@ namespace RegressionTesting
                         }
                         else if (Environment == "Mono")
                         {
-                            proc = ExecuteProcess(gcc, "-m32 \"" + filename + '"' + " -o " + '"' + output + '"');
+                            proc = ExecuteProcess(gcc, "-m32 \"" + filename.Replace(@"\", "/") + '"' + " -c -o " + '"' + output.Replace(@"\", "/") + '"' + " -I ../Runtime");
+
                         }
                         else
                         {
@@ -121,7 +125,7 @@ namespace RegressionTesting
                         }
                         else if (Environment == "Mono")
                         {
-                            proc = ExecuteProcess(gcc, "-m32 \"" + filename + '"' + " -o " + '"' + output + '"');
+                            proc = ExecuteProcess(gcc, "-m32 " + filename.Replace(@"\", "/") + ' ' + " Runtime.a -o " + '"' + output.Replace(@"\", "/") + '"');
                         }
                         else
                         {
