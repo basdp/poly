@@ -262,7 +262,6 @@ namespace PolyCompiler
                 if (m.IsGenericMethod) context.Header.Append("int generictypelist_length, enum CIL_Type* generictypelist");
                 context.Header.Append(");\n");
 
-                string s = Naming.GetInternalMethodName(m, true, true);
                 context.Code.AppendLine("// SIG: " + Naming.GetInternalMethodName(m, true, true));
                 context.Code.Append("void *" + Naming.GetInternalMethodName(m) + "(");
                 if (m.IsGenericMethod) context.Code.Append("int generictypelist_length, enum CIL_Type* generictypelist");

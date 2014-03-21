@@ -17,9 +17,6 @@ namespace PolyCompiler
             List<Type> types = module.GetTypes().ToList();
             types.Sort(delegate(Type t1, Type t2)
             {
-                Type orig_t1 = t1;
-                Type orig_t2 = t2;
-
                 if (t1 == null && t2 == null) return 0;
                 if (t1 == null) return 1;
                 if (t2 == null) return -1;
