@@ -111,6 +111,21 @@ enum CIL_Type stack_top_type() {
 	return types[ttop - 1];
 }
 
+int stack_top_type_is_float() {
+	enum CIL_Type stt = stack_top_type();
+	if (stt == CIL_float32) return 1;
+	if (stt == CIL_float64) return 1;
+	return 0;
+}
+
+int stack_top_type_is_integer() {
+	enum CIL_Type stt = stack_top_type();
+	if (stt == CIL_int32) return 1;
+	if (stt == CIL_int64) return 1;
+	if (stt == CIL_native) return 1;
+	return 0;
+}
+
 enum CIL_Type stack_offset_type(int offset) {
 	return types[ttop - 1 - offset];
 }

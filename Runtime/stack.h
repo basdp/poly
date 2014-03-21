@@ -22,3 +22,5 @@ int stack_size();
 void print_stack();
 void stack_duplicate_top();
 void stack_shrink(int size);
+int stack_top_type_is_integer();
+int stack_top_type_is_float();

@@ -24,9 +24,6 @@ class exception1
 
     static void Main(string[] l)
     {
-        string[] args = l;
-        if (args.Length != 1) args = new string[] { "3" };
-        
-        Test3();
+        throw new Exception("muhaha");
     }
 }

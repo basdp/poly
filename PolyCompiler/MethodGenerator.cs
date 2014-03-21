@@ -214,7 +214,7 @@ namespace PolyCompiler
                     throw new NotImplementedException(); // I think this is illegal also
                 }
 
-                context.Main.AppendLine("    CIL_call(" + Naming.GetInternalMethodName(m) + ", \"" + Naming.GetInternalMethodName(m, false) + "\", " + m.GetParameters().Count() + ", 0);");
+                context.Main.AppendLine("    CIL_call_unsafe(" + Naming.GetInternalMethodName(m) + ", \"" + Naming.GetInternalMethodName(m, false) + "\", " + m.GetParameters().Count() + ", 0);");
 
                 if (m.GetParameters().Count() == 1)
                 {
