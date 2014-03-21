@@ -126,7 +126,7 @@ void CIL_neg();
 char *CIL_getCStringFromSystemString(intptr_t object);
 void CIL_ldstr(const char*);
 
-#define CIL_undefined() { fprintf(stderr, __FILE__":%d\tError: a CIL opcode has not been implemented\n", __LINE__); exit(404); }
+#define CIL_undefined() { fprintf(stderr, __FILE__":%d\tError: a CIL opcode has not been implemented\n", __LINE__); exit(44); }
 
 #define CIL_add__ovf() CIL_undefined()
 #define CIL_add__ovf__un() CIL_undefined()
@@ -176,7 +176,6 @@ void CIL_ldstr(const char*);
 #define CIL_ldftn(...) CIL_undefined()
 #define CIL_ldsflda(...) CIL_undefined()
 #define CIL_ldvirtftn(...) CIL_undefined()
-#define CIL_leave(...) CIL_undefined()
 #define CIL_localloc(...) CIL_undefined()
 #define CIL_mkrefany(...) CIL_undefined()
 #define CIL_mul__ovf(...) CIL_undefined()
@@ -516,6 +515,7 @@ void CIL_ldtoken_static_field_dispatch(void*, enum CIL_Type, int);
 //exceptions
 #define CIL_throw() exception_throw()
 #define CIL_rethrow(...) exception_rethrow()
+#define CIL_leave(label) exception_leave(label)
 #define CIL_leave__s(label) exception_leave(label)
 #define CIL_endfinally() exception_endfinally()
 
