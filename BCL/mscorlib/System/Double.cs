@@ -19,7 +19,7 @@ namespace System
         struct System__Double *this = (struct System__Double*)parameter0;
         double d;
         memcpy(&d, &this->value, 8);
-        snprintf(buffer, 24, ""%.12f"", this->value);
+        snprintf(buffer, 24, ""%.12f"", d);
         CIL_ldstr(buffer);
         ")]
         public override string ToString() { return null; }

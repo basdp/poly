@@ -19,9 +19,20 @@ namespace RegressionTesting
         private static string cl_libs = @"C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\lib";
         private static string gcc = @"gcc";
 
-        private static string windowsSdkDir = Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.1", "InstallationFolder", "").ToString();
+        private static string windowsSdkDir {
+		get {
+			return Microsoft.Win32.Registry.GetValue(@"HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\Microsoft SDKs\Windows\v8.1", "InstallationFolder", "").ToString();
+		}
+	}
 
-        public static string Environment = "Mono";
+        public static string Environment {
+		get {
+			if (Type.GetType("Mono.Runtime") != null) 
+				return "Mono";
+			else
+				return "Microsoft";
+		}
+	}
 
         public static bool Compile(string filename, string output)
         {
