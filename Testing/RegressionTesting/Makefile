@@ -17,7 +17,7 @@ rebuild: clean all
 $(output_dir):
 	mkdir -p $@
 
-$(output_dir)/$(output): $(cs) | $(output_dir) $(output_dir)/PolyCompiler.exe $(output_dir)/__mscorlib.dll
+$(output_dir)/$(output): $(cs) | $(output_dir) $(output_dir)/PolyCompiler.exe $(output_dir)/__mscorlib.dll $(output_dir)/runtime.a
 	$(MCS) $(cs) -out:$@
 
 PolyCompiler:
@@ -35,6 +35,11 @@ mscorlib:
 $(output_dir)/__mscorlib.dll: mscorlib
 	cp ../../BCL/mscorlib/Build/__mscorlib.dll $@
 
+runtime:
+	$(MAKE) -C ../../Runtime
+
+$(output_dir)/runtime.a: runtime
+	cp ../../Runtime/runtime.a $@
 
 
 
