@@ -1,0 +1,26 @@
+#!/bin/sh
+set -e
+
+if [ $# -eq 0 ]
+then
+	echo "Error: no input file";
+	exit 1;
+fi
+
+if [ ! -f $1 ]
+then
+	echo "Error: $1 is not an existing file";
+	exit 1;
+fi
+
+OUT=$2
+if [ "$#" -eq 1 ]
+then
+	OUT=a.out
+fi
+
+TEMP=$(mktemp -d /tmp/polyc.XXXXXXXX)
+
+dmcs $1 -out:$TEMP/out.exe
+mono /usr/local/lib/poly/bin/PolyCompiler.exe $TEMP/out.exe $TEMP
+gcc -m32 $TEMP/out.c /usr/local/lib/poly/lib/runtime.a /usr/local/lib/poly/lib/mscorlib.obj /usr/local/lib/poly/lib/Poly.Internals.obj -I/usr/local/lib/poly/include -o $OUT
