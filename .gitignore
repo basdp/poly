@@ -5,6 +5,12 @@ BuildSystem/Build
 BuildSystem/*.dll
 BuildSystem/*.exe
 BuildSystem/*.lib
+Build/
+
+*.d
+*.o
+*.a
+tmp/
 
 # mstest test results
 TestResults
