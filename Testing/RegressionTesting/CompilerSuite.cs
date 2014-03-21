@@ -136,7 +136,7 @@ namespace RegressionTesting
                         }
                         else if (Environment == "Mono")
                         {
-                            proc = ExecuteProcess(gcc, "-m32 " + filename.Replace(@"\", "/") + ' ' + " Runtime.a -o " + '"' + output.Replace(@"\", "/") + '"');
+                            proc = ExecuteProcess(gcc, "-m32 " + filename.Replace(@"\", "/") + ' ' + " runtime.a -o " + '"' + output.Replace(@"\", "/") + '"');
                         }
                         else
                         {
