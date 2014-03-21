@@ -41,3 +41,4 @@ install: all libs
 
 uninstall:
 	rm -rf $(PREFIX)/poly
+	rm -rf $(PREFIX)/bin/polyc
