@@ -11,6 +11,8 @@ Build/
 *.o
 *.a
 tmp/
+/libs/
+*~
 
 # mstest test results
 TestResults
