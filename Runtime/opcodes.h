@@ -210,8 +210,10 @@ void CIL_ldstr(const char*);
 #define CIL_beq(target) { CIL_ceq(); CIL_brtrue(target); }
 #define CIL_beq__s(target) CIL_beq(target)
 
+#define CIL_bge(target) { CIL(); CIL_brfalse(target); }
+#define CIL_bge__s(target) CIL_bge(target)
 #define CIL_bge__un(target) { CIL_clt__un(); CIL_brfalse(target); }
-#define CIL_bge__un__s(target) CIL_undefined(target)
+#define CIL_bge__un__s(target) CIL_bge__un(target)
 #define CIL_bgt(target) { CIL_cgt(); CIL_brtrue(target); }
 #define CIL_bgt__s(target) CIL_bgt(target)
 #define CIL_bgt__un(target) { CIL_cgt__un(); CIL_brtrue(target); }
