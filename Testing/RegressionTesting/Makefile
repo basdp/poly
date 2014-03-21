@@ -17,8 +17,25 @@ rebuild: clean all
 $(output_dir):
 	mkdir -p $@
 
-$(output_dir)/$(output): $(cs) | $(output_dir)
+$(output_dir)/$(output): $(cs) | $(output_dir) $(output_dir)/PolyCompiler.exe $(output_dir)/__mscorlib.dll
 	$(MCS) $(cs) -out:$@
+
+PolyCompiler:
+	$(MAKE) -C ../../PolyCompiler
+
+$(output_dir)/PolyCompiler.exe: $(output_dir)/Poly.Internals.dll
+	cp ../../PolyCompiler/Build/PolyCompiler.exe $@
+
+$(output_dir)/Poly.Internals.dll: PolyCompiler
+	cp ../../PolyCompiler/Build/Poly.Internals.dll $@
+
+mscorlib:
+	$(MAKE) -C ../../BCL/mscorlib
+
+$(output_dir)/__mscorlib.dll: mscorlib
+	cp ../../BCL/mscorlib/Build/__mscorlib.dll $@
+
+
 
 
 TESTS := $(wildcard Tests/*)
