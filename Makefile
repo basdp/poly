@@ -17,10 +17,10 @@ $(DIRS): force
 
 libs: all
 	mkdir -p libs
-	mono PolyCompiler/Build/PolyCompiler.exe BCL/mscorlib/Build/__mscorlib.dll libs
-	mono PolyCompiler/Build/PolyCompiler.exe Poly.Internals/Build/Poly.Internals.dll libs
-	gcc -m32 libs/mscorlib.c -c -o libs/mscorlib.obj -I Runtime
-	gcc -m32 libs/Poly.Internals.c -c -o libs/Poly.Internals.obj -I Runtime
+	mono PolyCompiler/Build/PolyCompiler.exe BCL/mscorlib/Build/__mscorlib.dll --out=libs
+	mono PolyCompiler/Build/PolyCompiler.exe Poly.Internals/Build/Poly.Internals.dll --out=libs
+	gcc libs/mscorlib.c -c -o libs/mscorlib.obj -I Runtime
+	gcc libs/Poly.Internals.c -c -o libs/Poly.Internals.obj -I Runtime
 
 install: all libs
 	mkdir -p $(PREFIX)/lib/poly

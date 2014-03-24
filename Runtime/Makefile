@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-m32
+CFLAGS=
 AR=ar
 
 output := runtime.a
