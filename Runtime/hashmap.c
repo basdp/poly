@@ -5,6 +5,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <stdint.h>
 #include "hashmap.h"
 
 #define INITIAL_SIZE 1024
@@ -340,7 +341,8 @@ int hashmap_length(map_t in){
 }
 
 int hashmap_print_item(any_t tag, any_t data, const char* key) {
-	printf("%s\t0x%x\n", key, (unsigned int)data);
+	unsigned int uidata = (intptr_t)data;
+	printf("%s\t0x%x\n", key, uidata);
 	return 0;
 }
 
