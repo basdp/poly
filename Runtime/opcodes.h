@@ -248,7 +248,7 @@ void CIL_ldstr(const char*);
 	} else if (t == CIL_native) { \
 		int v; \
 		memcpy(&v, (void*)&((struct type*)self)->name, sizeof(int)); \
-		push_native(v);\ \
+		push_native(v);\
 	} else if (ts == 4) { \
 		int32_t v; \
 		memcpy(&v, (void*)&((struct type*)self)->name, 4); \
