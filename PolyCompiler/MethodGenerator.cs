@@ -233,8 +233,8 @@ namespace PolyCompiler
                 {
                     context.Main.AppendLine("    if (heap_size() > 0) { printf(\"DEBUG WARNING: Heap is not empty at end of program.\\n\"); print_heap(); }");
                     context.Main.AppendLine("    if (stack_size() > 1 || (stack_size() > 0 && stack_top_type() != CIL_int32)) { printf(\"DEBUG WARNING: Stack is not empty at end of program. (int32 for return is allowed)\\n\"); print_stack(); }");
-                    context.Main.AppendLine("    if (stack_size() > 0 && stack_top_type() == CIL_int32) { return pop_value32(); }");
                 }
+                context.Main.AppendLine("    if (stack_size() > 0 && stack_top_type() == CIL_int32) { return pop_value32(); }");
                 context.Main.AppendLine("    else { return 0; }");
                 
                 context.Main.AppendLine("}");
