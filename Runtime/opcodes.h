@@ -242,10 +242,10 @@ void CIL_ldstr(const char*);
 	enum CIL_Type t = ((struct type*)self)->name ## __type; \
 	int ts = cil_type_size(t); \
 	if (t == CIL_array) {\
-		uintptr_t v; \
-		memcpy(&v, (void*)&((struct type*)self)->name, sizeof(uintptr_t)); \
-		push_arraypointer(v); \
-	else if (t == CIL_native) { \
+	uintptr_t v; \
+	memcpy(&v, (void*)&((struct type*)self)->name, sizeof(uintptr_t)); \
+	push_arraypointer(v); \
+	} else if (t == CIL_native) { \
 		int v; \
 		memcpy(&v, (void*)&((struct type*)self)->name, sizeof(int)); \
 		push_native(v);\ \
