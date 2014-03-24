@@ -343,10 +343,10 @@ namespace SDILReader
                             break;
                         case OperandType.InlineI:
                         case OperandType.ShortInlineI:
-                            result += operand.ToString() + "u";
+                            result += operand.ToString() + "";
                             break;
                         case OperandType.InlineI8:
-                            result += operand.ToString() + "ull";
+                            result += operand.ToString() + "ll";
                             break;
                         case OperandType.InlineR:
                             double d = (double)operand;
