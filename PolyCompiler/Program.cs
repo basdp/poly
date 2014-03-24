@@ -17,6 +17,10 @@ namespace PolyCompiler
     public class Program
     {
         private static int verbosity = 0;
+        private static int debuglevel = 0;
+        private static string entryClass = null;
+        private static bool noMain = false;
+
         static int Main(string[] args)
         {
             SDILReader.Globals.LoadOpCodes();
@@ -45,6 +49,18 @@ namespace PolyCompiler
                     v => { if (v != null) ++verbosity; } 
                 },
                 {
+                    "debug", "generate debugging code",
+                    v => { if (v != null) ++debuglevel; } 
+                },
+                {
+                    "main=", "tell the compiler which {CLASS} contains the Main(...) entry point",
+                    v => { entryClass = v; } 
+                },
+                {
+                    "nomain", "do not generate an entry point, even if a Main(...) method has been found",
+                    v => { if (v != null) noMain = true; } 
+                },
+                {
                     "h|help",  "show this message and exit", 
                     v => show_help = v != null 
                 },
@@ -61,10 +77,10 @@ namespace PolyCompiler
             }
             catch (OptionException e)
             {
-                Console.Write("greet: ");
+                Console.Write("PolyCompiler: error: ");
                 Console.WriteLine(e.Message);
-                Console.WriteLine("Try `greet --help' for more information.");
-                return 0;
+                Console.WriteLine("Try `PolyCompiler --help' for more information.");
+                return 1;
             }
 
             if (show_help)
@@ -119,6 +135,9 @@ namespace PolyCompiler
                 CompilerContext context = new CompilerContext();
 
                 context.Architecture = arch;
+                context.DebugLevel = debuglevel;
+                context.EntryClass = entryClass;
+                context.DoNotGenerateMain = noMain;
 
                 context.Assembly = ass;
                 context.CodeHeader.Append("#include \"" + new FileInfo(headerfile).Name + "\"\n\n");
@@ -178,5 +197,6 @@ namespace PolyCompiler
                 Console.WriteLine(format, args);
             }
         }
+
     }
 }

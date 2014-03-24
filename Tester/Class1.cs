@@ -1,29 +1,38 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿//
+// Properties intermixed in assignments
+//
 
-class exception1
+using System;
+
+class X
 {
-    static void Test3()
+
+    static string v;
+
+    static string S
     {
-        try
+        get
         {
-            throw new NotImplementedException();
+            return v;
         }
-        catch (NullReferenceException)
+        set
         {
-            Console.WriteLine("NIE");
-        }
-        catch (Exception)
-        {
-            Console.WriteLine("RE");
+            v = value;
         }
     }
 
-    static void Main(string[] l)
+    static string x, b;
+
+    public static int Main()
     {
-        throw new Exception("muhaha");
+
+        x = S = b = "hlo";
+        if (x != "hlo")
+            return 1;
+        if (S != "hlo")
+            return 2;
+        if (b != "hlo")
+            return 3;
+        return 200;
     }
 }

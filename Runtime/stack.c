@@ -190,7 +190,7 @@ void print_stack() {
 			printf("%i", v);
 			t += sizeof(int32_t);
 		} else if (types[i] == CIL_int64) {
-			int64_t v = *((int64_t*)(items + t));
+			long long int v = *((int64_t*)(items + t));
 			printf("int64\t\t"); 
 			printf("%lld", v);
 			t += sizeof(int64_t);
@@ -215,22 +215,25 @@ void print_stack() {
 			t += sizeof(int);
 		} else if (types[i] == CIL_pointer) {
 			intptr_t v = *((intptr_t*)(items + t));
+			unsigned int vi = (unsigned int)v;
 			printf("pointer\t\t");
-			printf("0x%x\t", v);
+			printf("0x%x\t", vi);
 			/*if (v != 0) {
 				printf("%s", (char*)((struct SYSTEM__OBJECT_proto *)v)->__CILtype);
 			}*/
 			t += sizeof(intptr_t);
 		} else if (types[i] == CIL_valuetype) {
 			intptr_t v = *((intptr_t*)(items + t));
+			unsigned int vi = (unsigned int)v;
 			printf("value type\t"); 
-			printf("0x%x\t", v);
+			printf("0x%x\t", vi);
 			printf("%s", (char*)((struct SYSTEM__OBJECT_proto *)v)->__CILtype);
 			t += sizeof(intptr_t);
 		} else if (types[i] == CIL_array) {
 			intptr_t v = *((intptr_t*)(items + t));
+			unsigned int vi = (unsigned int)v;
 			printf("array\t\t"); 
-			printf("0x%x\t", v);
+			printf("0x%x\t", vi);
 			int32_t len = ((int32_t*)v)[0];
 			printf("length: %d", len);
 			t += sizeof(intptr_t);

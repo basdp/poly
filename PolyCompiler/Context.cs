@@ -44,5 +44,12 @@ namespace PolyCompiler
                 return Architecture == Architectures.ARMv8A || Architecture == Architectures.X64;
             }
         }
+
+        public int DebugLevel = 0;
+
+        public string EntryClass = null;
+
+        public bool DoNotGenerateMain = false;
+        public bool MainGenerated = false;
     }
 }
