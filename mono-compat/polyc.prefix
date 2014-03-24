@@ -22,5 +22,5 @@ fi
 TEMP=$(mktemp -d /tmp/polyc.XXXXXXXX)
 
 dmcs $1 -out:$TEMP/out.exe
-mono $PREFIX/lib/poly/bin/PolyCompiler.exe $TEMP/out.exe $TEMP
+mono $PREFIX/lib/poly/bin/PolyCompiler.exe $TEMP/out.exe -o $TEMP
 gcc -m32 $TEMP/out.c $PREFIX/lib/poly/lib/runtime.a $PREFIX/lib/poly/lib/mscorlib.obj $PREFIX/lib/poly/lib/Poly.Internals.obj -I$PREFIX/lib/poly/include -o $OUT

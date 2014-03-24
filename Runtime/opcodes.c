@@ -45,7 +45,7 @@ void CIL_conv__i4() {
 		return;
 	}
 	else if (type == CIL_native) {
-		intptr_t v = pop_pointer();
+		int v = pop_native();
 		int32_t r = (int32_t)v;
 		push_value32(r, CIL_int32);
 		return;
@@ -66,22 +66,22 @@ void CIL_conv__i() {
 	enum CIL_Type type = stack_top_type();
 	if (type == CIL_int32) {
 		int32_t v = pop_value32();
-		intptr_t r = (intptr_t)v;
-		push_pointer(r);
+		int r = (int)v;
+		push_native(r);
 		return;
 	}
 	else if (type == CIL_float32) {
 		int32_t v = pop_value32();
 		float f;
 		memcpy(&f, &v, 4);
-		intptr_t r = (intptr_t)f;
-		push_pointer(r);
+		int r = (int)f;
+		push_native(r);
 		return;
 	}
 	else if (type == CIL_int64) {
 		int64_t v = pop_value64();
-		intptr_t r = (intptr_t)v;
-		push_pointer(r);
+		int r = (int)v;
+		push_native(r);
 		return;
 	}
 	else if (type == CIL_native) {
@@ -92,8 +92,8 @@ void CIL_conv__i() {
 		int64_t v = pop_value64();
 		double d;
 		memcpy(&d, &v, 8);
-		intptr_t r = (intptr_t)d;
-		push_pointer(r);
+		int r = (int)d;
+		push_native(r);
 		return;
 	}
 	fprintf(stderr, "Error: conv.i4 is not supported on operand");
@@ -123,7 +123,7 @@ void CIL_conv__i1() {
 		return;
 	}
 	else if (type == CIL_native) {
-		intptr_t v = pop_pointer();
+		int v = pop_native();
 		int32_t r = (int8_t)v;
 		push_value32(r, CIL_int32);
 		return;
@@ -164,7 +164,7 @@ void CIL_conv__i2() {
 		return;
 	}
 	else if (type == CIL_native) {
-		intptr_t v = pop_pointer();
+		int v = pop_native();
 		int32_t r = (int16_t)v;
 		push_value32(r, CIL_int32);
 		return;
@@ -202,7 +202,7 @@ void CIL_conv__i8() {
 		return;
 	}
 	else if (type == CIL_native) {
-		intptr_t v = pop_pointer();
+		int v = pop_native();
 		int64_t r = (int64_t)v;
 		push_value64(r, CIL_int64);
 		return;
@@ -240,7 +240,7 @@ void CIL_conv__r4() {
 		return;
 	}
 	else if (type == CIL_native) {
-		intptr_t v = pop_pointer();
+		int v = pop_native();
 		float f = (float)v;
 		int32_t r;
 		memcpy(&r, &f, 4);
@@ -290,7 +290,7 @@ void CIL_conv__r8() {
 		return;
 	}
 	else if (type == CIL_native) {
-		intptr_t v = pop_pointer();
+		int v = pop_native();
 		double d = (double)v;
 		int64_t r;
 		memcpy(&r, &d, 8);
@@ -375,8 +375,8 @@ enum CIL_Type typea = stack_top_type();\
 	push_value32(a op b, CIL_int32);\
 	return;\
 	} else if (typea == CIL_native) {\
-	intptr_t a = pop_pointer();\
-	push_pointer(a op b);\
+	int a = pop_native();\
+	push_native(a op b);\
 	return;\
 	}\
 	} else if (typeb == CIL_int64) {\
@@ -388,15 +388,15 @@ enum CIL_Type typea = stack_top_type();\
 	return;\
 	}\
 	} else if (typeb == CIL_native) {\
-	int32_t b = pop_value32();\
+	int b = pop_native();\
 enum CIL_Type typea = stack_top_type();\
 	if (typea == CIL_int32) {\
 	int32_t a = pop_value32();\
-	push_pointer(a op b);\
+	push_native(a op b);\
 	return;\
 	} else if (typea == CIL_native) {\
-	intptr_t a = pop_pointer();\
-	push_pointer(a op b);\
+	int a = pop_native();\
+	push_native(a op b);\
 	return;\
 	}\
 } else if (typeb == CIL_float32) {\
@@ -437,8 +437,8 @@ enum CIL_Type typea = stack_top_type();\
 	push_value32(a op b, CIL_int32);\
 	return;\
 	} else if (typea == CIL_native) {\
-	intptr_t a = pop_pointer();\
-	push_pointer(a op b);\
+	int a = pop_native();\
+	push_native(a op b);\
 	return;\
 	}\
 	} else if (typeb == CIL_int64) {\
@@ -450,15 +450,15 @@ enum CIL_Type typea = stack_top_type();\
 	return;\
 	}\
 	} else if (typeb == CIL_native) {\
-	int32_t b = pop_value32();\
+	int b = pop_native();\
 enum CIL_Type typea = stack_top_type();\
 	if (typea == CIL_int32) {\
 	int32_t a = pop_value32();\
-	push_pointer(a op b);\
+	push_native(a op b);\
 	return;\
 	} else if (typea == CIL_native) {\
-	intptr_t a = pop_pointer();\
-	push_pointer(a op b);\
+	int a = pop_native();\
+	push_native(a op b);\
 	return;\
 	}\
 }\
@@ -496,8 +496,8 @@ enum CIL_Type typea = stack_top_type();\
 	push_value32(a op b ? 1 : 0, CIL_int32);\
 	return;\
 	} else if (typea == CIL_native) {\
-	intptr_t a = pop_pointer();\
-	push_value32(a op b ? 1 : 0, CIL_int32);\
+	int a = pop_native();\
+	push_native(a op b ? 1 : 0);\
 	return;\
 	}\
 	} else if (typeb == CIL_int64) {\
@@ -509,15 +509,15 @@ enum CIL_Type typea = stack_top_type();\
 	return;\
 	}\
 	} else if (typeb == CIL_native) {\
-	int32_t b = pop_value32();\
-enum CIL_Type typea = stack_top_type();\
+	int b = pop_native();\
+	enum CIL_Type typea = stack_top_type();\
 	if (typea == CIL_int32) {\
 	int32_t a = pop_value32();\
-	push_value32(a op b ? 1 : 0, CIL_int32);\
+	push_native(a op b ? 1 : 0);\
 	return;\
 	} else if (typea == CIL_native) {\
-	intptr_t a = pop_pointer();\
-	push_value32(a op b ? 1 : 0, CIL_int32);\
+	int a = pop_native();\
+	push_native(a op b ? 1 : 0);\
 	return;\
 	}\
 } else if (typeb == CIL_float32) {\
@@ -578,9 +578,9 @@ enum CIL_Type type = stack_top_type(); \
 	return; \
 } \
 	else if (type == CIL_native) { \
-	intptr_t v = pop_pointer(); \
+	int v = pop_native(); \
 	v = op v; \
-	push_pointer(v); \
+	push_native(v); \
 	return; \
 } \
 	fprintf(stderr, "Error: " #name " is not supported on these operands"); \
@@ -925,7 +925,7 @@ void CIL_ldelema_dispatch(const char* type) {
 
 void CIL_ldlen() {
 	uintptr_t arr = pop_pointer();
-	push_value32(((int32_t*)arr)[0], CIL_native);
+	push_native((int)(((int32_t*)arr)[0]));
 }
 
 // </arrays>

@@ -14,25 +14,6 @@
 #define _CRT_SECURE_NO_WARNINGS
 #endif
 
-// Check windows
-#if _WIN32 || _WIN64
-#if _WIN64
-#define POLY64
-#else
-#define POLY32
-#endif
-#endif
-
-// Check GCC
-#if __GNUC__
-#if __x86_64__ || __ppc64__
-#define POLY64
-#else
-#define POLY32
-#endif
-#endif
-
-
 struct SYSTEM__OBJECT_proto {
 	map_t __CILsymboltable;
 	intptr_t __CILtype;

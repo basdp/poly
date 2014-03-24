@@ -9,6 +9,14 @@ namespace PolyCompiler
 {
     public class CompilerContext
     {
+        public enum Architectures
+        {
+            X86,
+            X64,
+            ARMv7,
+            ARMv8A
+        }
+
         public CompilerContext()
         {
         }
@@ -25,5 +33,16 @@ namespace PolyCompiler
         public StringBuilder Header = new StringBuilder();
         public StringBuilder Init = new StringBuilder();
         public StringBuilder Main = new StringBuilder();
+
+        public Architectures Architecture;
+
+
+        public bool Is64BitArchitecture
+        {
+            get
+            {
+                return Architecture == Architectures.ARMv8A || Architecture == Architectures.X64;
+            }
+        }
     }
 }

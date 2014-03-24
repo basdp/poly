@@ -71,8 +71,14 @@ namespace PolyCompiler
                     else
                     {
                         context.Header.Append("    uintptr_t " + Naming.GetInternalFieldName(fis[j].Name) + "; //" + fis[j].MetadataToken + "\n");
-                        // TODO: 64 bit?
-                        classSize += 4;
+                        if (context.Is64BitArchitecture)
+                        {
+                            classSize += 8;
+                        }
+                        else
+                        {
+                            classSize += 4;
+                        }
                     }
                 }
 

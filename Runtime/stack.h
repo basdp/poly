@@ -1,6 +1,7 @@
 #pragma once 
 
-#include "stdint.h"
+#include <limits.h>
+#include <stdint.h>
 #include "runtime.h"
 
 void push_value32(int32_t, enum CIL_Type type);
@@ -24,3 +25,13 @@ void stack_duplicate_top();
 void stack_shrink(int size);
 int stack_top_type_is_integer();
 int stack_top_type_is_float();
+
+#if POLY_INTSIZE == 32
+#define push_native(val) push_value32((int32_t)val, CIL_native)
+#define pop_native() pop_value32()
+#elif POLY_INTSIZE == 64
+#define push_native(val) push_value64((int64_t)val, CIL_native)
+#define pop_native() pop_value64()
+#else
+#error Only 32 and 64 bits integer sizes are supported
+#endif

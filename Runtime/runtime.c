@@ -13,8 +13,9 @@ int cil_type_size(enum CIL_Type type) {
 	case CIL_float64:
 	case CIL_int64:
 		return 8;
-	case CIL_pointer:
 	case CIL_native:
+		return sizeof(int);
+	case CIL_pointer:
 	case CIL_array:
 		return sizeof(intptr_t);
 	default: return 0;
@@ -52,10 +53,14 @@ void push_default_value(enum CIL_Type type) {
 		break;
 	}
 	case CIL_pointer:
-	case CIL_native:
 	{
 		uintptr_t v = 0;
 		push_pointer(v);
+		break;
+	}
+	case CIL_native:
+	{
+		push_native(0);
 		break;
 	}
 	default:

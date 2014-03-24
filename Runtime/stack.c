@@ -89,7 +89,7 @@ uintptr_t peek_pointer(unsigned int offset) {
 		} else if (types[ttop - i - 1] == CIL_int64) {
 			size = 8;
 		} else if (types[ttop - i - 1] == CIL_native) {
-			size = sizeof(intptr_t);
+			size = sizeof(int);
 		} else if (types[ttop - i - 1] == CIL_pointer) {
 			size = sizeof(intptr_t);
 		} else if (types[ttop - i - 1] == CIL_valuetype) {
@@ -131,20 +131,7 @@ enum CIL_Type stack_offset_type(int offset) {
 }
 
 int stack_top_size() {
-	switch (stack_top_type()) {
-	case CIL_float32:
-	case CIL_int32:
-		return 4;
-	case CIL_float64:
-	case CIL_int64:
-		return 8;
-	case CIL_pointer:
-	case CIL_valuetype:
-	case CIL_array:
-	case CIL_native:
-		return sizeof(intptr_t);
-	default: return 0;
-	}
+	return (cil_type_size(stack_top_type()));
 }
 
 void stack_duplicate_top() {
@@ -164,12 +151,17 @@ void stack_duplicate_top() {
 		break;
 	case CIL_pointer:
 	case CIL_valuetype:
-	case CIL_array:
-	case CIL_native: {
+	case CIL_array: {
 		intptr_t v = pop_pointer();
 		push_pointer(v);
 		push_pointer(v); }
 		break;
+
+	case CIL_native: {
+			int v = pop_native();
+			push_native(v);
+			push_native(v);
+		}
 	}
 }
 
@@ -217,10 +209,10 @@ void print_stack() {
 			printf("%.14f", d);
 			t += sizeof(int64_t);
 		}  else if (types[i] == CIL_native) {
-			intptr_t v = *((intptr_t*)(items + t));
+			int v = *((int*)(items + t));
 			printf("native\t\t"); 
 			printf("%i", v);
-			t += sizeof(intptr_t);
+			t += sizeof(int);
 		} else if (types[i] == CIL_pointer) {
 			intptr_t v = *((intptr_t*)(items + t));
 			printf("pointer\t\t");
