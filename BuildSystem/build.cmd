@@ -7,7 +7,7 @@ copy ..\Runtime\Release\Runtime.lib build\
 copy ..\PolyCompiler\bin\Debug\PolyCompiler.exe build\
 copy ..\PolyCompiler\bin\Debug\Poly.Internals.dll build\
 copy ..\Tester\bin\Debug\Tester.exe build\
-copy ..\BCL\mscorlib\bin\Debug\mscorlib.dll build\mscorlib_.dll
+copy ..\BCL\mscorlib\bin\Debug\__mscorlib.dll build\
 
 call "C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\vcvarsall.bat"
 
@@ -17,7 +17,7 @@ cd build
 
 echo Compiling to C
 
-PolyCompiler.exe mscorlib_.dll
+PolyCompiler.exe __mscorlib.dll
 PolyCompiler.exe Poly.Internals.dll
 PolyCompiler.exe Tester.exe
 

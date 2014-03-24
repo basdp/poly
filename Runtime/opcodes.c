@@ -309,7 +309,7 @@ int CIL_call_dispatch(void* (*func)()) {
 	//       We need to create a hashtable from function pointers to signature strings that this
 	//       function can use to get the right signature.
 	//       Now, the signature of the base class is displayed on virtual functions.
-	int res = (int)func();
+	int res = (int)(intptr_t)func();
 	return res;
 }
 
@@ -324,7 +324,7 @@ int CIL_call_base_dispatch(uintptr_t ptr, void* (*func)()) {
 	// with this call_base opcode.
 
 	push_pointer(ptr);
-	int res = (int)func();
+	int res = (int)(intptr_t)func();
 	pop_pointer(); // pop the pointer that C# pushes for us, we don't use and need it but we need to clean it up.
 	return res;
 }
@@ -334,7 +334,7 @@ int CIL_call_generic_dispatch(int generictypelist_length, enum CIL_Type* generic
 	//       We need to create a hashtable from function pointers to signature strings that this
 	//       function can use to get the right signature.
 	//       Now, the signature of the base class is displayed on virtual functions.
-	int res = (int)func(generictypelist_length, generictypelist);
+	int res = (int)(intptr_t)func(generictypelist_length, generictypelist);
 	return res;
 }
 
@@ -343,7 +343,7 @@ int CIL_call_generic_ctor_dispatch(int generictypelist_length, enum CIL_Type* ge
 	//       We need to create a hashtable from function pointers to signature strings that this
 	//       function can use to get the right signature.
 	//       Now, the signature of the base class is displayed on virtual functions.
-	int res = (int)func(generictypelist_length, generictypelist);
+	int res = (int)(intptr_t)func(generictypelist_length, generictypelist);
 	return res;
 }
 
