@@ -77,11 +77,11 @@ namespace RegressionTesting
                         Process proc;
                         if (Environment == "Microsoft")
                         {
-                            proc = ExecuteProcess(poly, '"' + filename + '"' + ' ' + '"' + output + '"');
+                            proc = ExecuteProcess(poly, '"' + filename + '"' + " --out=" + '"' + output + '"');
                         }
                         else if (Environment == "Mono")
                         {
-                            proc = ExecuteProcess(mono, poly + " \"" + filename + '"' + ' ' + '"' + output + '"');
+                            proc = ExecuteProcess(mono, poly + " \"" + filename + '"' + " --out=" + '"' + output + '"');
                         }
                         else
                         {
@@ -108,7 +108,7 @@ namespace RegressionTesting
                         }
                         else if (Environment == "Mono")
                         {
-                            proc = ExecuteProcess(gcc, "-m32 \"" + filename.Replace(@"\", "/") + '"' + " -c -o " + '"' + output.Replace(@"\", "/") + '"' + " -I ../Runtime");
+                            proc = ExecuteProcess(gcc, " \"" + filename.Replace(@"\", "/") + '"' + " -c -o " + '"' + output.Replace(@"\", "/") + '"' + " -I ../Runtime");
 
                         }
                         else
@@ -136,7 +136,7 @@ namespace RegressionTesting
                         }
                         else if (Environment == "Mono")
                         {
-                            proc = ExecuteProcess(gcc, "-m32 " + filename.Replace(@"\", "/") + ' ' + " runtime.a -o " + '"' + output.Replace(@"\", "/") + '"');
+                            proc = ExecuteProcess(gcc, " " + filename.Replace(@"\", "/") + ' ' + " runtime.a -o " + '"' + output.Replace(@"\", "/") + '"');
                         }
                         else
                         {
