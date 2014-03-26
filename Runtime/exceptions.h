@@ -50,7 +50,7 @@ struct ExceptionHandler {
 
 #ifdef __GNUC__
 #define STORE_LABEL_ADDRESS(var, label) var = &&label
-#define GOTO_LABEL_ADDRESS(var) goto *(var)
+#define GOTO_LABEL_ADDRESS(var) goto *((void*)var)
 #endif
 
 #ifndef STORE_LABEL_ADDRESS

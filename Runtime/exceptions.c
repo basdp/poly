@@ -80,7 +80,8 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 			printf("Uncaught Exception: ");
 
 			push_pointer((uintptr_t)exception);
-			CIL_callvirt_unsafe(mAF915A59A72145069E6562E6C996D1A7DE3D1BBC, "m67927A3071253D828DCB5EC9A1AE8B0967E45059", 0, 1); // Exception.ToString();
+			callstack_push(mAF915A59A72145069E6562E6C996D1A7DE3D1BBC_sig, "(unknown)", 0);
+			CIL_callvirt_dispatch("m67927A3071253D828DCB5EC9A1AE8B0967E45059", 0, &mAF915A59A72145069E6562E6C996D1A7DE3D1BBC, 1); // Exception.ToString();
 			char *excmess = CIL_getCStringFromSystemString(pop_pointer());
 			printf("%s\n", excmess);
 			// TODO: should probably execute all finally blocks
@@ -88,8 +89,8 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 		}
 		eh = exceptionstack_peek(i++);
 
-		if (eh.handlerType == HANDLERTYPE_CATCH && object_is_type_or_subtype(exception, eh.typeName) ||
-			eh.handlerType == HANDLERTYPE_FINALLY)
+		if ((eh.handlerType == HANDLERTYPE_CATCH && object_is_type_or_subtype(exception, eh.typeName))
+			|| (eh.handlerType == HANDLERTYPE_FINALLY))
 		{
 			break;
 		}

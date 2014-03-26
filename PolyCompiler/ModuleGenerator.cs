@@ -63,7 +63,25 @@ namespace PolyCompiler
 
                 // TODO: check for dependencies of fields and such
                 //return t1.Name.CompareTo(t2.Name);
-                return 0;
+
+                int depth1 = 0;
+                Type base1 = t1.BaseType;
+                while (base1 != null)
+                {
+                    depth1++;
+                    base1 = base1.BaseType;
+                }
+                int depth2 = 0;
+                Type base2 = t2.BaseType;
+                while (base2 != null)
+                {
+                    depth2++;
+                    base2 = base2.BaseType;
+                }
+
+                // TODO: check for dependencies of fields and such
+                //return t1.Name.CompareTo(t2.Name);
+                return depth1.CompareTo(depth2);
             });
 
             foreach (var type in types)

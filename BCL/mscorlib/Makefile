@@ -4,7 +4,7 @@ output := __mscorlib.dll
 MCS=dmcs
 MCS_FLAGS=-t:library -r:$(output_dir)/Poly.Internals.dll -sdk:4.5 -nowarn:0436,1685
 
-cs := $(shell find -type f -name "*.cs")
+cs := $(shell find . -type f -name "*.cs")
 
 .PHONY: all clean
 

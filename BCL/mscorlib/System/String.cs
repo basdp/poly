@@ -137,7 +137,7 @@
         int c;
         char* str = this->str;
 
-        while (c = *str++)
+        while ((c = *str++))
             hash = ((hash << 5) + hash) + c; /* hash * 33 + c */
 
         push_value32((int32_t)hash, CIL_int32);
