@@ -118,13 +118,13 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 			*removedBoundExceptions += 1;
 
 			// this is a handler in this method
-			if (eh2.handlerType == HANDLERTYPE_FINALLY) {
+			if (eh.handlerType == HANDLERTYPE_FINALLY) {
 #if DEBUG_EXCEPTIONS == 1
 				printf("INTERMEDIATE FINALLY\n");
 				print_exceptionstack();
 #endif
 				push_pointer((uintptr_t)exception);
-				push_pointer((uintptr_t)eh2.labelAddress);
+				push_pointer((uintptr_t)eh.labelAddress);
 				gc_release(0, (uintptr_t)exception);
 				return (void*)1;
 			}
