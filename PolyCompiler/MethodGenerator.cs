@@ -142,6 +142,9 @@ namespace PolyCompiler
             if (type.IsValueType)
             {
                 string addedcode = "    uintptr_t parameter0 = pop_pointer();\n    enum CIL_Type parameter0__type = CIL_pointer;\n    struct LinkedList gcList = linkedlist_new();\n    int entryStackSize = stack_size();\n    int boundExceptions = 0;\n    ((struct System__Object*)parameter0)->__CILtype = (intptr_t)\"" + type.FullName.Replace(".__", ".") + "\";\n";
+                string startscope = Naming.ConvertTypeToCName(type.FullName + "::__init") + "__start";
+                addedcode += "    void* method_start;\n";
+                addedcode += "    " + startscope + ": STORE_LABEL_ADDRESS(method_start, " + startscope + ");\n\n";
                 addedcode += "    CIL_ldarg__0();\n    CIL_call(/*constructor*/ mEDC8295D0100B7A05696604AA16180D59191E3E6, \"NONE\", 0, 0 /* System.ValueType::.ctor() */);\n";
                 addedcode += "    ((struct System__Object*)parameter0)->__CILbaseclasses = (intptr_t)&" + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses;\n";
                 addedcode += "    ((struct System__Object*)parameter0)->__CILbaseclasses_length = &" + Naming.ConvertTypeToCName(type.FullName) + "__baseclasses_length;\n";
@@ -381,6 +384,10 @@ namespace PolyCompiler
 
             context.Code.AppendLine("    int entryStackSize = stack_size();");
             context.Code.AppendLine("    int boundExceptions = 0;");
+
+            string startscope = Naming.ConvertTypeToCName(m.DeclaringType.FullName + "::" + m.Name) + "__start";
+            context.Code.AppendLine("    void* method_start;");
+            context.Code.AppendLine("    " + startscope + ": STORE_LABEL_ADDRESS(method_start, " + startscope + ");\n");
 
             if (m.GetCustomAttributes(typeof(Poly.Internals.CompilerImplemented.InlineCodeAttribute), true).Length > 0)
             {
