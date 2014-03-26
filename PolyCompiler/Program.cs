@@ -161,6 +161,7 @@ namespace PolyCompiler
 
                 context.Code.AppendLine("int init_" + Naming.ConvertTypeToCName(assname) + "__called = 0;");
                 context.Code.Append("void init_" + Naming.ConvertTypeToCName(assname) + "() {\n    if(init_" + Naming.ConvertTypeToCName(assname) + "__called) return;\n    init_" + Naming.ConvertTypeToCName(assname) + "__called = 1;\n" + context.Init.ToString() + "}\n" + context.Main.ToString() + "\n");
+                context.Header.AppendLine("void init_" + Naming.ConvertTypeToCName(assname) + "();");
 
                 File.WriteAllText(codefile, context.CodeHeader.ToString() + "\n" + context.Code.ToString());
                 File.WriteAllText(headerfile, context.Header.ToString());
