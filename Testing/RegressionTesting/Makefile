@@ -21,7 +21,7 @@ $(output_dir)/$(output): $(cs) | $(output_dir) $(output_dir)/PolyCompiler.exe $(
 	$(MCS) $(cs) -out:$@
 
 PolyCompiler:
-	$(MAKE) -C ../../PolyCompiler
+	make -C ../../PolyCompiler
 
 $(output_dir)/PolyCompiler.exe: $(output_dir)/Poly.Internals.dll
 	cp ../../PolyCompiler/Build/PolyCompiler.exe $@
@@ -30,13 +30,13 @@ $(output_dir)/Poly.Internals.dll: PolyCompiler
 	cp ../../PolyCompiler/Build/Poly.Internals.dll $@
 
 mscorlib:
-	$(MAKE) -C ../../BCL/mscorlib
+	make -C ../../BCL/mscorlib
 
 $(output_dir)/__mscorlib.dll: mscorlib
 	cp ../../BCL/mscorlib/Build/__mscorlib.dll $@
 
 runtime:
-	$(MAKE) -C ../../Runtime
+	make -C ../../Runtime
 
 $(output_dir)/runtime.a: runtime
 	cp ../../Runtime/runtime.a $@

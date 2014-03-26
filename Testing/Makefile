@@ -1,7 +1,7 @@
 subsystem: RegressionTesting_
 
 RegressionTesting_:
-	$(MAKE) -C RegressionTesting
+	make -C RegressionTesting
 
 clean:
-	$(MAKE) -C RegressionTesting clean
+	make -C RegressionTesting clean

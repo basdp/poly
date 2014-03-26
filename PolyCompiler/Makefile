@@ -11,7 +11,7 @@ all: $(output_dir)/$(output)
 .PHONY: all clean
 
 Poly.Internals:
-	$(MAKE) -C ../Poly.Internals
+	make -C ../Poly.Internals
 
 $(output_dir)/Poly.Internals.dll: Poly.Internals
 	cp ../Poly.Internals/Build/Poly.Internals.dll $@

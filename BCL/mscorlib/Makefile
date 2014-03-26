@@ -22,7 +22,7 @@ $(output_dir)/$(output): $(cs) | $(output_dir) $(output_dir)/Poly.Internals.dll
 	$(MCS) $(MCS_FLAGS) $(cs) -out:$@
 
 Poly.Internals:
-	$(MAKE) -C ../../Poly.Internals
+	make -C ../../Poly.Internals
 
 $(output_dir)/Poly.Internals.dll: Poly.Internals
 	cp ../../Poly.Internals/Build/Poly.Internals.dll $@

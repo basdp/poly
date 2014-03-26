@@ -33,7 +33,7 @@ $(clean_DIRS): force
 	make -C $(patsubst clean_%, %, $@) clean
 
 $(DIRS): force
-	$(MAKE) -C $@
+	make -C $@
 
 libs: all
 	mkdir -p libs
