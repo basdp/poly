@@ -127,7 +127,6 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 				push_pointer((uintptr_t)eh2.labelAddress);
 				gc_release(0, (uintptr_t)exception);
 				return (void*)1;
-
 			}
 		}
 	}
@@ -135,7 +134,7 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 	// remove all other catches that are bound to this try block from the exception stack
 	if (exceptionstack_size() > 0) {
 		struct ExceptionHandler eh2 = exceptionstack_peek(0);
-		while (eh2.tryAddress == eh.tryAddress && eh2.tryLength == eh.tryLength) {
+		while (eh2.handlerType == HANDLERTYPE_CATCH && eh2.tryAddress == eh.tryAddress && eh2.tryLength == eh.tryLength) {
 #if DEBUG_EXCEPTIONS == 1
 			printf("Removed alternative %s from exception stack\n", eh2.typeName);
 #endif
