@@ -128,14 +128,16 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 	}
 
 	// remove all other catches that are bound to this try block from the exception stack
-	struct ExceptionHandler eh2 = exceptionstack_peek(0);
-	while (eh2.tryAddress == eh.tryAddress && eh2.tryLength == eh.tryLength) {
+	if (exceptionstack_size() > 0) {
+		struct ExceptionHandler eh2 = exceptionstack_peek(0);
+		while (eh2.tryAddress == eh.tryAddress && eh2.tryLength == eh.tryLength) {
 #if DEBUG_EXCEPTIONS == 1
-		printf("Removed alternative %s from exception stack\n", eh2.typeName);
+			printf("Removed alternative %s from exception stack\n", eh2.typeName);
 #endif
-		*removedBoundExceptions += 1;
-		exceptionstack_pop();
-		eh2 = exceptionstack_peek(0);
+			*removedBoundExceptions += 1;
+			exceptionstack_pop();
+			eh2 = exceptionstack_peek(0);
+		}
 	}
 
 #if DEBUG_EXCEPTIONS == 1
