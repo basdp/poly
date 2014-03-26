@@ -1,4 +1,4 @@
-.PHONY: all clean
+.PHONY: all clean polyc
 
 all: polyc
 
@@ -8,5 +8,8 @@ clean:
 rebuild: clean all
 
 polyc: polyc.prefix
-	sed 's/$$PREFIX/$(subst /,\/,$(PREFIX))/g' $< > $@
+	cp $< $@
+	sed -i'' 's/$$PREFIX/$(subst /,\/,$(PREFIX))/g' $@
+	sed -i'' 's/$$CFLAGS/$(subst /,\/,$(CFLAGS))/g' $@
+	sed -i'' 's/$$POLYFLAGS/$(subst /,\/,$(POLYFLAGS))/g' $@
 	chmod a+x $@

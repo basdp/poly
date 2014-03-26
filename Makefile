@@ -2,6 +2,26 @@ DIRS = Poly.Internals PolyCompiler Runtime BCL Testing mono-compat
 
 export PREFIX = /usr/local
 
+CC=gcc
+CFLAGS=
+AR=ar
+POLYFLAGS=
+
+ifndef ARCH
+export ARCH = $(shell uname -m)
+endif
+
+ifeq ($(ARCH), x86_64)
+	CFLAGS += -m64
+	POLYFLAGS += --arch=X64
+else
+	CFLAGS += -m32
+	POLYFLAGS += --arch=X86
+endif
+
+export CFLAGS
+export POLYFLAGS
+
 .PHONY: force clean install libs
 
 all: $(DIRS)
@@ -17,10 +37,10 @@ $(DIRS): force
 
 libs: all
 	mkdir -p libs
-	mono PolyCompiler/Build/PolyCompiler.exe BCL/mscorlib/Build/__mscorlib.dll --out=libs
-	mono PolyCompiler/Build/PolyCompiler.exe Poly.Internals/Build/Poly.Internals.dll --out=libs
-	gcc libs/mscorlib.c -c -o libs/mscorlib.obj -I Runtime
-	gcc libs/Poly.Internals.c -c -o libs/Poly.Internals.obj -I Runtime
+	mono PolyCompiler/Build/PolyCompiler.exe $(POLYFLAGS) BCL/mscorlib/Build/__mscorlib.dll --out=libs
+	mono PolyCompiler/Build/PolyCompiler.exe $(POLYFLAGS) Poly.Internals/Build/Poly.Internals.dll --out=libs
+	$(CC) -IRuntime libs/mscorlib.c -c -o libs/mscorlib.obj $(CFLAGS)
+	$(CC) -IRuntime libs/Poly.Internals.c -c -o libs/Poly.Internals.obj $(CFLAGS)
 
 install: all libs
 	mkdir -p $(PREFIX)/lib/poly
