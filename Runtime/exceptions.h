@@ -95,11 +95,17 @@ extern struct SYSTEM__OBJECT_proto *lastThrownException;
 			push_pointer((uintptr_t)p);\
 			GOTO_LABEL_ADDRESS(eh.labelAddress);\
 		} else if (eh.handlerType == HANDLERTYPE_CATCH) {\
-			struct ExceptionHandler eh2 = exceptionstack_peek(0);\
-			while (eh2.handlerType == HANDLERTYPE_CATCH && eh2.tryAddress == eh.tryAddress && eh2.tryLength == eh.tryLength) {\
-				exceptionstack_pop();\
-				boundExceptions--;\
-				eh2 = exceptionstack_peek(0);\
+			if (exceptionstack_size() > 0) { \
+				struct ExceptionHandler eh2 = exceptionstack_peek(0);\
+				while (eh2.handlerType == HANDLERTYPE_CATCH && eh2.tryAddress == eh.tryAddress && eh2.tryLength == eh.tryLength) {\
+					exceptionstack_pop();\
+					boundExceptions--;\
+					if (exceptionstack_size() > 0) { \
+						eh2 = exceptionstack_peek(0);\
+					} else {\
+						break;\
+					}\
+				}\
 			}\
 		}\
 	}\
