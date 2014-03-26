@@ -75,7 +75,6 @@ extern struct SYSTEM__OBJECT_proto *lastThrownException;
 	} else if (lbl == (void*)1) { \
 		/* continue with finally in THIS method */\
 		if (DEBUG_EXCEPTIONS) { printf("continue with finally in this method\n"); }\
-		/*boundExceptions--;*/ \
 		uintptr_t finallyAddr = pop_pointer(); \
 		push_pointer(0);\
 		GOTO_LABEL_ADDRESS(finallyAddr); \

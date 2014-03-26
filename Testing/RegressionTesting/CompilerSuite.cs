@@ -108,7 +108,10 @@ namespace RegressionTesting
                         }
                         else if (Environment == "Mono")
                         {
-                            proc = ExecuteProcess(gcc, " \"" + filename.Replace(@"\", "/") + '"' + " -c -o " + '"' + output.Replace(@"\", "/") + '"' + " -I ../../../Runtime");
+                            string platform = "-m32";
+                            if (System.Environment.GetCommandLineArgs().Length > 0 && System.Environment.GetCommandLineArgs()[0] == "x64")
+                                platform = "-m64";
+                            proc = ExecuteProcess(gcc, platform + " \"" + filename.Replace(@"\", "/") + '"' + " -c -o " + '"' + output.Replace(@"\", "/") + '"' + " -I ../../../Runtime");
 
                         }
                         else
