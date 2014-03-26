@@ -13,6 +13,10 @@ void exceptionstack_push(struct ExceptionHandler eh) {
 }
 
 struct ExceptionHandler exceptionstack_pop() {
+	if (top == 0) {
+		printf("exceptionstack_pop: top = 0\n");
+		exit(1);
+	}
 	return items[top-- - 1];
 }
 
