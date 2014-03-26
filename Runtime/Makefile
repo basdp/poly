@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=
+CFLAGS=-ggdb
 AR=ar
 
 ifeq ($(ARCH), x86_64)

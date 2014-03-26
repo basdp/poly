@@ -3,7 +3,7 @@ DIRS = Poly.Internals PolyCompiler Runtime BCL Testing mono-compat
 export PREFIX = /usr/local
 
 CC=gcc
-CFLAGS=
+CFLAGS=-ggdb
 AR=ar
 POLYFLAGS=
 
