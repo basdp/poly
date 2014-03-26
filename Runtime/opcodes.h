@@ -309,7 +309,7 @@ int CIL_stfld_generic_dispatch(uintptr_t, void*, enum CIL_Type);
 	else if (stack_top_type() == CIL_valuetype) { intptr_t vt = pop_pointer(); memcpy(&(type ## _sf_ ## name), (void*)vt, sizeof(type ## _sf_ ## name)); } \
 	else { intptr_t value = pop_pointer(); (type ## _sf_ ## name) = value; } }
 
-#define CIL_ret() { \
+#define CIL_return(i) { \
 	struct Node *gcNode = gcList.first;\
 	while (gcNode != 0) { \
 		gc_release(0, *(uintptr_t*)gcNode->ptr); \
@@ -317,8 +317,10 @@ int CIL_stfld_generic_dispatch(uintptr_t, void*, enum CIL_Type);
 	}\
 	linkedlist_free(&gcList); \
 	callstack_pop(); \
-	return 0; \
+	return i; \
 }
+
+#define CIL_ret() CIL_return(0)
 
 #define CIL_ldarg(n) {  \
 	if (parameter ## n ## __type == CIL_array) { push_arraypointer((uintptr_t)(parameter ## n)); } \

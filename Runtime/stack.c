@@ -91,11 +91,11 @@ uintptr_t peek_pointer(unsigned int offset) {
 		} else if (types[ttop - i - 1] == CIL_native) {
 			size = sizeof(int);
 		} else if (types[ttop - i - 1] == CIL_pointer) {
-			size = sizeof(intptr_t);
+			size = sizeof(uintptr_t);
 		} else if (types[ttop - i - 1] == CIL_valuetype) {
-			size = sizeof(intptr_t);
+			size = sizeof(uintptr_t);
 		} else if (types[ttop - i - 1] == CIL_array) {
-			size = sizeof(intptr_t);
+			size = sizeof(uintptr_t);
 		} else if (types[ttop - i - 1] == CIL_float32) {
 			size = 4;
 		} else if (types[ttop - i - 1] == CIL_float64) {

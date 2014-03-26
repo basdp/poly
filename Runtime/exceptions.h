@@ -66,22 +66,22 @@ extern struct SYSTEM__OBJECT_proto *lastThrownException;
 	if (DEBUG_EXCEPTIONS) { printf("in %s -> %s:%d\n", __FUNCTION__, __FILE__, __LINE__); } \
 	int removedBoundExceptions; \
 	void* lbl = throw_dispatch(boundExceptions, &removedBoundExceptions, initStackTrace); \
-	if (DEBUG_EXCEPTIONS && removedBoundExceptions > 0) printf("Removed %d from bound exceptions\n", removedBoundExceptions);\
+	if (DEBUG_EXCEPTIONS && removedBoundExceptions > 0) { printf("Removed %d from bound exceptions\n", removedBoundExceptions); }\
 	boundExceptions -= removedBoundExceptions; \
 	if (lbl == 0) { \
-	/* continue with exception in previous method */ \
-	callstack_pop(); \
-	return (void*)1; \
+		/* continue with exception in previous method */ \
+		callstack_pop(); \
+		return (void*)1; \
 	} else if (lbl == (void*)1) { \
-	/* continue with finally in THIS method */\
-	if (DEBUG_EXCEPTIONS) printf("continue with finally in this method\n");\
-	boundExceptions--; \
-	uintptr_t finallyAddr = pop_pointer(); \
-	push_pointer(0);\
-	GOTO_LABEL_ADDRESS(finallyAddr); \
+		/* continue with finally in THIS method */\
+		if (DEBUG_EXCEPTIONS) { printf("continue with finally in this method\n"); }\
+		boundExceptions--; \
+		uintptr_t finallyAddr = pop_pointer(); \
+		push_pointer(0);\
+		GOTO_LABEL_ADDRESS(finallyAddr); \
 	} else {\
-	GOTO_LABEL_ADDRESS(lbl); \
-} \
+		GOTO_LABEL_ADDRESS(lbl); \
+	} \
 }
 
 #define exception_leave(label) {\
