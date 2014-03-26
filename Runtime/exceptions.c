@@ -136,7 +136,12 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 #endif
 			*removedBoundExceptions += 1;
 			exceptionstack_pop();
-			eh2 = exceptionstack_peek(0);
+			if (exceptionstack_size() > 0) {
+				eh2 = exceptionstack_peek(0);
+			}
+			else {
+				break;
+			}
 		}
 	}
 
