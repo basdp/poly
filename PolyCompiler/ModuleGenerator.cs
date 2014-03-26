@@ -61,8 +61,6 @@ namespace PolyCompiler
                     return -1;
                 }
 
-                // TODO: check for dependencies of fields and such
-                //return t1.Name.CompareTo(t2.Name);
                 FieldInfo[] fis1 = t1.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
                 FieldInfo[] fis2 = t1.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
 

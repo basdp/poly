@@ -109,7 +109,7 @@ namespace RegressionTesting
                         else if (Environment == "Mono")
                         {
                             string platform = "-m32";
-                            if (System.Environment.GetCommandLineArgs().Length > 0 && System.Environment.GetCommandLineArgs()[0] == "x64")
+                            if (System.Environment.GetCommandLineArgs().Length > 1 && System.Environment.GetCommandLineArgs()[1] == "x64")
                             {
                                 platform = "-m64";
                             }
@@ -142,7 +142,7 @@ namespace RegressionTesting
                         else if (Environment == "Mono")
                         {
                             string platform = "-m32";
-                            if (System.Environment.GetCommandLineArgs().Length > 0 && System.Environment.GetCommandLineArgs()[0] == "x64")
+                            if (System.Environment.GetCommandLineArgs().Length > 1 && System.Environment.GetCommandLineArgs()[1] == "x64")
                             {
                                 platform = "-m64";
                             }
