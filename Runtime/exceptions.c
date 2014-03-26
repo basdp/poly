@@ -115,6 +115,7 @@ void* throw_dispatch(int boundExceptions, int* removedBoundExceptions, int initS
 		}
 		else {
 			struct ExceptionHandler eh2 = exceptionstack_pop();
+			*removedBoundExceptions += 1;
 
 			// this is a handler in this method
 			if (eh2.handlerType == HANDLERTYPE_FINALLY) {
