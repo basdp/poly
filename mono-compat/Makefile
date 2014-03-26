@@ -1,3 +1,9 @@
+SED_I = sed -i ''
+ifeq($(shell uname -s),Darwin)
+SED_I = sed -i''
+endif
+
+
 .PHONY: all clean polyc
 
 all: polyc
@@ -9,7 +15,7 @@ rebuild: clean all
 
 polyc: polyc.prefix
 	cp $< $@
-	sed -i'' 's/$$PREFIX/$(subst /,\/,$(PREFIX))/g' $@
-	sed -i'' 's/$$CFLAGS/$(subst /,\/,$(CFLAGS))/g' $@
-	sed -i'' 's/$$POLYFLAGS/$(subst /,\/,$(POLYFLAGS))/g' $@
+	$(SED_I) 's/$$PREFIX/$(subst /,\/,$(PREFIX))/g' $@
+	$(SED_I) 's/$$CFLAGS/$(subst /,\/,$(CFLAGS))/g' $@
+	$(SED_I) 's/$$POLYFLAGS/$(subst /,\/,$(POLYFLAGS))/g' $@
 	chmod a+x $@
