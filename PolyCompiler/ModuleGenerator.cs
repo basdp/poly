@@ -63,6 +63,20 @@ namespace PolyCompiler
 
                 // TODO: check for dependencies of fields and such
                 //return t1.Name.CompareTo(t2.Name);
+                FieldInfo[] fis1 = t1.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+                FieldInfo[] fis2 = t1.GetFields(BindingFlags.DeclaredOnly | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+
+                foreach (var fi in fis1)
+                {
+                    if (fi.FieldType.IsValueType && fi.FieldType == t2)
+                        return 1;
+                }
+
+                foreach (var fi in fis2)
+                {
+                    if (fi.FieldType.IsValueType && fi.FieldType == t1)
+                        return -1;
+                }
 
                 int depth1 = 0;
                 Type base1 = t1.BaseType;
@@ -79,8 +93,6 @@ namespace PolyCompiler
                     base2 = base2.BaseType;
                 }
 
-                // TODO: check for dependencies of fields and such
-                //return t1.Name.CompareTo(t2.Name);
                 return depth1.CompareTo(depth2);
             });
 

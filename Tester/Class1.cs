@@ -1,38 +1,38 @@
-﻿//
-// Properties intermixed in assignments
-//
-
-using System;
-
-class X
+﻿struct T
 {
+    public int a, b;
+}
 
-    static string v;
+struct S
+{
+    T t;
 
-    static string S
+    public T GetT()
     {
-        get
-        {
-            return v;
-        }
-        set
-        {
-            v = value;
-        }
+        return t;
     }
 
-    static string x, b;
+    public void Init()
+    {
+        t.a = 1;
+        t.b = 2;
+    }
+}
 
+class M
+{
     public static int Main()
     {
+        S s = new S();
 
-        x = S = b = "hlo";
-        if (x != "hlo")
+        s.Init();
+
+        if (s.GetT().a != 1)
             return 1;
-        if (S != "hlo")
+
+        if (s.GetT().b != 2)
             return 2;
-        if (b != "hlo")
-            return 3;
+
         return 200;
     }
 }
